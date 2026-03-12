@@ -1,5 +1,6 @@
 import Navbar from './components/Navbar'
 import Hero from './components/Hero'
+import Reveal from './components/Reveal'
 import WhyNow from './components/WhyNow'
 import HowItWorks from './components/HowItWorks'
 import Benefits from './components/Benefits'
@@ -13,6 +14,7 @@ export default function App() {
       <Navbar />
       <main>
         <Hero />
+        <Reveal />
         <WhyNow />
         <HowItWorks />
         <Benefits />

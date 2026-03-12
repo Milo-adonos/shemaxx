@@ -1,87 +1,142 @@
-import { motion } from 'framer-motion'
-import { useInView } from 'framer-motion'
-import { useRef } from 'react'
+import { motion, useInView, useMotionValue, useTransform, animate } from 'framer-motion'
+import { useRef, useEffect } from 'react'
 
 const stats = [
-  { value: '94%', label: 'des femmes se sentent mal représentées par les apps d\'attractivité existantes' },
-  { value: '3x', label: 'plus de précision grâce à des algorithmes entraînés sur des visages féminins' },
-  { value: '0', label: 'jugement. Seulement des insights basés sur les standards de la beauté dorée' },
+  { value: 94, suffix: '%', label: 'des femmes se sentent mal représentées par les apps d\'attractivité existantes' },
+  { value: 3, suffix: 'x', label: 'plus de précision grâce à des algorithmes entraînés sur des visages féminins' },
+  { value: 0, suffix: '', label: 'jugement. Seulement des insights basés sur les standards de la beauté dorée' },
 ]
+
+function CountUp({ target, suffix, inView }) {
+  const count = useMotionValue(0)
+  const rounded = useTransform(count, (v) => Math.round(v))
+  const ref = useRef(null)
+
+  useEffect(() => {
+    if (!inView) return
+    const controls = animate(count, target, { duration: 1.4, ease: 'easeOut' })
+    return controls.stop
+  }, [inView, target, count])
+
+  return (
+    <motion.span ref={ref}>
+      {useTransform(rounded, (v) => `${v}${suffix}`).get
+        ? <motion.span>{rounded}</motion.span>
+        : null}
+      <motion.span>{rounded}</motion.span>
+      <span>{suffix}</span>
+    </motion.span>
+  )
+}
+
+function AnimatedStat({ target, suffix, inView }) {
+  const count = useMotionValue(0)
+  const rounded = useTransform(count, (v) =>
+    target === 0 ? '0' : Math.round(v).toString()
+  )
+
+  useEffect(() => {
+    if (!inView || target === 0) return
+    const controls = animate(count, target, { duration: 1.2, ease: 'easeOut' })
+    return controls.stop
+  }, [inView, target, count])
+
+  if (target === 0) {
+    return <span>0</span>
+  }
+
+  return (
+    <>
+      <motion.span>{rounded}</motion.span>
+      <span>{suffix}</span>
+    </>
+  )
+}
 
 export default function WhyNow() {
   const ref = useRef(null)
-  const inView = useInView(ref, { once: true, margin: '-100px' })
+  const inView = useInView(ref, { once: true, margin: '-80px' })
 
   return (
-    <section ref={ref} className="relative py-28 overflow-hidden">
-      {/* Background accent */}
-      <div className="absolute inset-0 pointer-events-none">
-        <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-[#cc3c69]/20 to-transparent" />
-        <div className="absolute bottom-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-[#cc3c69]/10 to-transparent" />
-        <div className="absolute left-0 top-1/2 -translate-y-1/2 w-[400px] h-[400px] rounded-full bg-[#cc3c69]/5 blur-[100px]" />
-      </div>
+    <section ref={ref} className="relative py-16 md:py-24 bg-[#111] overflow-hidden">
+      {/* Top border accent */}
+      <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-[#cc3c69]/40 to-transparent" />
+      <div className="absolute bottom-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-white/5 to-transparent" />
 
-      <div className="relative z-10 max-w-6xl mx-auto px-6">
-        <div className="grid lg:grid-cols-2 gap-16 items-center">
-          {/* Left: text */}
-          <div>
+      {/* Ambient glow */}
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[400px] h-[200px] bg-[#cc3c69]/8 blur-[80px] pointer-events-none" />
+
+      <div className="relative z-10 max-w-3xl mx-auto px-5">
+
+        {/* Badge */}
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
+          animate={inView ? { opacity: 1, y: 0 } : {}}
+          transition={{ duration: 0.5 }}
+          className="flex justify-center mb-6"
+        >
+          <span className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-[#cc3c69]/30 bg-[#cc3c69]/10 text-[#cc3c69] text-xs font-semibold tracking-widest uppercase">
+            Pourquoi maintenant
+          </span>
+        </motion.div>
+
+        {/* Title */}
+        <motion.h2
+          initial={{ opacity: 0, y: 20 }}
+          animate={inView ? { opacity: 1, y: 0 } : {}}
+          transition={{ duration: 0.6, delay: 0.1 }}
+          className="text-3xl sm:text-4xl md:text-5xl font-black leading-tight tracking-tight text-center mb-8"
+        >
+          Enfin une IA qui<br />
+          <span className="text-[#cc3c69]">te comprend, toi.</span>
+        </motion.h2>
+
+        {/* Paragraphs */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={inView ? { opacity: 1, y: 0 } : {}}
+          transition={{ duration: 0.6, delay: 0.2 }}
+          className="space-y-3 text-sm text-white/50 leading-relaxed text-center max-w-lg mx-auto"
+        >
+          <p>Les outils existants ont été conçus pour les hommes — algorithmes biaisés, conseils inadaptés, expérience pensée sans nous.</p>
+          <p><span className="text-white font-medium">Shemaxx change ça.</span> Une IA entraînée sur des visages féminins, dans toute leur diversité.</p>
+          <p>Des insights qui célèbrent tes forces et révèlent ce qui te rend unique.</p>
+        </motion.div>
+
+        {/* Divider */}
+        <motion.div
+          initial={{ scaleX: 0, opacity: 0 }}
+          animate={inView ? { scaleX: 1, opacity: 1 } : {}}
+          transition={{ duration: 0.8, delay: 0.4 }}
+          className="my-12 h-px bg-gradient-to-r from-transparent via-[#cc3c69]/40 to-transparent origin-center"
+        />
+
+        {/* Stats */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-0 divide-y sm:divide-y-0 sm:divide-x divide-white/8">
+          {stats.map((s, i) => (
             <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={inView ? { opacity: 1, y: 0 } : {}}
-              transition={{ duration: 0.6 }}
-              className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-[#cc3c69]/30 bg-[#cc3c69]/10 text-[#cc3c69] text-xs font-semibold tracking-widest uppercase mb-6"
-            >
-              Pourquoi maintenant
-            </motion.div>
-
-            <motion.h2
+              key={i}
               initial={{ opacity: 0, y: 24 }}
               animate={inView ? { opacity: 1, y: 0 } : {}}
-              transition={{ duration: 0.6, delay: 0.1 }}
-              className="text-4xl md:text-5xl font-black leading-tight tracking-tight mb-6"
+              transition={{ duration: 0.6, delay: 0.5 + i * 0.12 }}
+              className="flex flex-col items-center text-center px-6 py-6 sm:py-4 group"
             >
-              Enfin une IA qui<br />
-              <span className="text-[#cc3c69]">te comprend, toi.</span>
-            </motion.h2>
+              {/* Top accent line */}
+              <div className="hidden sm:block w-8 h-0.5 bg-[#cc3c69]/50 rounded-full mb-5 group-hover:w-14 transition-all duration-300" />
 
-            <motion.div
-              initial={{ opacity: 0, y: 24 }}
-              animate={inView ? { opacity: 1, y: 0 } : {}}
-              transition={{ duration: 0.6, delay: 0.2 }}
-              className="space-y-5 text-white/60 leading-relaxed"
-            >
-              <p>
-                Pendant des années, les rares outils d'analyse faciale disponibles ont été conçus par et pour les hommes. Résultat ? Des algorithmes biaisés, des conseils inadaptés, et une expérience qui laisse les femmes de côté.
-              </p>
-              <p>
-                <span className="text-white font-medium">Shemaxx change ça.</span> Notre IA a été entraînée spécifiquement sur des visages féminins, avec une compréhension fine de la beauté féminine dans toute sa diversité — pas une pâle copie d'un outil masculin.
-              </p>
-              <p>
-                Tu mérites des insights pensés pour toi, qui célèbrent tes forces et t'offrent une nouvelle perspective sur ce qui te rend unique.
-              </p>
-            </motion.div>
-          </div>
-
-          {/* Right: stats */}
-          <div className="space-y-5">
-            {stats.map((s, i) => (
-              <motion.div
-                key={i}
-                initial={{ opacity: 0, x: 30 }}
-                animate={inView ? { opacity: 1, x: 0 } : {}}
-                transition={{ duration: 0.6, delay: 0.15 + i * 0.12 }}
-                className="group relative p-6 rounded-2xl border border-white/8 bg-[#222]/60 hover:border-[#cc3c69]/30 hover:bg-[#cc3c69]/5 transition-all duration-300"
+              <div
+                className="text-5xl md:text-6xl font-black leading-none mb-3 tabular-nums"
+                style={{
+                  color: '#cc3c69',
+                  textShadow: '0 0 12px rgba(204,60,105,0.55), 0 0 30px rgba(204,60,105,0.25)',
+                }}
               >
-                <div className="flex items-start gap-5">
-                  <span className="text-4xl font-black text-[#cc3c69] leading-none shrink-0 group-hover:scale-110 transition-transform duration-300">
-                    {s.value}
-                  </span>
-                  <p className="text-sm text-white/55 leading-relaxed pt-1">{s.label}</p>
-                </div>
-                <div className="absolute bottom-0 left-6 right-6 h-px bg-gradient-to-r from-[#cc3c69]/0 via-[#cc3c69]/30 to-[#cc3c69]/0 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-              </motion.div>
-            ))}
-          </div>
+                <AnimatedStat target={s.value} suffix={s.suffix} inView={inView} />
+              </div>
+
+              <p className="text-xs text-white/45 leading-relaxed max-w-[160px]">{s.label}</p>
+            </motion.div>
+          ))}
         </div>
       </div>
     </section>
