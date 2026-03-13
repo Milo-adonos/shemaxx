@@ -1,13 +1,5 @@
 import { motion } from 'framer-motion'
-import { Check, ShieldCheck, X } from 'lucide-react'
-
-const competitors = [
-  { name: 'ASCENDMAX',    weekly: '8,99€',  monthly: '35,96€' },
-  { name: 'Umax',         weekly: '3,99€',  monthly: '15,96€' },
-  { name: 'LooksMax AI',  weekly: '3,99€',  monthly: '15,96€' },
-  { name: 'AI FACE RATER',weekly: '8,99€',  monthly: '35,96€' },
-  { name: 'Looksmax',     weekly: '5,99€',  monthly: '23,96€' },
-]
+import { Check, ShieldCheck } from 'lucide-react'
 
 const mainFeatures = [
   'Analyse IA complète illimitée',
@@ -17,7 +9,6 @@ const mainFeatures = [
 ]
 
 const plans = [
-  { id: 'monthly', label: 'Mensuel',  price: '15,96€', period: '/mois',   badge: null },
   { id: 'annual',  label: 'Annuel',   price: '119€',   period: '/an',     badge: 'Économise 40%' },
 ]
 
@@ -33,30 +24,6 @@ export default function Step10Paywall({ pseudo, onClose }) {
         <p className="text-xs mt-2" style={{ color: 'rgba(255,255,255,0.4)' }}>
           Ton analyse est prête. Choisis ton accès pour débloquer tous tes insights.
         </p>
-      </motion.div>
-
-      {/* Competitor comparison */}
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 0.15 }}
-        className="mb-4 p-3 rounded-xl border border-white/5"
-        style={{ background: '#0f0f0f' }}
-      >
-        <p className="text-[10px] uppercase tracking-widest mb-2" style={{ color: 'rgba(255,255,255,0.25)' }}>
-          Prix concurrents
-        </p>
-        <div className="space-y-1.5">
-          {competitors.map((c) => (
-            <div key={c.name} className="flex items-center justify-between">
-              <span className="text-xs" style={{ color: 'rgba(255,255,255,0.35)' }}>{c.name}</span>
-              <div className="flex items-center gap-2">
-                <span className="text-[10px]" style={{ color: 'rgba(255,255,255,0.25)' }}>{c.weekly}/sem</span>
-                <span className="text-xs font-semibold" style={{ color: 'rgba(255,255,255,0.4)' }}>{c.monthly}/mois</span>
-              </div>
-            </div>
-          ))}
-        </div>
       </motion.div>
 
       {/* Main offer — RECOMMENDED */}
@@ -112,7 +79,7 @@ export default function Step10Paywall({ pseudo, onClose }) {
       </motion.div>
 
       {/* Secondary plans */}
-      <div className="grid grid-cols-2 gap-3 mb-5">
+      <div className="grid grid-cols-1 gap-3 mb-5">
         {plans.map((p, i) => (
           <motion.button
             key={p.id}
