@@ -40,8 +40,8 @@ export default function Step6Graph({ onNext }) {
         {/* Graph card */}
         <div className="w-full rounded-2xl border border-white/8 overflow-hidden" style={{ background: '#111' }}>
           <div className="px-5 pt-5 pb-1">
-            <p className="text-base font-black text-white">Improve with Shemaxx</p>
-            <p className="text-xs mt-0.5" style={{ color: 'rgba(255,255,255,0.35)' }}>Looksmaxxing with AI</p>
+            <p className="text-base font-black text-white">Améliore-toi avec Shemaxx</p>
+            <p className="text-xs mt-0.5" style={{ color: 'rgba(255,255,255,0.35)' }}>Looksmaxxing par l'IA</p>
           </div>
 
           <div className="px-4 py-4">

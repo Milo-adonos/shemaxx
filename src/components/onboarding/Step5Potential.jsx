@@ -2,13 +2,19 @@ import { useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
 import StepLayout from './StepLayout'
 
+const BAR_H = 220
+
 export default function Step5Potential({ onNext }) {
   const [ready, setReady] = useState(false)
+  const [animate, setAnimate] = useState(false)
 
   useEffect(() => {
-    const t = setTimeout(() => setReady(true), 3000)
-    return () => clearTimeout(t)
+    const t1 = setTimeout(() => setAnimate(true), 300)
+    const t2 = setTimeout(() => setReady(true), 3000)
+    return () => { clearTimeout(t1); clearTimeout(t2) }
   }, [])
+
+  const yLabels = ['100%', '50%', '0%']
 
   return (
     <StepLayout
@@ -17,89 +23,111 @@ export default function Step5Potential({ onNext }) {
       cta={ready ? 'Continuer' : null}
       onCta={onNext}
     >
-      <div className="flex flex-col items-center mt-4">
+      <div className="flex flex-col items-center mt-2">
         {/* Graph card */}
-        <div className="w-full rounded-2xl overflow-hidden border border-white/8" style={{ background: '#111' }}>
-          <div className="px-5 pt-5 pb-2">
-            <p className="text-xs font-bold uppercase tracking-widest mb-0.5" style={{ color: 'rgba(255,255,255,0.3)' }}>
-              Analyse de potentiel
-            </p>
-            <p className="text-base font-black text-white">We see your potential</p>
-            <p className="text-xs mt-0.5" style={{ color: 'rgba(255,255,255,0.35)' }}>
-              You can reach 100% with training
-            </p>
+        <div className="w-full rounded-2xl border border-white/8 px-5 pt-5 pb-5" style={{ background: '#111' }}>
+
+          {/* Title */}
+          <p className="text-sm font-semibold text-center mb-5" style={{ color: 'rgba(255,255,255,0.75)' }}>
+            Tu peux atteindre{' '}
+            <span style={{ color: '#cc3c69', fontWeight: 900 }}>100%</span>
+            {' '}avec un entraînement adapté
+          </p>
+
+          {/* Chart area */}
+          <div className="flex items-stretch gap-3">
+
+            {/* Y-axis labels */}
+            <div className="flex flex-col justify-between" style={{ height: BAR_H }}>
+              {yLabels.map(l => (
+                <span key={l} className="text-[10px] text-right leading-none" style={{ color: 'rgba(255,255,255,0.35)' }}>
+                  {l}
+                </span>
+              ))}
+            </div>
+
+            {/* Grid + bars */}
+            <div className="flex-1 relative" style={{ height: BAR_H }}>
+              {/* Horizontal grid lines */}
+              {[0, 0.5, 1].map((pos) => (
+                <div
+                  key={pos}
+                  className="absolute left-0 right-0"
+                  style={{
+                    top: `${pos * 100}%`,
+                    height: 1,
+                    background: 'rgba(255,255,255,0.07)',
+                  }}
+                />
+              ))}
+
+              {/* Two bars side by side */}
+              <div className="absolute inset-0 flex items-end justify-center gap-5">
+
+                {/* Barre bleue — Sans Shemaxx */}
+                <div className="flex flex-col items-center gap-2">
+                  <div className="relative rounded-xl overflow-hidden" style={{ width: 80, height: BAR_H, background: 'rgba(255,255,255,0.05)' }}>
+                    <motion.div
+                      initial={{ height: 0 }}
+                      animate={{ height: animate ? '22%' : 0 }}
+                      transition={{ duration: 0.8, delay: 0.2, ease: 'easeOut' }}
+                      className="absolute bottom-0 left-0 right-0 flex items-center justify-center"
+                      style={{ background: 'linear-gradient(180deg, #5bb8ff 0%, #3a9eff 100%)' }}
+                    >
+                      {animate && (
+                        <motion.span
+                          initial={{ opacity: 0 }}
+                          animate={{ opacity: 1 }}
+                          transition={{ delay: 0.8 }}
+                          className="text-base font-black text-white"
+                        >
+                          22%
+                        </motion.span>
+                      )}
+                    </motion.div>
+                  </div>
+                </div>
+
+                {/* Barre rose — Avec Shemaxx */}
+                <div className="flex flex-col items-center gap-2">
+                  <div className="relative rounded-xl overflow-hidden" style={{ width: 80, height: BAR_H, background: 'rgba(255,255,255,0.05)' }}>
+                    <motion.div
+                      initial={{ height: 0 }}
+                      animate={{ height: animate ? '78%' : 0 }}
+                      transition={{ duration: 1.1, delay: 0.5, ease: 'easeOut' }}
+                      className="absolute bottom-0 left-0 right-0 flex items-center justify-center"
+                      style={{
+                        background: 'linear-gradient(180deg, #e0557f 0%, #cc3c69 100%)',
+                        boxShadow: '0 0 20px rgba(204,60,105,0.3)',
+                      }}
+                    >
+                      {animate && (
+                        <motion.span
+                          initial={{ opacity: 0 }}
+                          animate={{ opacity: 1 }}
+                          transition={{ delay: 1.4 }}
+                          className="text-xl font-black text-white"
+                        >
+                          78%
+                        </motion.span>
+                      )}
+                    </motion.div>
+                  </div>
+                </div>
+
+              </div>
+            </div>
           </div>
 
-          <div className="px-5 py-6 flex items-end gap-8 justify-center">
-            {/* Bar WITHOUT Shemaxx */}
-            <div className="flex flex-col items-center gap-3">
-              <div className="flex flex-col justify-end" style={{ height: 180, width: 64 }}>
-                <div className="w-full rounded-xl overflow-hidden flex flex-col justify-end" style={{ height: '100%', background: 'rgba(255,255,255,0.04)' }}>
-                  {/* Unlocked potential (gray top) */}
-                  <motion.div
-                    initial={{ height: 0 }}
-                    animate={{ height: '24%' }}
-                    transition={{ duration: 0.8, delay: 0.8, ease: 'easeOut' }}
-                    className="w-full"
-                    style={{ background: 'rgba(255,255,255,0.12)' }}
-                  />
-                  {/* Current (blue bottom) */}
-                  <motion.div
-                    initial={{ height: 0 }}
-                    animate={{ height: '76%' }}
-                    transition={{ duration: 1, delay: 0.3, ease: 'easeOut' }}
-                    className="w-full"
-                    style={{ background: 'linear-gradient(0deg, #4a9eff, #6bb5ff)' }}
-                  />
-                </div>
-              </div>
-
-              {/* Labels beside bar */}
-              <div className="text-center">
-                <p className="text-[10px] font-bold text-white/50">Sans Shemaxx</p>
-                <div className="flex gap-1 justify-center mt-1.5 flex-col">
-                  <div className="flex items-center gap-1.5">
-                    <div className="w-2 h-2 rounded-sm" style={{ background: '#4a9eff' }} />
-                    <span className="text-[9px] text-white/40">76% actuel</span>
-                  </div>
-                  <div className="flex items-center gap-1.5">
-                    <div className="w-2 h-2 rounded-sm" style={{ background: 'rgba(255,255,255,0.2)' }} />
-                    <span className="text-[9px] text-white/40">24% bloqué</span>
-                  </div>
-                </div>
-              </div>
+          {/* Legend */}
+          <div className="flex items-center justify-center gap-6 mt-5">
+            <div className="flex items-center gap-2">
+              <div className="w-3 h-3 rounded-sm" style={{ background: '#3a9eff' }} />
+              <span className="text-xs" style={{ color: 'rgba(255,255,255,0.5)' }}>Sans Shemaxx</span>
             </div>
-
-            {/* VS separator */}
-            <div className="flex flex-col items-center gap-1 pb-12">
-              <div className="w-px h-8" style={{ background: 'rgba(255,255,255,0.1)' }} />
-              <span className="text-[10px] font-black" style={{ color: 'rgba(255,255,255,0.2)' }}>VS</span>
-              <div className="w-px h-8" style={{ background: 'rgba(255,255,255,0.1)' }} />
-            </div>
-
-            {/* Bar WITH Shemaxx */}
-            <div className="flex flex-col items-center gap-3">
-              <div className="relative flex flex-col justify-end" style={{ height: 180, width: 64 }}>
-                {/* Glow */}
-                <div className="absolute inset-0 rounded-xl" style={{ background: 'rgba(204,60,105,0.15)', filter: 'blur(12px)' }} />
-                <div className="relative w-full rounded-xl overflow-hidden" style={{ height: '100%', background: 'rgba(255,255,255,0.04)' }}>
-                  <motion.div
-                    initial={{ height: 0 }}
-                    animate={{ height: '100%' }}
-                    transition={{ duration: 1.2, delay: 0.5, ease: 'easeOut' }}
-                    className="w-full absolute bottom-0"
-                    style={{ background: 'linear-gradient(0deg, #cc3c69, #e0557f, rgba(255,255,255,0.6))' }}
-                  />
-                </div>
-              </div>
-
-              <div className="text-center">
-                <p className="text-[10px] font-bold" style={{ color: '#cc3c69' }}>Avec Shemaxx</p>
-                <div className="flex items-center gap-1.5 mt-1.5 justify-center">
-                  <div className="w-2 h-2 rounded-sm" style={{ background: '#cc3c69' }} />
-                  <span className="text-[9px]" style={{ color: 'rgba(204,60,105,0.7)' }}>100% débloqué</span>
-                </div>
-              </div>
+            <div className="flex items-center gap-2">
+              <div className="w-3 h-3 rounded-sm" style={{ background: '#cc3c69' }} />
+              <span className="text-xs" style={{ color: 'rgba(255,255,255,0.5)' }}>Avec Shemaxx</span>
             </div>
           </div>
         </div>
@@ -108,7 +136,7 @@ export default function Step5Potential({ onNext }) {
           <motion.p
             animate={{ opacity: [0.4, 1, 0.4] }}
             transition={{ duration: 1.5, repeat: Infinity }}
-            className="text-xs mt-6"
+            className="text-xs mt-5"
             style={{ color: 'rgba(255,255,255,0.3)' }}
           >
             Analyse en cours...

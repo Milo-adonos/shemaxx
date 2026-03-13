@@ -14,7 +14,6 @@ export default function Step4Result({ onNext }) {
 
   const handleSelect = (id) => {
     setSelected(id)
-    setTimeout(() => onNext(id), 300)
   }
 
   return (

@@ -12,14 +12,14 @@ export default function Step2Age({ value, onNext }) {
   const isDragging = useRef(false)
   const startX = useRef(0)
   const startScroll = useRef(0)
+  const ageRef = useRef(value || 22)
 
   const ages = Array.from({ length: MAX - MIN + 1 }, (_, i) => MIN + i)
 
   const scrollToAge = (a, smooth = true) => {
     if (!scrollRef.current) return
     const idx = a - MIN
-    const containerW = scrollRef.current.clientWidth
-    const offset = idx * ITEM_W - containerW / 2 + ITEM_W / 2
+    const offset = idx * ITEM_W + ITEM_W / 2
     scrollRef.current.scrollTo({ left: offset, behavior: smooth ? 'smooth' : 'instant' })
   }
 
@@ -29,11 +29,13 @@ export default function Step2Age({ value, onNext }) {
 
   const handleScroll = () => {
     if (!scrollRef.current) return
-    const containerW = scrollRef.current.clientWidth
     const scrollLeft = scrollRef.current.scrollLeft
-    const idx = Math.round((scrollLeft + containerW / 2 - ITEM_W / 2) / ITEM_W)
+    const idx = Math.round(Math.max(0, scrollLeft - ITEM_W / 2) / ITEM_W)
     const newAge = Math.min(MAX, Math.max(MIN, MIN + idx))
-    if (newAge !== age) setAge(newAge)
+    if (newAge !== ageRef.current) {
+      ageRef.current = newAge
+      setAge(newAge)
+    }
   }
 
   const onMouseDown = (e) => {
@@ -52,7 +54,7 @@ export default function Step2Age({ value, onNext }) {
   const onMouseUp = () => {
     isDragging.current = false
     if (scrollRef.current) scrollRef.current.style.cursor = 'grab'
-    scrollToAge(age)
+    scrollToAge(ageRef.current)
   }
 
   return (
