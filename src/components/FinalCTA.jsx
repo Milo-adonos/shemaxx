@@ -9,7 +9,7 @@ const reassurances = [
   { icon: Clock, text: 'Résultats en 30 sec' },
 ]
 
-export default function FinalCTA() {
+export default function FinalCTA({ onCta }) {
   const ref = useRef(null)
   const inView = useInView(ref, { once: true, margin: '-80px' })
 
@@ -43,14 +43,14 @@ export default function FinalCTA() {
             Lance ta première analyse et découvre ton potentiel beauté.
           </p>
 
-          <motion.a
-            href="#"
+          <motion.button
+            onClick={onCta}
             whileTap={{ scale: 0.97 }}
             className="inline-flex items-center justify-center gap-2 w-full sm:w-auto px-8 py-4 rounded-full font-bold text-base bg-[#cc3c69] text-white shadow-[0_0_30px_rgba(204,60,105,0.35)] mb-8 active:scale-95 transition-transform duration-150"
           >
             <Sparkles size={18} />
             Analyser mon visage gratuitement
-          </motion.a>
+          </motion.button>
 
           {/* Reassurances */}
           <div className="flex items-center justify-center gap-5 flex-wrap">

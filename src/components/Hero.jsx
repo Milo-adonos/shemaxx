@@ -14,7 +14,7 @@ const fadeUp = (delay = 0) => ({
   transition: { duration: 0.6, delay, ease: [0.22, 1, 0.36, 1] },
 })
 
-export default function Hero() {
+export default function Hero({ onCta }) {
   return (
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden pt-16">
       {/* Ambient glow */}
@@ -62,12 +62,12 @@ export default function Hero() {
         </motion.p>
 
         <motion.div {...fadeUp(0.5)} className="flex justify-center mb-10">
-          <a
-            href="#cta"
+          <button
+            onClick={onCta}
             className="px-8 py-4 rounded-full font-bold text-base bg-[#cc3c69] text-white text-center active:scale-95 transition-transform duration-150 shadow-[0_0_30px_rgba(204,60,105,0.3)]"
           >
             Analyser mon visage
-          </a>
+          </button>
         </motion.div>
 
         <motion.div
