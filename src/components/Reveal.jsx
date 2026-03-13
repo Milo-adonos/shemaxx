@@ -50,7 +50,7 @@ export default function Reveal() {
               transition={{ duration: 0.5, delay: 0.2 }}
               className="text-sm text-white/50 leading-relaxed mb-8 max-w-sm mx-auto lg:mx-0"
             >
-              Notre IA analyse 68+ points de référence pour te donner une lecture précise et personnalisée de ton visage.
+              Notre IA analyse +68 points de référence pour te donner une lecture précise et personnalisée de ton visage.
             </motion.p>
 
             {/* Points — desktop only */}

@@ -28,7 +28,7 @@ export default function FinalCTA({ onCta }) {
         >
           <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-[#cc3c69]/30 bg-[#cc3c69]/10 text-[#cc3c69] text-xs font-semibold tracking-widest uppercase mb-6">
             <span className="w-1.5 h-1.5 rounded-full bg-[#cc3c69] animate-pulse" />
-            Rejoins les 12 000+ femmes
+            Rejoins les +12 000 femmes
           </div>
 
           <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black leading-[1.08] tracking-tight mb-5">

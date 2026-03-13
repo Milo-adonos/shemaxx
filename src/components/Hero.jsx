@@ -75,10 +75,10 @@ export default function Hero({ onCta }) {
           className="flex flex-wrap items-center gap-x-4 gap-y-2 justify-center"
         >
           {[
-            { value: '12 000+', label: 'analyses' },
+            { value: '+12 000', label: 'analyses' },
             { value: '4.9/5', label: 'note' },
             { value: '97%', label: 'satisfaction' },
-            { value: '68+', label: 'points analysés' },
+            { value: '+68', label: 'points analysés' },
           ].map((s, i) => (
             <div key={i} className="flex items-baseline gap-1">
               <span className="text-sm font-black text-[#cc3c69]">{s.value}</span>
