@@ -1,137 +1,146 @@
 import { motion } from 'framer-motion'
 import StepLayout from './StepLayout'
 
-const weeks = ['Sem. 1', 'Sem. 2', 'Sem. 3']
+// SVG paths
+const SHEMAXX_PATH = "M 28,148 C 60,148 80,130 110,108 S 160,72 195,50 S 240,28 272,18"
+const INTERNET_PATH = "M 28,148 C 48,130 58,112 75,120 S 100,138 118,122 S 142,100 162,118 S 188,138 208,124 S 238,130 272,136"
 
-// Points AI line (progressive improvement)
-const aiPoints  = [{ x: 0, y: 70 }, { x: 1, y: 45 }, { x: 2, y: 15 }]
-// Points generic line (stagnation / slight decline)
-const genPoints = [{ x: 0, y: 62 }, { x: 1, y: 65 }, { x: 2, y: 68 }]
-
-const W = 280
-const H = 120
-const PAD = { left: 10, right: 10, top: 10, bottom: 10 }
-
-function toSVG(pts) {
-  return pts.map(p => {
-    const x = PAD.left + (p.x / 2) * (W - PAD.left - PAD.right)
-    const y = PAD.top + (p.y / 100) * (H - PAD.top - PAD.bottom)
-    return [x, y]
-  })
-}
-
-function pathD(pts) {
-  const coords = toSVG(pts)
-  return coords.map((c, i) => `${i === 0 ? 'M' : 'L'}${c[0]},${c[1]}`).join(' ')
-}
+// Longueur approximative des paths pour l'animation stroke-dashoffset
+const SHEMAXX_LEN  = 340
+const INTERNET_LEN = 310
 
 export default function Step6Graph({ onNext }) {
-  const aiCoords  = toSVG(aiPoints)
-  const genCoords = toSVG(genPoints)
-
   return (
     <StepLayout
       title="Révèle ton potentiel avec l'IA"
-      subtitle="Glow up avec l'IA"
       cta="Continuer"
       onCta={onNext}
     >
-      <div className="mt-2">
+      <div className="mt-3">
         {/* Graph card */}
-        <div className="w-full rounded-2xl border border-white/8 overflow-hidden" style={{ background: '#111' }}>
+        <div
+          className="w-full rounded-2xl overflow-hidden border border-white/8 relative"
+          style={{ background: '#0d0d0d' }}
+        >
+          {/* Subtle top glow */}
+          <div className="absolute top-0 right-0 w-32 h-32 pointer-events-none"
+            style={{ background: 'radial-gradient(circle, rgba(204,60,105,0.12), transparent 70%)' }} />
+
           <div className="px-5 pt-5 pb-1">
-            <p className="text-base font-black text-white">Améliore-toi avec Shemaxx</p>
-            <p className="text-xs mt-0.5" style={{ color: 'rgba(255,255,255,0.35)' }}>Looksmaxxing par l'IA</p>
+            <p className="text-lg font-black text-white leading-snug">
+              Looksmaxxing<br />avec Shemaxx
+            </p>
           </div>
 
-          <div className="px-4 py-4">
-            {/* Week labels */}
-            <div className="flex justify-between px-2 mb-2">
-              {weeks.map(w => (
-                <span key={w} className="text-[10px]" style={{ color: 'rgba(255,255,255,0.25)' }}>{w}</span>
+          {/* SVG Chart */}
+          <div className="px-3 pt-2 pb-0">
+            <svg
+              viewBox="0 0 300 175"
+              className="w-full"
+              style={{ overflow: 'visible' }}
+            >
+              {/* ── Shemaxx line (pink, going up) ── */}
+              {/* Glow layer */}
+              <motion.path
+                d={SHEMAXX_PATH}
+                fill="none"
+                stroke="#cc3c69"
+                strokeWidth="6"
+                strokeLinecap="round"
+                style={{ filter: 'blur(8px)', opacity: 0.35 }}
+                strokeDasharray={SHEMAXX_LEN}
+                initial={{ strokeDashoffset: SHEMAXX_LEN }}
+                animate={{ strokeDashoffset: 0 }}
+                transition={{ duration: 1.4, delay: 0.4, ease: [0.22, 1, 0.36, 1] }}
+              />
+              {/* Main line */}
+              <motion.path
+                d={SHEMAXX_PATH}
+                fill="none"
+                stroke="#cc3c69"
+                strokeWidth="3"
+                strokeLinecap="round"
+                strokeDasharray={SHEMAXX_LEN}
+                initial={{ strokeDashoffset: SHEMAXX_LEN }}
+                animate={{ strokeDashoffset: 0 }}
+                transition={{ duration: 1.4, delay: 0.4, ease: [0.22, 1, 0.36, 1] }}
+              />
+              {/* Start dot */}
+              <motion.circle cx="28" cy="148" r="6" fill="white"
+                initial={{ scale: 0 }} animate={{ scale: 1 }}
+                transition={{ delay: 0.3, type: 'spring' }} />
+              {/* End dot */}
+              <motion.circle cx="272" cy="18" r="6" fill="#cc3c69"
+                style={{ filter: 'drop-shadow(0 0 6px rgba(204,60,105,0.9))' }}
+                initial={{ scale: 0 }} animate={{ scale: 1 }}
+                transition={{ delay: 1.6, type: 'spring', stiffness: 200 }} />
+              {/* Label "Shemaxx" */}
+              <motion.text
+                x="248" y="10"
+                fill="#cc3c69" fontSize="11" fontWeight="900" textAnchor="middle"
+                initial={{ opacity: 0 }} animate={{ opacity: 1 }}
+                transition={{ delay: 1.7 }}
+              >
+                Shemaxx
+              </motion.text>
+
+              {/* ── Internet line (red, wavy going down) ── */}
+              <motion.path
+                d={INTERNET_PATH}
+                fill="none"
+                stroke="#ff5252"
+                strokeWidth="3"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeDasharray={INTERNET_LEN}
+                initial={{ strokeDashoffset: INTERNET_LEN }}
+                animate={{ strokeDashoffset: 0 }}
+                transition={{ duration: 1.6, delay: 0.6, ease: 'easeInOut' }}
+              />
+              {/* End dot */}
+              <motion.circle cx="272" cy="136" r="5" fill="none" stroke="#ff5252" strokeWidth="2.5"
+                initial={{ scale: 0 }} animate={{ scale: 1 }}
+                transition={{ delay: 1.9, type: 'spring' }} />
+              {/* Label "Tutos en ligne" */}
+              <motion.text
+                x="248" y="112"
+                fill="#ff5252" fontSize="10" fontWeight="700" textAnchor="middle"
+                initial={{ opacity: 0 }} animate={{ opacity: 1 }}
+                transition={{ delay: 2 }}
+              >
+                Tutos en ligne
+              </motion.text>
+
+              {/* ── X Axis ── */}
+              <line x1="20" y1="160" x2="280" y2="160" stroke="rgba(255,255,255,0.15)" strokeWidth="1" />
+              {/* Ticks */}
+              {[75, 150, 225].map((x, i) => (
+                <g key={i}>
+                  <line x1={x} y1="158" x2={x} y2="164" stroke="rgba(255,255,255,0.2)" strokeWidth="1" />
+                </g>
               ))}
-            </div>
+            </svg>
 
-            {/* SVG chart */}
-            <div className="relative">
-              <svg width="100%" viewBox={`0 0 ${W} ${H}`} style={{ overflow: 'visible' }}>
-                {/* Subtle grid */}
-                {[25, 50, 75].map(y => {
-                  const sy = PAD.top + (y / 100) * (H - PAD.top - PAD.bottom)
-                  return (
-                    <line key={y} x1={PAD.left} x2={W - PAD.right} y1={sy} y2={sy}
-                      stroke="rgba(255,255,255,0.05)" strokeWidth="1" />
-                  )
-                })}
-
-                {/* Generic line (red) */}
-                <motion.path
-                  d={pathD(genPoints)}
-                  fill="none" stroke="#ff4d4d" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"
-                  initial={{ pathLength: 0 }} animate={{ pathLength: 1 }}
-                  transition={{ duration: 1.2, delay: 0.3, ease: 'easeInOut' }}
-                />
-                {genCoords.map(([x, y], i) => (
-                  <motion.circle key={i} cx={x} cy={y} r="4" fill="#ff4d4d"
-                    initial={{ scale: 0 }} animate={{ scale: 1 }}
-                    transition={{ delay: 0.4 + i * 0.3 }} />
-                ))}
-
-                {/* AI line (pink) */}
-                <motion.path
-                  d={pathD(aiPoints)}
-                  fill="none" stroke="#cc3c69" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"
-                  style={{ filter: 'drop-shadow(0 0 4px rgba(204,60,105,0.6))' }}
-                  initial={{ pathLength: 0 }} animate={{ pathLength: 1 }}
-                  transition={{ duration: 1.2, delay: 0.5, ease: 'easeInOut' }}
-                />
-                {/* AI area fill */}
-                <motion.path
-                  d={`${pathD(aiPoints)} L${W - PAD.right},${H - PAD.bottom} L${PAD.left},${H - PAD.bottom} Z`}
-                  fill="url(#aiArea)"
-                  initial={{ opacity: 0 }} animate={{ opacity: 1 }}
-                  transition={{ delay: 1.2 }}
-                />
-                <defs>
-                  <linearGradient id="aiArea" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="#cc3c69" stopOpacity="0.2" />
-                    <stop offset="100%" stopColor="#cc3c69" stopOpacity="0" />
-                  </linearGradient>
-                </defs>
-                {aiCoords.map(([x, y], i) => (
-                  <motion.circle key={i} cx={x} cy={y} r="4" fill="#cc3c69"
-                    style={{ filter: 'drop-shadow(0 0 4px rgba(204,60,105,0.8))' }}
-                    initial={{ scale: 0 }} animate={{ scale: 1 }}
-                    transition={{ delay: 0.6 + i * 0.3, type: 'spring' }} />
-                ))}
-              </svg>
-            </div>
-
-            {/* Legend */}
-            <div className="flex items-center justify-center gap-6 mt-3">
-              <div className="flex items-center gap-2">
-                <div className="w-3 h-3 rounded-full" style={{ background: '#cc3c69', boxShadow: '0 0 6px rgba(204,60,105,0.7)' }} />
-                <span className="text-[10px] text-white/50">Analyse IA Shemaxx</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <div className="w-3 h-3 rounded-full bg-red-500" />
-                <span className="text-[10px] text-white/50">Conseils internet</span>
-              </div>
+            {/* X-axis labels */}
+            <div className="flex justify-around px-4 pb-4 -mt-1">
+              {['Semaine 1', 'Semaine 2', 'Semaine 3'].map(w => (
+                <span key={w} className="text-[10px]" style={{ color: 'rgba(255,255,255,0.35)' }}>{w}</span>
+              ))}
             </div>
           </div>
         </div>
 
         {/* Key stat */}
         <motion.div
-          initial={{ opacity: 0, y: 12 }}
+          initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 1.4 }}
-          className="mt-4 p-4 rounded-2xl text-center border border-white/6"
+          transition={{ delay: 1.8 }}
+          className="mt-4 p-4 rounded-2xl flex items-center gap-4 border border-white/6"
           style={{ background: 'rgba(204,60,105,0.06)' }}
         >
-          <p className="text-2xl font-black" style={{ color: '#cc3c69' }}>3x</p>
-          <p className="text-xs mt-1" style={{ color: 'rgba(255,255,255,0.45)' }}>
-            plus de résultats visibles en 3 semaines avec l'analyse IA
+          <span className="text-3xl font-black shrink-0" style={{ color: '#cc3c69' }}>3x</span>
+          <p className="text-xs leading-relaxed" style={{ color: 'rgba(255,255,255,0.5)' }}>
+            plus de résultats visibles en 3 semaines avec l'analyse IA Shemaxx
           </p>
         </motion.div>
       </div>

@@ -1,61 +1,14 @@
-import { useState, useRef, useEffect } from 'react'
+import { useState } from 'react'
 import { motion } from 'framer-motion'
 import StepLayout from './StepLayout'
 
 const MIN = 13
 const MAX = 45
-const ITEM_W = 52
 
 export default function Step2Age({ value, onNext }) {
   const [age, setAge] = useState(value || 22)
-  const scrollRef = useRef(null)
-  const isDragging = useRef(false)
-  const startX = useRef(0)
-  const startScroll = useRef(0)
-  const ageRef = useRef(value || 22)
 
-  const ages = Array.from({ length: MAX - MIN + 1 }, (_, i) => MIN + i)
-
-  const scrollToAge = (a, smooth = true) => {
-    if (!scrollRef.current) return
-    const idx = a - MIN
-    const offset = idx * ITEM_W + ITEM_W / 2
-    scrollRef.current.scrollTo({ left: offset, behavior: smooth ? 'smooth' : 'instant' })
-  }
-
-  useEffect(() => {
-    scrollToAge(age, false)
-  }, [])
-
-  const handleScroll = () => {
-    if (!scrollRef.current) return
-    const scrollLeft = scrollRef.current.scrollLeft
-    const idx = Math.round(Math.max(0, scrollLeft - ITEM_W / 2) / ITEM_W)
-    const newAge = Math.min(MAX, Math.max(MIN, MIN + idx))
-    if (newAge !== ageRef.current) {
-      ageRef.current = newAge
-      setAge(newAge)
-    }
-  }
-
-  const onMouseDown = (e) => {
-    isDragging.current = true
-    startX.current = e.pageX
-    startScroll.current = scrollRef.current.scrollLeft
-    scrollRef.current.style.cursor = 'grabbing'
-  }
-
-  const onMouseMove = (e) => {
-    if (!isDragging.current) return
-    const dx = e.pageX - startX.current
-    scrollRef.current.scrollLeft = startScroll.current - dx
-  }
-
-  const onMouseUp = () => {
-    isDragging.current = false
-    if (scrollRef.current) scrollRef.current.style.cursor = 'grab'
-    scrollToAge(ageRef.current)
-  }
+  const pct = ((age - MIN) / (MAX - MIN)) * 100
 
   return (
     <StepLayout
@@ -63,14 +16,56 @@ export default function Step2Age({ value, onNext }) {
       cta="Continuer"
       onCta={() => onNext(age)}
     >
+      <style>{`
+        .age-slider {
+          -webkit-appearance: none;
+          appearance: none;
+          width: 100%;
+          height: 4px;
+          border-radius: 9999px;
+          outline: none;
+          cursor: pointer;
+          background: linear-gradient(
+            to right,
+            #cc3c69 0%,
+            #cc3c69 ${pct}%,
+            rgba(255,255,255,0.1) ${pct}%,
+            rgba(255,255,255,0.1) 100%
+          );
+        }
+        .age-slider::-webkit-slider-thumb {
+          -webkit-appearance: none;
+          appearance: none;
+          width: 28px;
+          height: 28px;
+          border-radius: 50%;
+          background: #cc3c69;
+          cursor: pointer;
+          box-shadow: 0 0 0 4px rgba(204,60,105,0.2), 0 0 16px rgba(204,60,105,0.5);
+          transition: box-shadow 0.15s;
+        }
+        .age-slider::-webkit-slider-thumb:active {
+          box-shadow: 0 0 0 8px rgba(204,60,105,0.25), 0 0 24px rgba(204,60,105,0.6);
+        }
+        .age-slider::-moz-range-thumb {
+          width: 28px;
+          height: 28px;
+          border-radius: 50%;
+          background: #cc3c69;
+          cursor: pointer;
+          border: none;
+          box-shadow: 0 0 0 4px rgba(204,60,105,0.2), 0 0 16px rgba(204,60,105,0.5);
+        }
+      `}</style>
+
       {/* Big age display */}
-      <div className="text-center mb-8">
+      <div className="text-center mb-12">
         <motion.div
           key={age}
-          initial={{ scale: 0.85, opacity: 0.5 }}
+          initial={{ scale: 0.9, opacity: 0.6 }}
           animate={{ scale: 1, opacity: 1 }}
-          transition={{ duration: 0.15 }}
-          className="text-8xl font-black tabular-nums"
+          transition={{ duration: 0.1 }}
+          className="text-8xl font-black tabular-nums leading-none"
           style={{
             color: '#cc3c69',
             textShadow: '0 0 30px rgba(204,60,105,0.5), 0 0 60px rgba(204,60,105,0.2)',
@@ -78,63 +73,24 @@ export default function Step2Age({ value, onNext }) {
         >
           {age}
         </motion.div>
-        <p className="text-sm mt-2" style={{ color: 'rgba(255,255,255,0.3)' }}>ans</p>
+        <p className="text-sm mt-3" style={{ color: 'rgba(255,255,255,0.3)' }}>ans</p>
       </div>
 
-      {/* Horizontal scroll picker */}
-      <div className="relative">
-        {/* Fade edges */}
-        <div className="absolute left-0 top-0 bottom-0 w-16 z-10 pointer-events-none"
-          style={{ background: 'linear-gradient(90deg, #090909, transparent)' }} />
-        <div className="absolute right-0 top-0 bottom-0 w-16 z-10 pointer-events-none"
-          style={{ background: 'linear-gradient(-90deg, #090909, transparent)' }} />
-
-        {/* Center indicator */}
-        <div className="absolute left-1/2 -translate-x-1/2 top-0 bottom-0 w-12 z-10 pointer-events-none flex flex-col justify-center">
-          <div className="w-full h-12 rounded-xl" style={{ background: 'rgba(204,60,105,0.1)', border: '1px solid rgba(204,60,105,0.3)' }} />
-        </div>
-
-        <div
-          ref={scrollRef}
-          onScroll={handleScroll}
-          onMouseDown={onMouseDown}
-          onMouseMove={onMouseMove}
-          onMouseUp={onMouseUp}
-          onMouseLeave={onMouseUp}
-          className="flex overflow-x-auto select-none py-2"
-          style={{
-            scrollbarWidth: 'none',
-            msOverflowStyle: 'none',
-            cursor: 'grab',
-            scrollSnapType: 'x mandatory',
-          }}
-        >
-          <div style={{ width: '50%', flexShrink: 0 }} />
-          {ages.map((a) => (
-            <div
-              key={a}
-              onClick={() => { setAge(a); setTimeout(() => scrollToAge(a), 0) }}
-              className="flex items-center justify-center shrink-0 transition-all duration-150"
-              style={{
-                width: ITEM_W,
-                height: 48,
-                scrollSnapAlign: 'center',
-                color: a === age ? '#cc3c69' : 'rgba(255,255,255,0.2)',
-                fontSize: a === age ? 22 : 16,
-                fontWeight: a === age ? 900 : 400,
-                cursor: 'pointer',
-              }}
-            >
-              {a}
-            </div>
-          ))}
-          <div style={{ width: '50%', flexShrink: 0 }} />
+      {/* Slider */}
+      <div className="px-2">
+        <input
+          type="range"
+          min={MIN}
+          max={MAX}
+          value={age}
+          onChange={(e) => setAge(Number(e.target.value))}
+          className="age-slider"
+        />
+        <div className="flex justify-between mt-3">
+          <span className="text-xs" style={{ color: 'rgba(255,255,255,0.2)' }}>{MIN} ans</span>
+          <span className="text-xs" style={{ color: 'rgba(255,255,255,0.2)' }}>{MAX} ans</span>
         </div>
       </div>
-
-      <p className="text-center text-xs mt-4" style={{ color: 'rgba(255,255,255,0.2)' }}>
-        Fais glisser pour sélectionner
-      </p>
     </StepLayout>
   )
 }
