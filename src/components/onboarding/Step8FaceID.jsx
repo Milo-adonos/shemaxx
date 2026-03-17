@@ -1,6 +1,7 @@
 import { useEffect, useState, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { FaceMesh } from '@mediapipe/face_mesh'
+import { computeFaceScores } from '../../utils/faceAnalysis'
 
 // ── Dimensions UI ────────────────────────────────────────────────────────────
 const OVAL_W   = 260
@@ -196,7 +197,9 @@ export default function Step8FaceID({ onNext }) {
                 doneRef.current = true
                 setPhaseSync('done')
                 streamRef.current?.getTracks().forEach(t => t.stop())
-                setTimeout(onNext, 1400)
+                // Calcule les scores à partir des derniers landmarks détectés
+                const scores = computeFaceScores(landmarksRef.current)
+                setTimeout(() => onNext(scores), 1400)
               }
             }
           }

@@ -11,12 +11,13 @@ import Step7 from './Step7Pseudo'
 import Step8 from './Step8Photos'
 import Step8FaceID from './Step8FaceID'
 import Step9 from './Step9Loading'
+import Step9Reveal from './Step9Reveal'
 import Step10 from './Step10Paywall'
 
-const TOTAL = 11
+const TOTAL = 12
 
 // Étapes sans header (plein écran immersif)
-const IMMERSIVE_STEPS = [9, 10, 11]
+const IMMERSIVE_STEPS = [8, 9, 11, 12]
 
 export default function Onboarding({ onClose }) {
   const [step, setStep] = useState(1)
@@ -27,6 +28,7 @@ export default function Onboarding({ onClose }) {
     zones: [],
     result: null,
     pseudo: '',
+    faceScores: null,
   })
 
   const next = (patch = {}) => {
@@ -46,13 +48,14 @@ export default function Onboarding({ onClose }) {
     <Step2      key={2}  value={data.age} onNext={(v) => next({ age: v })} />,
     <Step3      key={3}  value={data.zones} onNext={(v) => next({ zones: v })} />,
     <Step4      key={4}  onNext={(v) => next({ result: v })} />,
-    <Step5      key={5}  onNext={() => next()} />,
-    <Step6      key={6}  onNext={() => next()} />,
-    <Step7      key={7}  onNext={(v) => next({ pseudo: v })} />,
-    <Step8      key={8}  onNext={() => next()} />,
-    <Step8FaceID key={9} onNext={() => next()} />,
-    <Step9      key={10} onNext={() => next()} />,
-    <Step10     key={11} pseudo={data.pseudo} onClose={onClose} />,
+    <Step6      key={5}  onNext={() => next()} />,
+    <Step7      key={6}  onNext={(v) => next({ pseudo: v })} />,
+    <Step8      key={7}  onNext={() => next()} />,
+    <Step8FaceID key={8} onNext={(scores) => next({ faceScores: scores })} />,
+    <Step9      key={9}  onNext={() => next()} />,
+    <Step5      key={10} faceScores={data.faceScores} onNext={() => next()} />,
+    <Step9Reveal key={11} pseudo={data.pseudo} faceScores={data.faceScores} onNext={() => next()} />,
+    <Step10     key={12} pseudo={data.pseudo} onClose={onClose} />,
   ]
 
   const immersive = IMMERSIVE_STEPS.includes(step)
@@ -75,12 +78,12 @@ export default function Onboarding({ onClose }) {
           </span>
 
           <div className="flex items-center gap-3">
-            <span className="text-xs text-white/30">{step}/{TOTAL - 1}</span>
+            <span className="text-xs text-white/30">{step}/{TOTAL - 2}</span>
             <div className="w-24 h-1 rounded-full bg-white/8 overflow-hidden">
               <motion.div
                 className="h-full rounded-full"
                 style={{ background: '#cc3c69' }}
-                animate={{ width: `${(step / (TOTAL - 1)) * 100}%` }}
+                animate={{ width: `${(step / (TOTAL - 2)) * 100}%` }}
                 transition={{ duration: 0.4, ease: 'easeOut' }}
               />
             </div>

@@ -4,9 +4,12 @@ import StepLayout from './StepLayout'
 
 const GRID_LINES = [100, 75, 50, 25, 0]
 
-export default function Step5Potential({ onNext }) {
+export default function Step5Potential({ onNext, faceScores = null }) {
   const [ready, setReady] = useState(false)
   const [animate, setAnimate] = useState(false)
+
+  const currentPct = 24
+  const gainPct    = 76
 
   useEffect(() => {
     const t1 = setTimeout(() => setAnimate(true), 300)
@@ -83,10 +86,10 @@ export default function Step5Potential({ onNext }) {
                     <div className="absolute inset-0 rounded-xl pointer-events-none"
                       style={{ background: 'radial-gradient(ellipse at 50% 100%, rgba(204,60,105,0.2), transparent 70%)' }} />
 
-                    {/* Bottom 24% — potentiel actuel (gris) */}
+                    {/* Bottom — score actuel sans accompagnement (gris) */}
                     <motion.div
                       initial={{ height: 0 }}
-                      animate={animate ? { height: '24%' } : { height: 0 }}
+                      animate={animate ? { height: `${currentPct}%` } : { height: 0 }}
                       transition={{ duration: 0.7, delay: 0.2, ease: [0.22, 1, 0.36, 1] }}
                       className="w-full absolute bottom-0 flex items-center justify-center"
                       style={{ background: 'rgba(255,255,255,0.15)', borderTop: '1px solid rgba(255,255,255,0.1)' }}
@@ -98,14 +101,14 @@ export default function Step5Potential({ onNext }) {
                         className="text-base font-black"
                         style={{ color: 'rgba(255,255,255,0.4)' }}
                       >
-                        24%
+                        {currentPct}%
                       </motion.span>
                     </motion.div>
 
-                    {/* Top 76% — avec Shemaxx (rose) */}
+                    {/* Top — gain avec Shemaxx (rose) */}
                     <motion.div
                       initial={{ height: 0 }}
-                      animate={animate ? { height: '76%' } : { height: 0 }}
+                      animate={animate ? { height: `${gainPct}%` } : { height: 0 }}
                       transition={{ duration: 1.1, delay: 0.5, ease: [0.22, 1, 0.36, 1] }}
                       className="w-full absolute top-0 flex items-center justify-center"
                       style={{
@@ -119,7 +122,7 @@ export default function Step5Potential({ onNext }) {
                         transition={{ delay: 1.2, type: 'spring' }}
                         className="text-2xl font-black text-white"
                       >
-                        76%
+                        {gainPct}%
                       </motion.span>
                     </motion.div>
                   </div>
@@ -133,7 +136,7 @@ export default function Step5Potential({ onNext }) {
           <div className="flex items-center justify-center gap-6 mt-5 pt-4 border-t border-white/6">
             <div className="flex items-center gap-2">
               <div className="w-3 h-3 rounded-full" style={{ background: 'rgba(255,255,255,0.2)' }} />
-              <span className="text-[11px] font-medium" style={{ color: 'rgba(255,255,255,0.4)' }}>Infos sur les réseaux</span>
+              <span className="text-[11px] font-medium" style={{ color: 'rgba(255,255,255,0.4)' }}>Sans accompagnement</span>
             </div>
             <div className="flex items-center gap-2">
               <div className="w-3 h-3 rounded-full" style={{ background: '#cc3c69', boxShadow: '0 0 6px rgba(204,60,105,0.7)' }} />

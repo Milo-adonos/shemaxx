@@ -77,18 +77,18 @@ export default function Step6Graph({ onNext }) {
               {/* Label "Shemaxx" */}
               <motion.text
                 x="248" y="10"
-                fill="#cc3c69" fontSize="11" fontWeight="900" textAnchor="middle"
+                fill="#cc3c69" fontSize="10" fontWeight="500" textAnchor="middle"
                 initial={{ opacity: 0 }} animate={{ opacity: 1 }}
                 transition={{ delay: 1.7 }}
               >
                 Shemaxx
               </motion.text>
 
-              {/* ── Internet line (red, wavy going down) ── */}
+              {/* ── Internet line (grey, wavy going down) ── */}
               <motion.path
                 d={INTERNET_PATH}
                 fill="none"
-                stroke="#ff5252"
+                stroke="rgba(255,255,255,0.35)"
                 strokeWidth="3"
                 strokeLinecap="round"
                 strokeLinejoin="round"
@@ -98,13 +98,13 @@ export default function Step6Graph({ onNext }) {
                 transition={{ duration: 1.6, delay: 0.6, ease: 'easeInOut' }}
               />
               {/* End dot */}
-              <motion.circle cx="272" cy="136" r="5" fill="none" stroke="#ff5252" strokeWidth="2.5"
+              <motion.circle cx="272" cy="136" r="5" fill="none" stroke="rgba(255,255,255,0.35)" strokeWidth="2.5"
                 initial={{ scale: 0 }} animate={{ scale: 1 }}
                 transition={{ delay: 1.9, type: 'spring' }} />
               {/* Label "Tutos en ligne" */}
               <motion.text
                 x="248" y="112"
-                fill="#ff5252" fontSize="10" fontWeight="700" textAnchor="middle"
+                fill="rgba(255,255,255,0.4)" fontSize="10" fontWeight="500" textAnchor="middle"
                 initial={{ opacity: 0 }} animate={{ opacity: 1 }}
                 transition={{ delay: 2 }}
               >
