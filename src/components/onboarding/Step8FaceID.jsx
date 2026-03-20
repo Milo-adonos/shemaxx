@@ -1,7 +1,7 @@
 import { useEffect, useState, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { FaceMesh } from '@mediapipe/face_mesh'
-import { computeFaceScores } from '../../utils/faceAnalysis'
+import { captureVideoFrame, analyzeWithAI } from '../../utils/analyzeWithAI'
 
 // ── Dimensions UI ────────────────────────────────────────────────────────────
 const OVAL_W   = 260
@@ -16,20 +16,46 @@ const SVG_CY   = SVG_H / 2
 const DOTS     = 64
 
 // ── Détection circulaire ─────────────────────────────────────────────────────
-const SECTORS        = 8       // cercle divisé en 8 secteurs de 45°
-const SECTORS_NEEDED = 7       // 7/8 pour valider
-const MIN_RADIUS     = 0.038   // déplacement min du nez depuis le centre pour compter
+const SECTORS        = 12      // cercle divisé en 12 secteurs de 30°
+const SECTORS_NEEDED = 12      // tour complet obligatoire (360°)
+const MIN_RADIUS     = 0.030   // déplacement min du nez (plus indulgent)
 const CALIB_FRAMES   = 30      // frames de calibration avant de tracker
 const NOSE           = 1       // index landmark bout du nez
-const PAUSE_GRACE    = 800     // ms avant de considérer le visage vraiment perdu
+const PAUSE_GRACE    = 1400    // ms avant de considérer le visage vraiment perdu (plus tolérant)
+
+// ── Phases de positionnement (avant le scan circulaire) ──────────────────────
+const HOLD_FRAMES = 38   // frames consécutives à maintenir pour valider
+const POSITION_STEPS = [
+  {
+    key: 'front',
+    label: 'Regarde droit devant',
+    hint: 'Centre ton visage dans le cadre',
+    icon: '👁',
+    check: (nx) => nx > 0.43 && nx < 0.57,
+  },
+  {
+    key: 'left',
+    label: 'Tourne la tête à gauche',
+    hint: 'Tourne lentement vers ta gauche',
+    icon: '←',
+    check: (nx) => nx > 0.60,
+  },
+  {
+    key: 'right',
+    label: 'Tourne la tête à droite',
+    hint: 'Tourne lentement vers ta droite',
+    icon: '→',
+    check: (nx) => nx < 0.40,
+  },
+]
 
 // ── Messages liés aux secteurs visités ───────────────────────────────────────
 const SCAN_MESSAGES = [
-  { atSectors: 0, text: 'Visage détecté — fais un cercle avec ta tête' },
-  { atSectors: 2, text: 'Analyse de la structure faciale…' },
-  { atSectors: 4, text: 'Mesure de la symétrie…' },
-  { atSectors: 6, text: 'Calcul de l\'harmonie faciale…' },
-  { atSectors: 7, text: 'Génération du rapport…' },
+  { atSectors: 0,  text: 'Fais un cercle complet avec ta tête' },
+  { atSectors: 3,  text: 'Analyse de la structure faciale…' },
+  { atSectors: 6,  text: 'Mesure de la symétrie…' },
+  { atSectors: 9,  text: 'Calcul de l\'harmonie faciale…' },
+  { atSectors: 11, text: 'Génération du rapport…' },
 ]
 
 // ── Couleurs ─────────────────────────────────────────────────────────────────
@@ -37,14 +63,28 @@ const PINK   = '#cc3c69'
 const GREEN  = '#34d399'
 const PINK_A = (a) => `rgba(204,60,105,${a})`
 
-export default function Step8FaceID({ onNext }) {
-  const [camStatus,  setCamStatus]  = useState('idle')
-  // phase: 'waiting' | 'calibrating' | 'scanning' | 'paused' | 'done'
-  const [phase,      setPhase]      = useState('waiting')
-  const [sectors,    setSectors]    = useState(new Array(SECTORS).fill(false))
-  const [msgIndex,   setMsgIndex]   = useState(0)
-  const [faceOk,     setFaceOk]     = useState(false)
-  const [noseAngle,  setNoseAngle]  = useState(null) // angle courant pour le dot visuel
+// Messages d'erreur selon le contexte
+const RETRY_REASONS = [
+  'Assure-toi d\'être dans une pièce bien éclairée',
+  'Évite les contre-jours (fenêtre derrière toi)',
+  'Centre bien ton visage dans le cadre',
+  'Fais le cercle lentement et régulièrement',
+]
+
+export default function Step8FaceID({ onNext, onRetry }) {
+  const [camInitTrigger, setCamInitTrigger] = useState(0) // incrémenté pour relancer la caméra
+  const [camStatus,    setCamStatus]    = useState('idle')
+  // phase: 'waiting' | 'calibrating' | 'front' | 'left' | 'right' | 'scanning' | 'paused' | 'done' | 'analyzing' | 'error'
+  const [phase,        setPhase]        = useState('waiting')
+  const [aiError,      setAiError]      = useState(null)
+  const [scanError,    setScanError]    = useState(null)
+  const [sectors,      setSectors]      = useState(new Array(SECTORS).fill(false))
+  const [msgIndex,     setMsgIndex]     = useState(0)
+  const [faceOk,       setFaceOk]       = useState(false)
+  const [noseAngle,    setNoseAngle]    = useState(null)
+  const [videoReady,   setVideoReady]   = useState(false)
+  const [holdProgress, setHoldProgress] = useState(0)
+  const [completedSteps, setCompletedSteps] = useState([])
 
   const videoRef    = useRef(null)
   const canvasRef   = useRef(null)
@@ -54,24 +94,86 @@ export default function Step8FaceID({ onNext }) {
   const drawRafRef  = useRef(null)
   const doneRef     = useRef(false)
   const landmarksRef = useRef(null)
-  const scanLineT   = useRef(0)     // temps accumulé pour la scan line
+  const scanLineT   = useRef(0)
 
   // ── Refs de tracking (pas de re-render) ──────────────────────────────────
-  const phaseRef       = useRef('waiting')
-  const faceOkRef      = useRef(false)
-  const calibCount     = useRef(0)
-  const baseline       = useRef(null)   // {x, y} position neutre du nez
-  const sectorArr      = useRef(new Array(SECTORS).fill(false))
-  const lastFaceTime   = useRef(null)
-  const noseAngleRef   = useRef(null)
+  const phaseRef           = useRef('waiting')
+  const faceOkRef          = useRef(false)
+  const calibCount         = useRef(0)
+  const baseline           = useRef(null)
+  const sectorArr          = useRef(new Array(SECTORS).fill(false))
+  const lastFaceTime       = useRef(null)
+  const noseAngleRef       = useRef(null)
+  const holdCount          = useRef(0)
+  const completedStepsRef  = useRef([])
+  const lastActivePosPhase = useRef('front')  // phase de position active avant pause
+  const frontPhotoRef      = useRef(null)     // photo capturée lors de la phase "front"
 
   const setPhaseSync = (p) => { phaseRef.current = p; setPhase(p) }
+
+  // ── Arrête tout et affiche l'écran d'erreur ───────────────────────────────
+  const restartScan = (errorMsg) => {
+    cancelAnimationFrame(rafRef.current)
+    cancelAnimationFrame(drawRafRef.current)
+    streamRef.current?.getTracks().forEach(t => t.stop())
+    streamRef.current = null
+    if (faceMeshRef.current) { faceMeshRef.current.close?.(); faceMeshRef.current = null }
+    setScanError(errorMsg || 'Une erreur est survenue pendant l\'analyse.')
+    setPhaseSync('error')
+  }
+
+  // ── Retry : reset total + relance la caméra en interne ───────────────────
+  const doRetry = () => {
+    // Arrêt des ressources existantes
+    cancelAnimationFrame(rafRef.current)
+    cancelAnimationFrame(drawRafRef.current)
+    streamRef.current?.getTracks().forEach(t => t.stop())
+    streamRef.current = null
+    if (faceMeshRef.current) { faceMeshRef.current.close?.(); faceMeshRef.current = null }
+
+    // Reset des refs
+    doneRef.current        = false
+    calibCount.current     = 0
+    baseline.current       = null
+    sectorArr.current      = new Array(SECTORS).fill(false)
+    lastFaceTime.current   = null
+    noseAngleRef.current   = null
+    landmarksRef.current   = null
+    holdCount.current      = 0
+    completedStepsRef.current   = []
+    lastActivePosPhase.current  = 'front'
+    frontPhotoRef.current       = null
+    phaseRef.current            = 'waiting'
+    faceOkRef.current           = false
+    scanLineT.current           = 0
+
+    // Reset du state UI
+    setPhase('waiting')
+    setScanError(null)
+    setAiError(null)
+    setSectors(new Array(SECTORS).fill(false))
+    setMsgIndex(0)
+    setFaceOk(false)
+    setNoseAngle(null)
+    setVideoReady(false)
+    setHoldProgress(0)
+    setCompletedSteps([])
+    setCamStatus('idle')
+
+    // Déclenche la réinitialisation de la caméra
+    setCamInitTrigger(t => t + 1)
+  }
 
   // ── Ouverture caméra ─────────────────────────────────────────────────────
   useEffect(() => {
     let cancelled = false
     const init = async () => {
       setCamStatus('requesting')
+      // Petit délai au retry pour laisser le hardware se libérer
+      if (camInitTrigger > 0) {
+        await new Promise(r => setTimeout(r, 450))
+      }
+      if (cancelled) return
       try {
         const stream = await navigator.mediaDevices.getUserMedia({
           video: { facingMode: 'user', width: { ideal: 640 }, height: { ideal: 480 } },
@@ -91,7 +193,8 @@ export default function Step8FaceID({ onNext }) {
       cancelAnimationFrame(drawRafRef.current)
       faceMeshRef.current?.close?.()
     }
-  }, [])
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [camInitTrigger])
 
   // ── Attache le stream à la vidéo ─────────────────────────────────────────
   useEffect(() => {
@@ -113,8 +216,8 @@ export default function Step8FaceID({ onNext }) {
     mesh.setOptions({
       maxNumFaces:            1,
       refineLandmarks:        false,
-      minDetectionConfidence: 0.55,
-      minTrackingConfidence:  0.55,
+      minDetectionConfidence: 0.45,
+      minTrackingConfidence:  0.45,
     })
 
     mesh.onResults((results) => {
@@ -127,13 +230,15 @@ export default function Step8FaceID({ onNext }) {
       setFaceOk(detected)
 
       const now = Date.now()
+      const posPhases = ['front', 'left', 'right']
 
       if (detected) {
         lastFaceTime.current = now
 
         // Reprend si on était en pause
         if (phaseRef.current === 'paused') {
-          setPhaseSync(calibCount.current >= CALIB_FRAMES ? 'scanning' : 'calibrating')
+          const resumeTo = lastActivePosPhase.current
+          setPhaseSync(calibCount.current >= CALIB_FRAMES ? resumeTo : 'calibrating')
         }
 
         // Lance la calibration dès la première détection
@@ -157,7 +262,50 @@ export default function Step8FaceID({ onNext }) {
             }
           }
           if (calibCount.current >= CALIB_FRAMES) {
-            setPhaseSync('scanning')
+            setPhaseSync('front')
+            lastActivePosPhase.current = 'front'
+          }
+          return
+        }
+
+        // ── Phases de positionnement (front → left → right) ──
+        if (posPhases.includes(phaseRef.current)) {
+          lastActivePosPhase.current = phaseRef.current
+          const stepDef = POSITION_STEPS.find(s => s.key === phaseRef.current)
+
+          if (stepDef && stepDef.check(nose.x)) {
+            holdCount.current++
+            const pct = Math.min(100, Math.round((holdCount.current / HOLD_FRAMES) * 100))
+            setHoldProgress(pct)
+
+            if (holdCount.current >= HOLD_FRAMES) {
+              holdCount.current = 0
+              setHoldProgress(0)
+              const stepIdx = POSITION_STEPS.findIndex(s => s.key === phaseRef.current)
+
+              // Capture la photo de face au moment où la phase "front" est validée
+              if (phaseRef.current === 'front') {
+                try { frontPhotoRef.current = captureVideoFrame(videoRef.current) } catch { /* ignore */ }
+              }
+
+              const newCompleted = [...completedStepsRef.current, phaseRef.current]
+              completedStepsRef.current = newCompleted
+              setCompletedSteps(newCompleted)
+
+              if (stepIdx < POSITION_STEPS.length - 1) {
+                const nextStep = POSITION_STEPS[stepIdx + 1].key
+                setPhaseSync(nextStep)
+                lastActivePosPhase.current = nextStep
+              } else {
+                // Toutes les positions validées → scan circulaire
+                setPhaseSync('scanning')
+                lastActivePosPhase.current = 'scanning'
+              }
+            }
+          } else {
+            // Position incorrecte : décrémente lentement
+            holdCount.current = Math.max(0, holdCount.current - 1)
+            setHoldProgress(Math.min(100, Math.round((holdCount.current / HOLD_FRAMES) * 100)))
           }
           return
         }
@@ -168,8 +316,6 @@ export default function Step8FaceID({ onNext }) {
           const dx   = baseline.current.x - nose.x
           const dy   = nose.y - baseline.current.y
           const dist = Math.sqrt(dx * dx + dy * dy)
-          // Soustrait π/2 pour aligner atan2 avec le départ du ring (haut = -π/2)
-          // → tourner à droite = dot à droite, nod bas = dot en bas, etc.
           let ang = Math.atan2(dy, dx) - Math.PI / 2
           if (ang <= -Math.PI) ang += 2 * Math.PI
 
@@ -186,20 +332,37 @@ export default function Step8FaceID({ onNext }) {
 
               const visited = next.filter(Boolean).length
 
-              // Met à jour le message
               const msgIdx = [...SCAN_MESSAGES]
                 .reverse()
                 .findIndex(m => m.atSectors <= visited)
               if (msgIdx >= 0) setMsgIndex(SCAN_MESSAGES.length - 1 - msgIdx)
 
-              // Terminé !
               if (visited >= SECTORS_NEEDED) {
                 doneRef.current = true
                 setPhaseSync('done')
+
+                let imageDataUrl = null
+                try {
+                  imageDataUrl = captureVideoFrame(videoRef.current)
+                } catch { /* ignore */ }
+
                 streamRef.current?.getTracks().forEach(t => t.stop())
-                // Calcule les scores à partir des derniers landmarks détectés
-                const scores = computeFaceScores(landmarksRef.current)
-                setTimeout(() => onNext(scores), 1400)
+
+                setTimeout(async () => {
+                  setPhaseSync('analyzing')
+                  try {
+                    const scores = await analyzeWithAI(imageDataUrl)
+                    onNext({ ...scores, photoUrl: frontPhotoRef.current })
+                  } catch (err) {
+                    console.error('Analyse IA échouée :', err)
+                    const msg = err.message?.includes('401')
+                      ? 'Problème de connexion au serveur. Vérifie ta connexion internet.'
+                      : err.message?.includes('abort') || err.message?.includes('timeout')
+                      ? 'L\'analyse a pris trop de temps. Assure-toi d\'avoir une bonne connexion internet.'
+                      : 'L\'image n\'était pas assez nette pour l\'analyse. Assure-toi d\'avoir une bonne lumière et que ton visage soit bien centré.'
+                    restartScan(msg)
+                  }
+                }, 1200)
               }
             }
           }
@@ -207,8 +370,9 @@ export default function Step8FaceID({ onNext }) {
 
       } else {
         // Visage perdu : attend la grâce avant de mettre en pause
+        const pausablePhases = ['scanning', 'calibrating', 'front', 'left', 'right']
         if (
-          (phaseRef.current === 'scanning' || phaseRef.current === 'calibrating') &&
+          pausablePhases.includes(phaseRef.current) &&
           lastFaceTime.current &&
           now - lastFaceTime.current > PAUSE_GRACE
         ) {
@@ -381,62 +545,272 @@ export default function Step8FaceID({ onNext }) {
   }
 
   const isDone      = phase === 'done'
+  const isAnalyzing = phase === 'analyzing'
   const isScanning  = phase === 'scanning'
   const isPaused    = phase === 'paused'
   const isCalib     = phase === 'calibrating'
+  const isPosPhase  = ['front', 'left', 'right'].includes(phase)
+  const currentPosStep = POSITION_STEPS.find(s => s.key === phase)
   const visitedCount = sectors.filter(Boolean).length
   const fillPct      = (visitedCount / SECTORS) * 100
 
   // Couleur de la bordure ovale
-  const ovalBorder = isDone ? GREEN : isPaused ? '#ef4444' : isScanning ? PINK : 'rgba(255,255,255,0.15)'
+  const ovalBorder = isDone
+    ? GREEN
+    : isPaused
+    ? '#ef4444'
+    : (isScanning || isPosPhase)
+    ? PINK
+    : 'rgba(255,255,255,0.15)'
+
+  // ── Écran erreur + retry ─────────────────────────────────────────────────
+  if (phase === 'error') {
+    return (
+      <div className="flex flex-col min-h-full items-center justify-center gap-7 px-8 text-center"
+        style={{ background: '#000' }}>
+
+        {/* Icône */}
+        <motion.div
+          initial={{ scale: 0 }} animate={{ scale: 1 }}
+          transition={{ type: 'spring', stiffness: 200 }}
+          className="w-20 h-20 rounded-full flex items-center justify-center text-4xl"
+          style={{ background: 'rgba(239,68,68,0.1)', border: '2px solid rgba(239,68,68,0.4)' }}>
+          📸
+        </motion.div>
+
+        <div>
+          <motion.p initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
+            className="text-xl font-black text-white mb-3">
+            Analyse impossible
+          </motion.p>
+          <motion.p initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1 }}
+            className="text-sm leading-relaxed mb-6"
+            style={{ color: 'rgba(255,255,255,0.5)' }}>
+            {scanError}
+          </motion.p>
+        </div>
+
+        {/* Conseils */}
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2 }}
+          className="w-full max-w-xs rounded-2xl p-4 space-y-2.5"
+          style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)' }}>
+          <p className="text-xs font-bold uppercase tracking-widest mb-3"
+            style={{ color: 'rgba(255,255,255,0.3)' }}>Pour une meilleure analyse</p>
+          {RETRY_REASONS.map((tip, i) => (
+            <div key={i} className="flex items-start gap-2.5">
+              <span style={{ color: PINK, fontSize: 10, marginTop: 2 }}>✦</span>
+              <span className="text-xs leading-snug" style={{ color: 'rgba(255,255,255,0.5)' }}>{tip}</span>
+            </div>
+          ))}
+        </motion.div>
+
+        <motion.button
+          initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.4, type: 'spring', stiffness: 180 }}
+          whileTap={{ scale: 0.97 }}
+          onClick={doRetry}
+          className="w-full max-w-xs py-4 rounded-2xl font-black text-base text-white"
+          style={{
+            background: 'linear-gradient(135deg, #cc3c69, #e8608a)',
+            boxShadow: '0 0 28px rgba(204,60,105,0.45), 0 8px 24px rgba(0,0,0,0.4)',
+          }}>
+          Refaire l'analyse →
+        </motion.button>
+      </div>
+    )
+  }
+
+  // ── Écran analyse IA ─────────────────────────────────────────────────────
+  if (isAnalyzing) {
+    return (
+      <div className="flex flex-col min-h-full items-center justify-center gap-8 px-8 text-center"
+        style={{ background: '#000' }}>
+
+        {/* Anneau animé */}
+        <div className="relative w-28 h-28 flex items-center justify-center">
+          <motion.div
+            animate={{ rotate: 360 }}
+            transition={{ duration: 1.4, repeat: Infinity, ease: 'linear' }}
+            className="absolute inset-0 rounded-full"
+            style={{ border: `2.5px solid transparent`, borderTopColor: PINK,
+              borderRightColor: PINK_A(0.4) }}
+          />
+          <motion.div
+            animate={{ rotate: -360 }}
+            transition={{ duration: 2.2, repeat: Infinity, ease: 'linear' }}
+            className="absolute rounded-full"
+            style={{ inset: 8, border: `1.5px solid transparent`, borderTopColor: PINK_A(0.4),
+              borderLeftColor: PINK_A(0.2) }}
+          />
+          <span className="text-3xl">✦</span>
+        </div>
+
+        <div>
+          <motion.p
+            animate={{ opacity: [0.7, 1, 0.7] }}
+            transition={{ duration: 1.8, repeat: Infinity }}
+            className="text-2xl font-black text-white mb-3">
+            {aiError === 'failed' ? 'Finalisation…' : 'Analyse IA en cours…'}
+          </motion.p>
+
+          {aiError === 'retry' ? (
+            <p className="text-sm" style={{ color: 'rgba(255,255,255,0.4)' }}>
+              Connexion lente — nouvelle tentative…
+            </p>
+          ) : aiError === 'failed' ? (
+            <p className="text-sm" style={{ color: 'rgba(255,255,255,0.35)' }}>
+              Préparation de tes résultats…
+            </p>
+          ) : (
+            <p className="text-sm leading-relaxed" style={{ color: 'rgba(255,255,255,0.35)' }}>
+              Notre IA analyse ton visage<br />en détail pour te donner des résultats précis
+            </p>
+          )}
+        </div>
+
+        {/* Steps d'analyse animés */}
+        <div className="w-full max-w-xs space-y-2.5">
+          {['Symétrie faciale', 'Proportions dorées', 'Structure osseuse', 'Qualité de peau'].map((label, i) => (
+            <motion.div key={label}
+              initial={{ opacity: 0, x: -10 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: i * 0.4 }}
+              className="flex items-center gap-3 px-4 py-2.5 rounded-xl"
+              style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}>
+              <motion.div
+                animate={{ scale: [1, 1.4, 1], opacity: [0.5, 1, 0.5] }}
+                transition={{ duration: 1.2, repeat: Infinity, delay: i * 0.3 }}
+                className="w-1.5 h-1.5 rounded-full shrink-0"
+                style={{ background: PINK }}
+              />
+              <span className="text-xs font-semibold" style={{ color: 'rgba(255,255,255,0.5)' }}>
+                {label}
+              </span>
+              <motion.span
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: i * 0.4 + 0.6 }}
+                className="ml-auto text-xs font-bold"
+                style={{ color: PINK }}>
+                ✓
+              </motion.span>
+            </motion.div>
+          ))}
+        </div>
+      </div>
+    )
+  }
 
   return (
-    <div className="flex flex-col min-h-full items-center justify-between pt-6 pb-8"
+    <div className="flex flex-col min-h-full items-center justify-between pt-4 pb-8"
       style={{ background: '#000' }}>
 
-      {/* ── Badge ── */}
-      <div className="relative z-20 flex items-center justify-center h-9">
-        <AnimatePresence mode="wait">
-          {isDone && (
-            <motion.div key="done" initial={{ opacity: 0, scale: 0.85 }} animate={{ opacity: 1, scale: 1 }}
-              className="flex items-center gap-2 px-4 py-1.5 rounded-full"
-              style={{ background: 'rgba(52,211,153,0.12)', border: '1px solid rgba(52,211,153,0.4)' }}>
-              <div className="w-1.5 h-1.5 rounded-full" style={{ background: GREEN }} />
-              <span className="text-xs font-semibold" style={{ color: GREEN }}>Analyse complète</span>
-            </motion.div>
-          )}
-          {isPaused && (
-            <motion.div key="paused" initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }}
-              className="flex items-center gap-2 px-4 py-1.5 rounded-full"
-              style={{ background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.35)' }}>
-              <motion.div animate={{ opacity: [0.5, 1, 0.5] }} transition={{ duration: 0.9, repeat: Infinity }}
-                className="w-1.5 h-1.5 rounded-full bg-red-400" />
-              <span className="text-xs font-semibold text-red-400">Visage perdu — analyse en pause</span>
-            </motion.div>
-          )}
-          {isScanning && (
-            <motion.div key="scan" initial={{ opacity: 0 }} animate={{ opacity: 1 }}
-              className="flex items-center gap-2 px-4 py-1.5 rounded-full"
-              style={{ background: PINK_A(0.1), border: `1px solid ${PINK_A(0.4)}` }}>
-              <motion.div animate={{ scale: [1, 1.5, 1] }} transition={{ duration: 0.7, repeat: Infinity }}
-                className="w-1.5 h-1.5 rounded-full" style={{ background: PINK }} />
-              <span className="text-xs font-semibold" style={{ color: PINK }}>
-                Scan en cours — {visitedCount}/{SECTORS_NEEDED} secteurs
+      {/* ── Indicateur d'étapes ── */}
+      <div className="relative z-20 w-full px-6">
+        {/* Étapes de positionnement + cercle */}
+        <div className="flex items-center justify-center gap-2 mb-3">
+          {POSITION_STEPS.map((step, i) => {
+            const done    = completedSteps.includes(step.key)
+            const active  = phase === step.key
+            const pending = !done && !active
+            return (
+              <div key={step.key} className="flex items-center gap-2">
+                <motion.div
+                  animate={{
+                    background: done ? GREEN : active ? PINK : 'rgba(255,255,255,0.08)',
+                    scale: active ? 1.1 : 1,
+                  }}
+                  className="flex items-center gap-1.5 px-3 py-1 rounded-full"
+                  style={{ border: `1px solid ${done ? GREEN : active ? PINK : 'rgba(255,255,255,0.1)'}` }}>
+                  <span className="text-xs font-bold" style={{ color: done ? '#000' : active ? '#fff' : 'rgba(255,255,255,0.3)' }}>
+                    {done ? '✓' : `${i + 1}`}
+                  </span>
+                  {active && (
+                    <span className="text-xs font-semibold text-white hidden sm:inline">
+                      {step.label.split(' ').slice(-1)[0]}
+                    </span>
+                  )}
+                </motion.div>
+                {i < POSITION_STEPS.length - 1 && (
+                  <div className="w-4 h-px" style={{ background: 'rgba(255,255,255,0.1)' }} />
+                )}
+              </div>
+            )
+          })}
+          {/* Étape cercle */}
+          <div className="flex items-center gap-2">
+            <div className="w-4 h-px" style={{ background: 'rgba(255,255,255,0.1)' }} />
+            <motion.div
+              animate={{
+                background: isDone ? GREEN : isScanning ? PINK : 'rgba(255,255,255,0.08)',
+                scale: isScanning ? 1.1 : 1,
+              }}
+              className="flex items-center gap-1.5 px-3 py-1 rounded-full"
+              style={{ border: `1px solid ${isDone ? GREEN : isScanning ? PINK : 'rgba(255,255,255,0.1)'}` }}>
+              <span className="text-xs font-bold"
+                style={{ color: isDone ? '#000' : isScanning ? '#fff' : 'rgba(255,255,255,0.3)' }}>
+                {isDone ? '✓' : '↻'}
               </span>
             </motion.div>
-          )}
-          {(isCalib || phase === 'waiting') && (
-            <motion.div key="calib" initial={{ opacity: 0 }} animate={{ opacity: 1 }}
-              className="flex items-center gap-2 px-4 py-1.5 rounded-full"
-              style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)' }}>
-              <motion.div animate={{ opacity: [0.4, 1, 0.4] }} transition={{ duration: 1.2, repeat: Infinity }}
-                className="w-1.5 h-1.5 rounded-full bg-white/40" />
-              <span className="text-xs font-semibold text-white/40">
-                {isCalib ? 'Calibration…' : faceOk ? 'Visage détecté ✓' : 'Positionne ton visage…'}
-              </span>
-            </motion.div>
-          )}
-        </AnimatePresence>
+          </div>
+        </div>
+
+        {/* Badge statut */}
+        <div className="flex items-center justify-center h-7">
+          <AnimatePresence mode="wait">
+            {isDone && (
+              <motion.div key="done" initial={{ opacity: 0, scale: 0.85 }} animate={{ opacity: 1, scale: 1 }}
+                className="flex items-center gap-2 px-3 py-1 rounded-full"
+                style={{ background: 'rgba(52,211,153,0.12)', border: '1px solid rgba(52,211,153,0.4)' }}>
+                <div className="w-1.5 h-1.5 rounded-full" style={{ background: GREEN }} />
+                <span className="text-xs font-semibold" style={{ color: GREEN }}>Analyse complète</span>
+              </motion.div>
+            )}
+            {isPaused && (
+              <motion.div key="paused" initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }}
+                className="flex items-center gap-2 px-3 py-1 rounded-full"
+                style={{ background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.35)' }}>
+                <motion.div animate={{ opacity: [0.5, 1, 0.5] }} transition={{ duration: 0.9, repeat: Infinity }}
+                  className="w-1.5 h-1.5 rounded-full bg-red-400" />
+                <span className="text-xs font-semibold text-red-400">Visage perdu — reprends ta position</span>
+              </motion.div>
+            )}
+            {isScanning && (
+              <motion.div key="scan" initial={{ opacity: 0 }} animate={{ opacity: 1 }}
+                className="flex items-center gap-2 px-3 py-1 rounded-full"
+                style={{ background: PINK_A(0.1), border: `1px solid ${PINK_A(0.4)}` }}>
+                <motion.div animate={{ scale: [1, 1.5, 1] }} transition={{ duration: 0.7, repeat: Infinity }}
+                  className="w-1.5 h-1.5 rounded-full" style={{ background: PINK }} />
+                <span className="text-xs font-semibold" style={{ color: PINK }}>
+                  Scan circulaire — {visitedCount}/{SECTORS_NEEDED}
+                </span>
+              </motion.div>
+            )}
+            {isPosPhase && (
+              <motion.div key={`pos-${phase}`} initial={{ opacity: 0 }} animate={{ opacity: 1 }}
+                className="flex items-center gap-2 px-3 py-1 rounded-full"
+                style={{ background: PINK_A(0.08), border: `1px solid ${PINK_A(0.3)}` }}>
+                <motion.div animate={{ opacity: [0.5, 1, 0.5] }} transition={{ duration: 0.8, repeat: Infinity }}
+                  className="w-1.5 h-1.5 rounded-full" style={{ background: PINK }} />
+                <span className="text-xs font-semibold" style={{ color: PINK }}>
+                  {faceOk ? 'Maintiens la position…' : 'Positionne ton visage'}
+                </span>
+              </motion.div>
+            )}
+            {(isCalib || phase === 'waiting') && (
+              <motion.div key="calib" initial={{ opacity: 0 }} animate={{ opacity: 1 }}
+                className="flex items-center gap-2 px-3 py-1 rounded-full"
+                style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)' }}>
+                <motion.div animate={{ opacity: [0.4, 1, 0.4] }} transition={{ duration: 1.2, repeat: Infinity }}
+                  className="w-1.5 h-1.5 rounded-full bg-white/40" />
+                <span className="text-xs font-semibold text-white/40">
+                  {isCalib ? 'Calibration…' : faceOk ? 'Visage détecté ✓' : 'Positionne ton visage…'}
+                </span>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
       </div>
 
       {/* ── Zone visage ── */}
@@ -456,9 +830,30 @@ export default function Step8FaceID({ onNext }) {
             }}
           >
             <video ref={videoRef} autoPlay playsInline muted
+              onLoadedData={() => setVideoReady(true)}
               style={{ width: '100%', height: '100%', objectFit: 'cover', transform: 'scaleX(-1)' }} />
             <canvas ref={canvasRef}
               style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', pointerEvents: 'none' }} />
+
+            {/* Overlay chargement vidéo */}
+            <AnimatePresence>
+              {!videoReady && (
+                <motion.div
+                  initial={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.4 }}
+                  className="absolute inset-0 flex flex-col items-center justify-center gap-3"
+                  style={{ background: '#0a0a0a' }}>
+                  <motion.div
+                    animate={{ rotate: 360 }}
+                    transition={{ duration: 1.2, repeat: Infinity, ease: 'linear' }}
+                    className="w-8 h-8 rounded-full"
+                    style={{ border: `2px solid ${PINK_A(0.3)}`, borderTopColor: PINK }}
+                  />
+                  <span className="text-xs font-semibold" style={{ color: PINK_A(0.6) }}>
+                    Activation caméra…
+                  </span>
+                </motion.div>
+              )}
+            </AnimatePresence>
 
             {/* Overlay pause */}
             <AnimatePresence>
@@ -560,7 +955,7 @@ export default function Step8FaceID({ onNext }) {
         </div>
       </div>
 
-      {/* ── Messages ── */}
+      {/* ── Messages + progression ── */}
       <div className="relative z-20 text-center w-full px-6">
         <AnimatePresence mode="wait">
           {isDone ? (
@@ -581,6 +976,21 @@ export default function Step8FaceID({ onNext }) {
               <p className="text-lg font-bold text-white">{SCAN_MESSAGES[msgIndex]?.text}</p>
               <p className="text-xs mt-1" style={{ color: 'rgba(255,255,255,0.3)' }}>Analyse faciale IA en cours</p>
             </motion.div>
+          ) : isPosPhase && currentPosStep ? (
+            <motion.div key={`pos-msg-${phase}`}
+              initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }}>
+              {/* Flèche directionnelle */}
+              <motion.div
+                animate={{ x: phase === 'left' ? [-4, 4, -4] : phase === 'right' ? [4, -4, 4] : [0, 0, 0] }}
+                transition={{ duration: 1.2, repeat: Infinity }}
+                className="text-3xl mb-2">
+                {phase === 'left' ? '←' : phase === 'right' ? '→' : '⊙'}
+              </motion.div>
+              <p className="text-xl font-black text-white">{currentPosStep.label}</p>
+              <p className="text-sm mt-1" style={{ color: 'rgba(255,255,255,0.4)' }}>
+                {faceOk ? currentPosStep.hint : 'Centre ton visage dans le cadre'}
+              </p>
+            </motion.div>
           ) : (
             <motion.div key="wait-msg" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
               <p className="text-xl font-black text-white">
@@ -593,8 +1003,20 @@ export default function Step8FaceID({ onNext }) {
           )}
         </AnimatePresence>
 
-        {/* Progression secteurs */}
-        {(isScanning || isPaused) && !isDone && (
+        {/* Barre de progression maintien position */}
+        {isPosPhase && faceOk && !isDone && (
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}
+            className="mt-4 mx-auto w-48 h-1 rounded-full overflow-hidden"
+            style={{ background: 'rgba(255,255,255,0.08)' }}>
+            <motion.div className="h-full rounded-full"
+              animate={{ width: `${holdProgress}%` }}
+              transition={{ duration: 0.1 }}
+              style={{ background: `linear-gradient(90deg, ${PINK}, #e8608a)` }} />
+          </motion.div>
+        )}
+
+        {/* Progression secteurs (scan circulaire) */}
+        {(isScanning || (isPaused && lastActivePosPhase.current === 'scanning')) && !isDone && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: isPaused ? 0.4 : 1 }}
             className="mt-4 mx-auto w-48 h-0.5 rounded-full overflow-hidden"
             style={{ background: 'rgba(255,255,255,0.08)' }}>

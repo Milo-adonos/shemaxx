@@ -1,42 +1,48 @@
+import { useState, useRef } from 'react'
 import { motion } from 'framer-motion'
 
-const DEFAULT_SCORES = { symmetry: 87, proportions: 84, regard: 89, structure: 85, skin: 80, photogenie: 88, total: 86, ranking: 'Top 20 %', beautyScore: '8.6', rank: 'B+' }
+const DEFAULT_SCORES = {
+  symmetry: 87, proportions: 84, regard: 89, structure: 85, skin: 80, photogenie: 88,
+  total: 86, ranking: 'Top 20 %', beautyScore: '8.6', rank: 'B+',
+  defauts: [
+    { zone: 'Sourcils', probleme: 'Légère asymétrie — le gauche est plus haut', conseil: 'Technique de mapping sourcils en 3 points pour rééquilibrer' },
+    { zone: 'Structure', probleme: 'Manque de définition de la mâchoire', conseil: 'Exercices de Mewing + routine de contouring ciblée' },
+    { zone: 'Peau', probleme: 'Quelques irrégularités de texture visibles', conseil: 'Protocole de soin exfoliant personnalisé + sérum vitamine C' },
+  ],
+}
 
 const PINK   = '#cc3c69'
 const PINK_A = (a) => `rgba(204,60,105,${a})`
 
+const ZONE_ICONS = {
+  nez: '👃', sourcils: '〰️', yeux: '👁️', joues: '◉', mâchoire: '⬟',
+  lèvres: '◡', peau: '✦', front: '▱', pommettes: '◈', structure: '⬟',
+  regard: '◎', visage: '◇', symétrie: '◈', proportions: '⬡',
+}
+
+function getZoneIcon(zone) {
+  const z = zone.toLowerCase()
+  for (const [key, icon] of Object.entries(ZONE_ICONS)) {
+    if (z.includes(key)) return icon
+  }
+  return '◆'
+}
+
 export default function Step9Reveal({ onNext, pseudo = '', faceScores = null }) {
-  const scores = faceScores ?? DEFAULT_SCORES
+  const scores  = faceScores ?? DEFAULT_SCORES
+  const defauts = Array.isArray(scores.defauts) && scores.defauts.length > 0
+    ? scores.defauts
+    : DEFAULT_SCORES.defauts
 
-  // ── Calcul des conseils verrouillés ──────────────────────────────────────────
-  const WEIGHTS = {
-    symmetry: 0.20, proportions: 0.20, regard: 0.18,
-    structure: 0.18, skin: 0.10, photogenie: 0.14,
+  const [userPhoto, setUserPhoto] = useState(null)
+  const fileInputRef = useRef(null)
+
+  const handlePhotoChange = (e) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    const url = URL.createObjectURL(file)
+    setUserPhoto(url)
   }
-  const TARGETS = {
-    symmetry: 88, proportions: 88, regard: 88,
-    structure: 88, skin: 85, photogenie: 90,
-  }
-  const TIPS = [
-    { key: 'symmetry',    label: 'Symétrie',            icon: '◈' },
-    { key: 'proportions', label: 'Proportions',         icon: '⬡' },
-    { key: 'regard',      label: 'Impact du regard',    icon: '◎' },
-    { key: 'structure',   label: 'Structure du visage', icon: '⬟' },
-    { key: 'skin',        label: 'Qualité de peau',     icon: '✦' },
-    { key: 'photogenie',  label: 'Photogénie',          icon: '◇' },
-  ]
-
-  const activeTips = TIPS
-    .map(t => {
-      const current = scores[t.key] ?? 0
-      const target  = TARGETS[t.key]
-      const gain    = Math.max(1, Math.round((target - current) * WEIGHTS[t.key]))
-      return { ...t, current, target, gain }
-    })
-    .filter(t => t.current < t.target)
-    .sort((a, b) => b.gain - a.gain)
-
-  const totalGain = activeTips.reduce((s, t) => s + t.gain, 0)
 
   return (
     <div className="flex flex-col px-5 pt-6 items-center"
@@ -52,6 +58,21 @@ export default function Step9Reveal({ onNext, pseudo = '', faceScores = null }) 
       />
 
       <div className="w-full" style={{ position: 'relative', zIndex: 1 }}>
+
+        {/* ── Header page ── */}
+        <motion.div
+          initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.45 }}
+          className="mb-5 text-center">
+          <p className="text-xs font-bold uppercase tracking-widest mb-2"
+            style={{ color: 'rgba(204,60,105,0.7)' }}>
+            Résultats de ton analyse
+          </p>
+          <h1 className="text-2xl font-black text-white leading-tight">
+            On a détecté des{' '}
+            <span style={{ color: '#ff4d88' }}>points à améliorer</span>
+          </h1>
+        </motion.div>
 
         {/* ── CARTE RÉSULTATS ── */}
         <motion.div className="w-full max-w-sm mx-auto relative"
@@ -80,20 +101,52 @@ export default function Step9Reveal({ onNext, pseudo = '', faceScores = null }) 
               </span>
             </div>
 
-            {/* 2. Profile row : avatar | prénom | score total */}
-            <div className="flex items-center gap-3 mb-4">
+            {/* 2. Profile row */}
+            <div className="flex items-center gap-2 mb-4">
               <div className="relative shrink-0">
                 <motion.div className="absolute rounded-full"
                   animate={{ opacity: [0.5, 1, 0.5] }} transition={{ duration: 2, repeat: Infinity }}
-                  style={{ inset: -3, border: '1.5px solid rgba(205,55,103,0.7)', borderRadius: '50%',
-                    boxShadow: '0 0 12px rgba(205,55,103,0.4)' }} />
-                <div className="w-14 h-14 rounded-full flex items-center justify-center text-2xl"
+                  style={{ inset: -4, border: '2px solid rgba(205,55,103,0.7)', borderRadius: '50%',
+                    boxShadow: '0 0 16px rgba(205,55,103,0.5)' }} />
+                {/* Input fichier caché */}
+                <input ref={fileInputRef} type="file" accept="image/*"
+                  onChange={handlePhotoChange}
+                  style={{ display: 'none' }} />
+
+                {/* Bouton avatar cliquable */}
+                <button onClick={() => fileInputRef.current?.click()}
+                  className="w-20 h-20 rounded-full overflow-hidden flex items-center justify-center relative group"
                   style={{ background: 'linear-gradient(135deg, #1d1424, #231929)', border: '2px solid #cc3c69' }}>
-                  👤
-                </div>
+                  {userPhoto ? (
+                    <img src={userPhoto} alt="photo"
+                      style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                  ) : (
+                    <div className="flex flex-col items-center gap-0.5">
+                      {/* Icône galerie N&B */}
+                      <svg width="26" height="26" viewBox="0 0 24 24" fill="none"
+                        stroke="rgba(255,255,255,0.35)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                        <rect x="3" y="3" width="18" height="18" rx="3"/>
+                        <circle cx="8.5" cy="8.5" r="1.5"/>
+                        <path d="m21 15-5-5L5 21"/>
+                      </svg>
+                      {/* Badge "+" */}
+                      <div className="absolute bottom-1 right-1 w-6 h-6 rounded-full flex items-center justify-center"
+                        style={{ background: '#cc3c69', border: '2px solid #000', boxShadow: '0 0 8px rgba(204,60,105,0.6)' }}>
+                        <span className="text-white font-black" style={{ fontSize: 14, lineHeight: 1 }}>+</span>
+                      </div>
+                    </div>
+                  )}
+                  {/* Overlay hover si photo déjà chargée */}
+                  {userPhoto && (
+                    <div className="absolute inset-0 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                      style={{ background: 'rgba(0,0,0,0.5)' }}>
+                      <span style={{ fontSize: 16 }}>✎</span>
+                    </div>
+                  )}
+                </button>
               </div>
 
-              <div className="flex-1 min-w-0">
+              <div className="flex-1 min-w-0 ml-3">
                 <p className="text-xl font-black text-white leading-tight truncate">
                   {pseudo || 'Mon analyse'}
                 </p>
@@ -176,51 +229,80 @@ export default function Step9Reveal({ onNext, pseudo = '', faceScores = null }) 
           </div>
         </motion.div>
 
-        {/* ── Bloc conseils verrouillés ── */}
-        {activeTips.length > 0 && (
-          <motion.div className="w-full max-w-sm mx-auto mt-4 mb-2"
-            initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.5 }}>
+        {/* ── Défauts détectés par l'IA (verrouillés) ── */}
+        <motion.div className="w-full max-w-sm mx-auto mt-4 mb-2"
+          initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.5 }}>
 
-            <div className="flex items-center gap-2.5 mb-3">
-              <div className="w-7 h-7 rounded-lg flex items-center justify-center text-sm shrink-0"
-                style={{ background: 'rgba(205,55,103,0.15)', border: '1px solid rgba(205,55,103,0.3)' }}>
-                💡
-              </div>
-              <p className="text-sm font-bold text-white leading-tight">
-                <span style={{ color: '#ff4d88' }}>{activeTips.length} conseil{activeTips.length > 1 ? 's' : ''}</span>
-                {' '}trouvé{activeTips.length > 1 ? 's' : ''} pour augmenter ta note de{' '}
-                <span style={{ color: '#ff4d88' }}>+{totalGain} points</span>
-              </p>
+          {/* Header */}
+          <div className="flex items-center gap-2.5 mb-3">
+            <div className="w-7 h-7 rounded-lg flex items-center justify-center text-sm shrink-0"
+              style={{ background: 'rgba(205,55,103,0.15)', border: '1px solid rgba(205,55,103,0.3)' }}>
+              🔍
             </div>
+            <p className="text-sm font-bold text-white leading-tight">
+              <span style={{ color: '#ff4d88' }}>+ de {defauts.length} défauts identifiés</span>
+              {' '}— conseils verrouillés
+            </p>
+          </div>
 
-            <div className="rounded-2xl overflow-hidden"
-              style={{ border: '1px solid rgba(255,255,255,0.07)', background: 'rgba(255,255,255,0.02)' }}>
-              {activeTips.map((tip, i) => (
-                <div key={tip.key}
-                  className="flex items-center gap-3 px-4 py-3"
-                  style={{ borderBottom: i < activeTips.length - 1 ? '1px solid rgba(255,255,255,0.05)' : 'none' }}>
-                  <span style={{ color: 'rgba(205,55,103,0.5)', fontSize: 11, flexShrink: 0 }}>{tip.icon}</span>
-                  <span className="text-xs font-semibold flex-1"
-                    style={{ color: 'rgba(255,255,255,0.4)' }}>{tip.label}</span>
-                  <div className="flex items-center gap-1.5 shrink-0">
-                    <span className="text-[10px] font-bold" style={{ color: '#ff4d88' }}>
-                      +{tip.gain} pt{tip.gain > 1 ? 's' : ''}
-                    </span>
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none"
-                      stroke="rgba(255,255,255,0.2)" strokeWidth="2.5" strokeLinecap="round">
-                      <rect x="3" y="11" width="18" height="11" rx="2"/>
-                      <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
-                    </svg>
+          {/* Liste des défauts */}
+          <div className="rounded-2xl overflow-hidden"
+            style={{ border: '1px solid rgba(255,255,255,0.07)', background: 'rgba(255,255,255,0.02)' }}>
+            {defauts.map((defaut, i) => (
+              <motion.div key={i}
+                initial={{ opacity: 0, x: -8 }} animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.55 + i * 0.08 }}
+                style={{ borderBottom: i < defauts.length - 1 ? '1px solid rgba(255,255,255,0.05)' : 'none' }}>
+
+                {/* Zone + problème */}
+                <div className="flex items-start gap-3 px-4 pt-3 pb-1">
+                  <span className="shrink-0 mt-0.5" style={{ color: PINK, fontSize: 12 }}>
+                    {getZoneIcon(defaut.zone)}
+                  </span>
+                  <div className="flex-1 min-w-0">
+                    <span className="text-[10px] font-bold uppercase tracking-wider"
+                      style={{ color: 'rgba(205,55,103,0.7)' }}>{defaut.zone}</span>
+                    <p className="text-xs font-semibold leading-snug mt-0.5"
+                      style={{ color: 'rgba(255,255,255,0.75)' }}>{defaut.probleme}</p>
                   </div>
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none"
+                    stroke="rgba(255,255,255,0.2)" strokeWidth="2.5" strokeLinecap="round" className="shrink-0 mt-1">
+                    <rect x="3" y="11" width="18" height="11" rx="2"/>
+                    <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                  </svg>
                 </div>
-              ))}
-            </div>
-          </motion.div>
-        )}
+
+                {/* Conseil flou */}
+                <div className="px-4 pb-3 pt-1 flex items-center gap-2">
+                  <div className="h-px w-4 shrink-0" style={{ background: 'rgba(255,255,255,0.08)' }} />
+                  <p className="text-[11px] leading-snug flex-1"
+                    style={{
+                      color: 'rgba(255,255,255,0.35)',
+                      filter: 'blur(4px)',
+                      userSelect: 'none',
+                      pointerEvents: 'none',
+                    }}>
+                    {defaut.conseil}
+                  </p>
+                  <span className="text-[10px] font-bold shrink-0" style={{ color: PINK }}>
+                    Pro
+                  </span>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+
+          <motion.p
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1 }}
+            className="text-xs text-center mt-3 leading-relaxed"
+            style={{ color: 'rgba(255,255,255,0.3)' }}>
+            Débloque les conseils personnalisés pour corriger chaque défaut
+          </motion.p>
+        </motion.div>
       </div>
 
-      {/* ── Bouton CTA (fixé en bas de l'écran) ── */}
+      {/* ── Bouton CTA fixé en bas ── */}
       <motion.button
         onClick={onNext}
         initial={{ opacity: 0, y: 20 }}
@@ -230,10 +312,7 @@ export default function Step9Reveal({ onNext, pseudo = '', faceScores = null }) 
         className="py-4 rounded-2xl font-black text-base text-white overflow-hidden"
         style={{
           position: 'fixed',
-          bottom: 24,
-          left: 20,
-          right: 20,
-          zIndex: 200,
+          bottom: 24, left: 20, right: 20, zIndex: 200,
           background: 'linear-gradient(135deg, #cc3c69, #e8608a)',
           boxShadow: '0 0 28px rgba(204,60,105,0.45), 0 8px 24px rgba(0,0,0,0.4)',
         }}>

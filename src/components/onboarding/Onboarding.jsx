@@ -22,6 +22,7 @@ const IMMERSIVE_STEPS = [8, 9, 11, 12]
 export default function Onboarding({ onClose }) {
   const [step, setStep] = useState(1)
   const [direction, setDirection] = useState(1)
+  const [faceidKey, setFaceidKey] = useState(0)   // force remontage complet Step8FaceID
   const [data, setData] = useState({
     level: null,
     age: 22,
@@ -51,11 +52,11 @@ export default function Onboarding({ onClose }) {
     <Step6      key={5}  onNext={() => next()} />,
     <Step7      key={6}  onNext={(v) => next({ pseudo: v })} />,
     <Step8      key={7}  onNext={() => next()} />,
-    <Step8FaceID key={8} onNext={(scores) => next({ faceScores: scores })} />,
+    <Step8FaceID key={`faceid-${faceidKey}`} onNext={(scores) => next({ faceScores: scores })} onRetry={() => setFaceidKey(k => k + 1)} />,
     <Step9      key={9}  onNext={() => next()} />,
     <Step5      key={10} faceScores={data.faceScores} onNext={() => next()} />,
     <Step9Reveal key={11} pseudo={data.pseudo} faceScores={data.faceScores} onNext={() => next()} />,
-    <Step10     key={12} pseudo={data.pseudo} onClose={onClose} />,
+    <Step10     key={12} pseudo={data.pseudo} faceScores={data.faceScores} onClose={onClose} />,
   ]
 
   const immersive = IMMERSIVE_STEPS.includes(step)
