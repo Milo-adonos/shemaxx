@@ -74,9 +74,8 @@ const RETRY_REASONS = [
 export default function Step8FaceID({ onNext, onRetry }) {
   const [camInitTrigger, setCamInitTrigger] = useState(0) // incrémenté pour relancer la caméra
   const [camStatus,    setCamStatus]    = useState('idle')
-  // phase: 'waiting' | 'calibrating' | 'front' | 'left' | 'right' | 'scanning' | 'paused' | 'done' | 'analyzing' | 'error'
+  // phase: 'waiting' | 'calibrating' | 'front' | 'left' | 'right' | 'scanning' | 'paused' | 'done' | 'error'
   const [phase,        setPhase]        = useState('waiting')
-  const [aiError,      setAiError]      = useState(null)
   const [scanError,    setScanError]    = useState(null)
   const [sectors,      setSectors]      = useState(new Array(SECTORS).fill(false))
   const [msgIndex,     setMsgIndex]     = useState(0)
@@ -150,7 +149,6 @@ export default function Step8FaceID({ onNext, onRetry }) {
     // Reset du state UI
     setPhase('waiting')
     setScanError(null)
-    setAiError(null)
     setSectors(new Array(SECTORS).fill(false))
     setMsgIndex(0)
     setFaceOk(false)
@@ -341,6 +339,12 @@ export default function Step8FaceID({ onNext, onRetry }) {
                 doneRef.current = true
                 setPhaseSync('done')
 
+                // Copie des landmarks au moment du succès (avant arrêt caméra / perte de détection)
+                const landmarksSnapshot =
+                  lm && lm.length >= 468
+                    ? lm.map((p) => ({ x: p.x, y: p.y, z: p.z ?? 0 }))
+                    : null
+
                 let imageDataUrl = null
                 try {
                   imageDataUrl = captureVideoFrame(videoRef.current)
@@ -349,17 +353,16 @@ export default function Step8FaceID({ onNext, onRetry }) {
                 streamRef.current?.getTracks().forEach(t => t.stop())
 
                 setTimeout(async () => {
-                  setPhaseSync('analyzing')
                   try {
-                    const scores = await analyzeWithAI(imageDataUrl)
+                    const scores = await analyzeWithAI(imageDataUrl, landmarksSnapshot)
                     onNext({ ...scores, photoUrl: frontPhotoRef.current })
                   } catch (err) {
-                    console.error('Analyse IA échouée :', err)
+                    console.error('Analyse échouée :', err)
                     const msg = err.message?.includes('401')
                       ? 'Problème de connexion au serveur. Vérifie ta connexion internet.'
                       : err.message?.includes('abort') || err.message?.includes('timeout')
                       ? 'L\'analyse a pris trop de temps. Assure-toi d\'avoir une bonne connexion internet.'
-                      : 'L\'image n\'était pas assez nette pour l\'analyse. Assure-toi d\'avoir une bonne lumière et que ton visage soit bien centré.'
+                      : 'Impossible de calculer ton analyse. Réessaie le scan en gardant le visage bien centré.'
                     restartScan(msg)
                   }
                 }, 1200)
@@ -545,7 +548,6 @@ export default function Step8FaceID({ onNext, onRetry }) {
   }
 
   const isDone      = phase === 'done'
-  const isAnalyzing = phase === 'analyzing'
   const isScanning  = phase === 'scanning'
   const isPaused    = phase === 'paused'
   const isCalib     = phase === 'calibrating'
@@ -617,87 +619,6 @@ export default function Step8FaceID({ onNext, onRetry }) {
           }}>
           Refaire l'analyse →
         </motion.button>
-      </div>
-    )
-  }
-
-  // ── Écran analyse IA ─────────────────────────────────────────────────────
-  if (isAnalyzing) {
-    return (
-      <div className="flex flex-col min-h-full items-center justify-center gap-8 px-8 text-center"
-        style={{ background: '#000' }}>
-
-        {/* Anneau animé */}
-        <div className="relative w-28 h-28 flex items-center justify-center">
-          <motion.div
-            animate={{ rotate: 360 }}
-            transition={{ duration: 1.4, repeat: Infinity, ease: 'linear' }}
-            className="absolute inset-0 rounded-full"
-            style={{ border: `2.5px solid transparent`, borderTopColor: PINK,
-              borderRightColor: PINK_A(0.4) }}
-          />
-          <motion.div
-            animate={{ rotate: -360 }}
-            transition={{ duration: 2.2, repeat: Infinity, ease: 'linear' }}
-            className="absolute rounded-full"
-            style={{ inset: 8, border: `1.5px solid transparent`, borderTopColor: PINK_A(0.4),
-              borderLeftColor: PINK_A(0.2) }}
-          />
-          <span className="text-3xl">✦</span>
-        </div>
-
-        <div>
-          <motion.p
-            animate={{ opacity: [0.7, 1, 0.7] }}
-            transition={{ duration: 1.8, repeat: Infinity }}
-            className="text-2xl font-black text-white mb-3">
-            {aiError === 'failed' ? 'Finalisation…' : 'Analyse IA en cours…'}
-          </motion.p>
-
-          {aiError === 'retry' ? (
-            <p className="text-sm" style={{ color: 'rgba(255,255,255,0.4)' }}>
-              Connexion lente — nouvelle tentative…
-            </p>
-          ) : aiError === 'failed' ? (
-            <p className="text-sm" style={{ color: 'rgba(255,255,255,0.35)' }}>
-              Préparation de tes résultats…
-            </p>
-          ) : (
-            <p className="text-sm leading-relaxed" style={{ color: 'rgba(255,255,255,0.35)' }}>
-              Notre IA analyse ton visage<br />en détail pour te donner des résultats précis
-            </p>
-          )}
-        </div>
-
-        {/* Steps d'analyse animés */}
-        <div className="w-full max-w-xs space-y-2.5">
-          {['Symétrie faciale', 'Proportions dorées', 'Structure osseuse', 'Qualité de peau'].map((label, i) => (
-            <motion.div key={label}
-              initial={{ opacity: 0, x: -10 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: i * 0.4 }}
-              className="flex items-center gap-3 px-4 py-2.5 rounded-xl"
-              style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}>
-              <motion.div
-                animate={{ scale: [1, 1.4, 1], opacity: [0.5, 1, 0.5] }}
-                transition={{ duration: 1.2, repeat: Infinity, delay: i * 0.3 }}
-                className="w-1.5 h-1.5 rounded-full shrink-0"
-                style={{ background: PINK }}
-              />
-              <span className="text-xs font-semibold" style={{ color: 'rgba(255,255,255,0.5)' }}>
-                {label}
-              </span>
-              <motion.span
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: i * 0.4 + 0.6 }}
-                className="ml-auto text-xs font-bold"
-                style={{ color: PINK }}>
-                ✓
-              </motion.span>
-            </motion.div>
-          ))}
-        </div>
       </div>
     )
   }

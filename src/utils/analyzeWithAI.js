@@ -1,4 +1,35 @@
+import { computeFaceScores } from './faceAnalysis.js'
+
 const API_KEY = import.meta.env.VITE_OPENAI_API_KEY
+
+/** Conseils génériques quand l’analyse passe par le moteur local (sans OpenAI) */
+const FALLBACK_DEFAUTS = [
+  {
+    zone: 'Proportions',
+    probleme: 'Équilibre des traits à optimiser',
+    conseil: 'Travaille la lumière en photo (lumière douce de face) et un léger contouring pour harmoniser visuellement.',
+  },
+  {
+    zone: 'Peau',
+    probleme: 'Texture et éclat',
+    conseil: 'Routine hydratante matin/soir et SPF quotidien améliorent le rendu sur quelques semaines.',
+  },
+  {
+    zone: 'Suivi',
+    probleme: 'Analyse basée sur ton scan facial',
+    conseil: 'Réessaie le scan avec une lumière naturelle pour affiner les recommandations dans l’app.',
+  },
+]
+
+/**
+ * Scores calculés uniquement à partir des landmarks MediaPipe (aucun appel réseau).
+ */
+export function scoresFromLandmarks(landmarks) {
+  if (!landmarks || landmarks.length < 468) return null
+  const s = computeFaceScores(landmarks)
+  if (!s) return null
+  return formatScores({ ...s, defauts: FALLBACK_DEFAUTS })
+}
 
 const PROMPT = `Tu es une experte en analyse de beauté féminine, looksmaxxing et chirurgie esthétique.
 Analyse ce visage de femme avec précision et objectivité. Identifie les vrais défauts visibles.
@@ -143,25 +174,42 @@ async function callAPI(imageDataUrl) {
 }
 
 /**
- * Envoie une image base64 à GPT-4o mini et retourne les scores
- * Retente automatiquement jusqu'à 2 fois en cas d'échec
+ * Envoie une image à GPT-4o mini si une clé API est définie ; sinon ou en cas d’échec,
+ * utilise les landmarks MediaPipe passés en second argument (analyse 100 % locale).
+ *
+ * @param {string|null} imageDataUrl — capture vidéo (peut être null si canvas « tainted »)
+ * @param {Array<{x:number,y:number,z?:number}>|null} landmarksSnapshot — copie des 468 points à la fin du scan
  */
-export async function analyzeWithAI(imageDataUrl) {
-  if (!API_KEY) throw new Error('Clé API manquante — vérifie le fichier .env')
+export async function analyzeWithAI(imageDataUrl, landmarksSnapshot = null) {
+  const local = () => scoresFromLandmarks(landmarksSnapshot)
+
+  if (!API_KEY) {
+    const scores = local()
+    if (scores) {
+      console.info('Analyse : mode local (pas de VITE_OPENAI_API_KEY).')
+      return scores
+    }
+    throw new Error('Clé API manquante et landmarks insuffisants pour l’analyse locale.')
+  }
 
   let lastError
-  for (let attempt = 1; attempt <= 2; attempt++) {
+  for (let attempt = 1; attempt <= 3; attempt++) {
     try {
       const raw = await callAPI(imageDataUrl)
       return formatScores(raw)
     } catch (err) {
       lastError = err
       console.warn(`Analyse IA — tentative ${attempt} échouée :`, err.message)
-      if (attempt < 2) {
-        // Attends 1.5s avant de réessayer
+      if (attempt < 3) {
         await new Promise(r => setTimeout(r, 1500))
       }
     }
+  }
+
+  const scores = local()
+  if (scores) {
+    console.info('Analyse : repli local après échec de l’API OpenAI.')
+    return scores
   }
 
   throw lastError

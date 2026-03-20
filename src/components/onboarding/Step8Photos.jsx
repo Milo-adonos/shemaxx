@@ -27,7 +27,7 @@ export default function Step8Photos({ onNext }) {
         </h1>
         <p className="text-sm mt-3 leading-relaxed" style={{ color: 'rgba(255,255,255,0.45)' }}>
           Notre IA va scanner ton visage en temps réel.<br />
-          Il te suffira de faire un simple cercle avec la tête.
+          Tu suivras d’abord des positions de tête, puis un mouvement circulaire.
         </p>
       </motion.div>
 
@@ -90,7 +90,11 @@ export default function Step8Photos({ onNext }) {
       <div className="flex flex-col gap-3 mb-8">
         {[
           { step: '1', title: 'Positionne ton visage', desc: 'Centre ton visage dans le cadre de la caméra' },
-          { step: '2', title: 'Fais un cercle', desc: 'Tourne lentement ta tête en cercle — haut, droite, bas, gauche' },
+          {
+            step: '2',
+            title: 'Mouvements pendant le scan',
+            desc: 'Regarde droit devant toi, puis tourne la tête à gauche, puis à droite. Ensuite, fais un cercle complet avec la tête (lentement, sans sortir du cadre).',
+          },
           { step: '3', title: 'Reste dans le cadre', desc: 'Si ton visage sort du cadre, l\'analyse se met en pause' },
         ].map((item, i) => (
           <motion.div

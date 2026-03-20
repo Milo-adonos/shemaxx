@@ -10,14 +10,15 @@ import Step6 from './Step6Graph'
 import Step7 from './Step7Pseudo'
 import Step8 from './Step8Photos'
 import Step8FaceID from './Step8FaceID'
+import Step9AnalyzingIA from './Step9AnalyzingIA'
 import Step9 from './Step9Loading'
 import Step9Reveal from './Step9Reveal'
 import Step10 from './Step10Paywall'
 
-const TOTAL = 12
+const TOTAL = 13
 
 // Étapes sans header (plein écran immersif)
-const IMMERSIVE_STEPS = [8, 9, 11, 12]
+const IMMERSIVE_STEPS = [8, 9, 10, 12, 13]
 
 export default function Onboarding({ onClose }) {
   const [step, setStep] = useState(1)
@@ -53,10 +54,11 @@ export default function Onboarding({ onClose }) {
     <Step7      key={6}  onNext={(v) => next({ pseudo: v })} />,
     <Step8      key={7}  onNext={() => next()} />,
     <Step8FaceID key={`faceid-${faceidKey}`} onNext={(scores) => next({ faceScores: scores })} onRetry={() => setFaceidKey(k => k + 1)} />,
-    <Step9      key={9}  onNext={() => next()} />,
-    <Step5      key={10} faceScores={data.faceScores} onNext={() => next()} />,
-    <Step9Reveal key={11} pseudo={data.pseudo} faceScores={data.faceScores} onNext={() => next()} />,
-    <Step10     key={12} pseudo={data.pseudo} faceScores={data.faceScores} onClose={onClose} />,
+    <Step9AnalyzingIA key={9} onNext={() => next()} />,
+    <Step9      key={10}  onNext={() => next()} />,
+    <Step5      key={11} faceScores={data.faceScores} onNext={() => next()} />,
+    <Step9Reveal key={12} pseudo={data.pseudo} faceScores={data.faceScores} onNext={() => next()} />,
+    <Step10     key={13} pseudo={data.pseudo} faceScores={data.faceScores} onClose={onClose} />,
   ]
 
   const immersive = IMMERSIVE_STEPS.includes(step)
