@@ -1,6 +1,5 @@
 import { useState, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { ChevronRight } from 'lucide-react'
 import HolographicFaceTraits from './HolographicFaceTraits'
 
 const PINK   = '#cc3c69'
@@ -15,7 +14,7 @@ const METRIC_GRID = [
   { label: 'Photogénie',         icon: '◇', key: 'photogenie'  },
 ]
 
-// ── Slide 3 : conseils + produit Amazon par zone du visage (liens amazon.fr) ──
+// ── Slide 3 : conseils + suggestion produit (textes sensibles floutés) ──
 const FACE_PROGRESS_TIPS = [
   {
     zoneKey: 'skin',
@@ -23,7 +22,6 @@ const FACE_PROGRESS_TIPS = [
     title: 'Peau',
     tip: 'Nettoie en douceur puis applique une crème riche en céramides pour renforcer la barrière cutanée et lisser le grain.',
     product: 'CeraVe — Baume hydratant visage (céramides)',
-    amazonUrl: 'https://www.amazon.fr/dp/B077T86SX7',
   },
   {
     zoneKey: 'eyes',
@@ -31,7 +29,6 @@ const FACE_PROGRESS_TIPS = [
     title: 'Yeux',
     tip: 'Le contour des yeux se hydrate le matin avec un soin léger ; tapote du bout des doigts pour réduire les poches.',
     product: 'The Ordinary — Sérum contour des yeux caféine 5 %',
-    amazonUrl: 'https://www.amazon.fr/dp/B018EU3RT2',
   },
   {
     zoneKey: 'cheeks',
@@ -39,7 +36,6 @@ const FACE_PROGRESS_TIPS = [
     title: 'Pommettes',
     tip: 'Un fard à joues crème ou liquide sur le haut des pommettes redonne du relief et un effet « bonne mine » naturel.',
     product: 'Rare Beauty — Soft Pinch Blush liquide (teinte au choix)',
-    amazonUrl: 'https://www.amazon.fr/s?k=rare+beauty+soft+pinch+liquid+blush',
   },
   {
     zoneKey: 'jaw',
@@ -47,7 +43,6 @@ const FACE_PROGRESS_TIPS = [
     title: 'Mâchoire',
     tip: 'Massage ascendant avec une pierre ou un Gua Sha (5–10 min) aide à décongestionner et à définir la ligne du bas du visage.',
     product: 'Gua Sha pierre de jade — massage visage',
-    amazonUrl: 'https://www.amazon.fr/dp/B08QSNYYSM',
   },
   {
     zoneKey: 'nose',
@@ -55,7 +50,6 @@ const FACE_PROGRESS_TIPS = [
     title: 'Nez',
     tip: 'Un nettoyant avec acide salicylique (BHA) 2–3×/semaine aide à garder les pores du nez plus nets sans agresser.',
     product: 'La Roche-Posay — Effaclar gel moussant purifiant',
-    amazonUrl: 'https://www.amazon.fr/dp/B002LAJGQE',
   },
   {
     zoneKey: 'mouth',
@@ -63,7 +57,6 @@ const FACE_PROGRESS_TIPS = [
     title: 'Bouche',
     tip: 'Exfolie délicatement 1×/semaine puis nourris avec un baume à base de beurre de karité pour des lèvres plus lisses.',
     product: "Burt's Bees — Baume à lèvres à la cire d'abeille",
-    amazonUrl: 'https://www.amazon.fr/dp/B0042RBLU4',
   },
 ]
 
@@ -312,7 +305,7 @@ export default function Step10Paywall({ pseudo, faceScores = {}, onClose }) {
                 </motion.div>
               )}
 
-              {/* ── SLIDE 3 : conseils + lien produit Amazon par zone ── */}
+              {/* ── SLIDE 3 : conseils + produit suggéré (conseil & produit floutés) ── */}
               {slideIdx === 2 && (
                 <motion.div key="improve"
                   custom={dir} variants={slideVariants}
@@ -320,12 +313,12 @@ export default function Step10Paywall({ pseudo, faceScores = {}, onClose }) {
                   transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
                   className="space-y-3 pr-0.5">
                   <p className="text-[11px] leading-relaxed px-1 -mt-1 mb-2" style={{ color: 'rgba(255,255,255,0.38)' }}>
-                    Un conseil et une idée de produit par zone — ouvre sur Amazon.fr (lien direct).
+                    Un conseil et une idée de produit par zone — débloque pour tout lire.
                   </p>
                   {FACE_PROGRESS_TIPS.map((item) => (
                     <div
                       key={item.zoneKey}
-                      className="rounded-2xl px-4 py-3.5 space-y-2"
+                      className="rounded-2xl px-4 py-3.5"
                       style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.07)' }}
                     >
                       <div className="flex items-start gap-3">
@@ -342,26 +335,18 @@ export default function Step10Paywall({ pseudo, faceScores = {}, onClose }) {
                           >
                             {item.tip}
                           </p>
-                          <p className="text-[11px] font-semibold mt-2" style={{ color: 'rgba(255,255,255,0.65)' }}>
+                          <p
+                            className="text-[11px] font-semibold mt-2 select-none pointer-events-none"
+                            style={{
+                              color: 'rgba(255,255,255,0.65)',
+                              filter: 'blur(5px)',
+                            }}
+                            aria-hidden
+                          >
                             {item.product}
                           </p>
                         </div>
                       </div>
-                      <a
-                        href={item.amazonUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="flex items-center justify-center gap-2 w-full py-2.5 rounded-xl text-xs font-black transition-opacity hover:opacity-95 active:opacity-85"
-                        style={{
-                          background: 'rgba(204,60,105,0.14)',
-                          border: '1px solid rgba(204,60,105,0.45)',
-                          color: '#ffc4d8',
-                          boxShadow: '0 0 20px rgba(204,60,105,0.15), inset 0 1px 0 rgba(255,255,255,0.06)',
-                        }}
-                      >
-                        Voir le produit sur Amazon
-                        <ChevronRight size={16} strokeWidth={2.5} />
-                      </a>
                     </div>
                   ))}
                 </motion.div>
