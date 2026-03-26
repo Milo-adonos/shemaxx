@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 
-export default function Navbar({ onCta }) {
+export default function Navbar({ onCta, onSignOut, user }) {
   const [scrolled, setScrolled] = useState(false)
 
   useEffect(() => {
@@ -27,12 +27,40 @@ export default function Navbar({ onCta }) {
           <span className="w-1.5 h-1.5 rounded-full bg-[#cc3c69] animate-pulse" />
         </a>
 
-        <button
-          onClick={onCta}
-          className="px-5 py-2 rounded-full text-sm font-semibold bg-[#cc3c69] text-white active:scale-95 transition-transform duration-150"
-        >
-          Analyser mon visage
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={onCta}
+            className="px-5 py-2 rounded-full text-sm font-semibold bg-[#cc3c69] text-white active:scale-95 transition-transform duration-150 flex items-center gap-1.5"
+          >
+            {user ? (
+              <>
+                <span className="w-2 h-2 rounded-full bg-white/80" />
+                Mon compte
+              </>
+            ) : (
+              'Connexion'
+            )}
+          </button>
+
+          {user && (
+            <button
+              onClick={onSignOut}
+              title="Se déconnecter"
+              className="w-9 h-9 rounded-full flex items-center justify-center active:scale-95 transition-all duration-150"
+              style={{
+                background: 'rgba(255,255,255,0.06)',
+                border: '1px solid rgba(255,255,255,0.1)',
+              }}
+            >
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none"
+                stroke="rgba(255,255,255,0.55)" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+                <polyline points="16 17 21 12 16 7"/>
+                <line x1="21" y1="12" x2="9" y2="12"/>
+              </svg>
+            </button>
+          )}
+        </div>
       </div>
     </motion.header>
   )

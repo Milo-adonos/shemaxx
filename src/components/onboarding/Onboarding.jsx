@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { X } from 'lucide-react'
 import Step1 from './Step1Qualification'
@@ -12,31 +12,58 @@ import Step8 from './Step8Photos'
 import Step8FaceID from './Step8FaceID'
 import Step9AnalyzingIA from './Step9AnalyzingIA'
 import Step9 from './Step9Loading'
-import Step9Reveal from './Step9Reveal'
+import Step9Reveal, { DEFAULT_DEFAUTS } from './Step9Reveal'
 import Step10 from './Step10Paywall'
+import Step11 from './Step11Results'
 
-const TOTAL = 13
+const TOTAL = 14
 
 // Étapes sans header (plein écran immersif)
-const IMMERSIVE_STEPS = [8, 9, 10, 12, 13]
+const IMMERSIVE_STEPS = [8, 9, 10, 12, 13, 14]
 
-export default function Onboarding({ onClose }) {
-  const [step, setStep] = useState(1)
+export default function Onboarding({ onClose, initialUser, initialSubscribed, initialScans, initialProfile, pendingScores, pendingPayment = 'none' }) {
+  // Bloque le scroll du body pendant que l'app est ouverte
+  useEffect(() => {
+    document.body.classList.add('app-open')
+    return () => document.body.classList.remove('app-open')
+  }, [])
+
+  // Accès à l'app (Step11) uniquement si connecté ET abonné,
+  // ou si on revient juste de Stripe avec un paiement validé
+  const justPaid  = pendingPayment === 'subscription'
+  const canAccess = (initialUser && initialSubscribed) || justPaid
+  const startStep = canAccess ? TOTAL : 1
+
+  const [step, setStep] = useState(startStep)
   const [direction, setDirection] = useState(1)
-  const [faceidKey, setFaceidKey] = useState(0)   // force remontage complet Step8FaceID
+  const [faceidKey, setFaceidKey] = useState(0)
+  const [rescanMode, setRescanMode] = useState(false)
+  // Priorité : scores en attente (retour Stripe) → scans Supabase → null
+  const restoredScores = pendingScores
+    ?? (initialUser && initialScans?.length > 0 ? initialScans[0] : null)
+
   const [data, setData] = useState({
     level: null,
-    age: 22,
+    age:   initialProfile?.age ?? 22,
     zones: [],
     result: null,
-    pseudo: '',
-    faceScores: null,
+    pseudo: initialProfile?.pseudo ?? (initialUser?.email?.split('@')[0] ?? ''),
+    faceScores: restoredScores,
+    analysisData: null,
   })
 
   const next = (patch = {}) => {
     setData(d => ({ ...d, ...patch }))
     setDirection(1)
     setStep(s => Math.min(s + 1, TOTAL))
+  }
+
+  // Depuis Step11Results : saute directement au scan, puis teaser seulement
+  const handleRescan = () => {
+    setRescanMode(true)
+    setFaceidKey(k => k + 1)
+    setDirection(1)
+    setStep(8)
   }
 
   const variants = {
@@ -53,16 +80,27 @@ export default function Onboarding({ onClose }) {
     <Step6      key={5}  onNext={() => next()} />,
     <Step7      key={6}  onNext={(v) => next({ pseudo: v })} />,
     <Step8      key={7}  onNext={() => next()} />,
-    <Step8FaceID key={`faceid-${faceidKey}`} onNext={(scores) => next({ faceScores: scores })} onRetry={() => setFaceidKey(k => k + 1)} />,
-    <Step9AnalyzingIA key={9} onNext={() => next()} />,
-    <Step9      key={10}  onNext={() => next()} />,
+    <Step8FaceID key={`faceid-${faceidKey}`} age={data.age} onNext={(raw) => next({ photoUrl: raw.photoUrl, photoLandmarks: raw.photoLandmarks, analysisData: raw.analysisData })} onRetry={() => setFaceidKey(k => k + 1)} />,
+    <Step9AnalyzingIA key={9} age={data.age} analysisData={data.analysisData}
+      onNext={(scores) => {
+        const defauts = (scores.defauts && scores.defauts.length > 0)
+          ? scores.defauts
+          : DEFAULT_DEFAUTS
+        next({ faceScores: { ...scores, defauts, photoUrl: data.photoUrl, photoLandmarks: data.photoLandmarks, scanId: Date.now() } })
+      }}
+      onRescan={() => { setDirection(-1); setStep(8); setFaceidKey(k => k + 1) }}
+    />,
+    <Step9      key={10}  onNext={() => {
+      if (rescanMode) { setDirection(1); setStep(13) }
+      else next()
+    }} />,
     <Step5      key={11} faceScores={data.faceScores} onNext={() => next()} />,
-    <Step9Reveal key={12} pseudo={data.pseudo} faceScores={data.faceScores} onNext={() => next()} />,
-    <Step10     key={13} pseudo={data.pseudo} faceScores={data.faceScores} onClose={onClose} />,
+    <Step9Reveal key={12} pseudo={data.pseudo} faceScores={data.faceScores} zones={data.zones} onNext={() => next()} />,
+    <Step10     key={13} pseudo={data.pseudo} faceScores={data.faceScores} onNext={() => { setRescanMode(false); next() }} onClose={onClose} />,
+    <Step11     key={14} pseudo={data.pseudo} faceScores={data.faceScores} age={data.age} onClose={onClose} onRescan={handleRescan} pendingPayment={pendingPayment} />,
   ]
 
   const immersive = IMMERSIVE_STEPS.includes(step)
-  const showProgress = !immersive
 
   return (
     <motion.div

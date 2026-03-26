@@ -1,7 +1,7 @@
 import { useEffect, useState, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { FaceMesh } from '@mediapipe/face_mesh'
-import { captureVideoFrame, analyzeWithAI } from '../../utils/analyzeWithAI'
+import { captureVideoFrame } from '../../utils/analyzeWithAI'
 
 // ── Dimensions UI ────────────────────────────────────────────────────────────
 const OVAL_W   = 260
@@ -24,7 +24,7 @@ const NOSE           = 1       // index landmark bout du nez
 const PAUSE_GRACE    = 1400    // ms avant de considérer le visage vraiment perdu (plus tolérant)
 
 // ── Phases de positionnement (avant le scan circulaire) ──────────────────────
-const HOLD_FRAMES = 38   // frames consécutives à maintenir pour valider
+const HOLD_FRAMES = 70   // frames consécutives à maintenir (~2.3s à 30fps)
 const POSITION_STEPS = [
   {
     key: 'front',
@@ -71,11 +71,11 @@ const RETRY_REASONS = [
   'Fais le cercle lentement et régulièrement',
 ]
 
-export default function Step8FaceID({ onNext, onRetry }) {
+export default function Step8FaceID({ onNext, onRetry, age = null }) {
   const [camInitTrigger, setCamInitTrigger] = useState(0) // incrémenté pour relancer la caméra
   const [camStatus,    setCamStatus]    = useState('idle')
-  // phase: 'waiting' | 'calibrating' | 'front' | 'left' | 'right' | 'scanning' | 'paused' | 'done' | 'error'
-  const [phase,        setPhase]        = useState('waiting')
+  // phase: 'photo' | 'waiting' | 'calibrating' | 'front' | 'left' | 'right' | 'scanning' | 'paused' | 'done' | 'error'
+  const [phase,        setPhase]        = useState('photo')
   const [scanError,    setScanError]    = useState(null)
   const [sectors,      setSectors]      = useState(new Array(SECTORS).fill(false))
   const [msgIndex,     setMsgIndex]     = useState(0)
@@ -84,6 +84,14 @@ export default function Step8FaceID({ onNext, onRetry }) {
   const [videoReady,   setVideoReady]   = useState(false)
   const [holdProgress, setHoldProgress] = useState(0)
   const [completedSteps, setCompletedSteps] = useState([])
+  const [photoFlash,    setPhotoFlash]    = useState(false)
+  const [faceTooFar,    setFaceTooFar]    = useState(false)
+  const [headTilted,    setHeadTilted]    = useState(false)
+  const [lookingAway,   setLookingAway]   = useState(false)
+  const [gazeOff,       setGazeOff]       = useState(false)  // yeux pas dans la caméra
+  const [centerHint,    setCenterHint]    = useState(null)    // 'left'|'right'|'up'|'down'|null
+  // null = pas d'erreur, sinon { emoji, title, detail }
+  const [photoQualError, setPhotoQualError] = useState(null)
 
   const videoRef    = useRef(null)
   const canvasRef   = useRef(null)
@@ -96,7 +104,7 @@ export default function Step8FaceID({ onNext, onRetry }) {
   const scanLineT   = useRef(0)
 
   // ── Refs de tracking (pas de re-render) ──────────────────────────────────
-  const phaseRef           = useRef('waiting')
+  const phaseRef           = useRef('photo')
   const faceOkRef          = useRef(false)
   const calibCount         = useRef(0)
   const baseline           = useRef(null)
@@ -106,9 +114,108 @@ export default function Step8FaceID({ onNext, onRetry }) {
   const holdCount          = useRef(0)
   const completedStepsRef  = useRef([])
   const lastActivePosPhase = useRef('front')  // phase de position active avant pause
-  const frontPhotoRef      = useRef(null)     // photo capturée lors de la phase "front"
+  const frontPhotoRef      = useRef(null)     // photo capturée manuellement
+  const frontLandmarksRef  = useRef(null)     // landmarks MediaPipe au moment de la photo
 
   const setPhaseSync = (p) => { phaseRef.current = p; setPhase(p) }
+
+  // ── Analyse qualité d'une photo (luminosité + flou) côté client ──────────
+  const checkPhotoQuality = (dataUrl) => new Promise((resolve) => {
+    const img = new window.Image()
+    img.onload = () => {
+      const SIZE = 160
+      const cv = document.createElement('canvas')
+      cv.width = SIZE; cv.height = SIZE
+      const ctx = cv.getContext('2d')
+      ctx.drawImage(img, 0, 0, SIZE, SIZE)
+      const d = ctx.getImageData(0, 0, SIZE, SIZE).data
+
+      // ── Luminosité moyenne ──
+      let bright = 0
+      const px = d.length / 4
+      for (let i = 0; i < d.length; i += 4)
+        bright += d[i] * 0.299 + d[i + 1] * 0.587 + d[i + 2] * 0.114
+      bright /= px
+
+      // Seuils volontairement très souples — seuls les cas vraiment inutilisables bloquent
+      if (bright < 8) return resolve({
+        ok: false, emoji: '💡', title: 'Trop sombre',
+        detail: 'Il fait vraiment trop noir. Allume une lumière devant toi.',
+        tips: ['Allume une lampe devant toi', 'Mets-toi face à une fenêtre'],
+      })
+      if (bright > 252) return resolve({
+        ok: false, emoji: '☀️', title: 'Image surexposée',
+        detail: 'La photo est entièrement blanche. Éloigne-toi de la lumière.',
+        tips: ['Éloigne-toi de la source lumineuse'],
+      })
+
+      // Flou — seuil très bas, on bloque uniquement les images vraiment inutilisables
+      const gray = new Float32Array(SIZE * SIZE)
+      for (let i = 0; i < SIZE * SIZE; i++) {
+        const p = i * 4
+        gray[i] = d[p] * 0.299 + d[p + 1] * 0.587 + d[p + 2] * 0.114
+      }
+      let s = 0, s2 = 0, n = 0
+      for (let y = 1; y < SIZE - 1; y++) {
+        for (let x = 1; x < SIZE - 1; x++) {
+          const lap = (
+            -gray[(y-1)*SIZE+x-1] - gray[(y-1)*SIZE+x] - gray[(y-1)*SIZE+x+1]
+            - gray[y*SIZE+x-1] + 8*gray[y*SIZE+x] - gray[y*SIZE+x+1]
+            - gray[(y+1)*SIZE+x-1] - gray[(y+1)*SIZE+x] - gray[(y+1)*SIZE+x+1]
+          )
+          s += lap; s2 += lap * lap; n++
+        }
+      }
+      const variance = s2 / n - (s / n) ** 2
+
+      if (variance < 5) return resolve({
+        ok: false, emoji: '📷', title: 'Image trop floue',
+        detail: 'L\'objectif est peut-être couvert. Nettoie ta caméra.',
+        tips: ['Nettoie l\'objectif de ta caméra', 'Reste immobile'],
+      })
+
+      resolve({ ok: true })
+    }
+    img.onerror = () => resolve({ ok: true })
+    img.src = dataUrl
+  })
+
+  // ── Prise de photo manuelle (phase 'photo') ───────────────────────────────
+  const capturePhoto = async () => {
+    if (!videoRef.current) return
+    setPhotoQualError(null)
+
+    let dataUrl = null
+    try {
+      dataUrl = captureVideoFrame(videoRef.current)
+      frontPhotoRef.current = dataUrl
+    } catch { /* ignore */ }
+
+    // Sauvegarde des landmarks au moment exact de la photo
+    if (landmarksRef.current && landmarksRef.current.length >= 468) {
+      frontLandmarksRef.current = landmarksRef.current.map(p => ({ x: p.x, y: p.y, z: p.z ?? 0 }))
+    }
+
+    // Flash visuel
+    setPhotoFlash(true)
+    await new Promise(r => setTimeout(r, 480))
+    setPhotoFlash(false)
+
+    // Vérification qualité
+    if (dataUrl) {
+      const check = await checkPhotoQuality(dataUrl)
+      if (!check.ok) {
+        setPhotoQualError({ emoji: check.emoji, title: check.title, detail: check.detail, tips: check.tips })
+        frontPhotoRef.current = null  // annule la photo invalide
+        return
+      }
+    }
+
+    setCenterHint(null)
+    setFaceTooFar(false)
+    setGazeOff(false)
+    setPhaseSync('waiting')
+  }
 
   // ── Arrête tout et affiche l'écran d'erreur ───────────────────────────────
   const restartScan = (errorMsg) => {
@@ -142,12 +249,13 @@ export default function Step8FaceID({ onNext, onRetry }) {
     completedStepsRef.current   = []
     lastActivePosPhase.current  = 'front'
     frontPhotoRef.current       = null
-    phaseRef.current            = 'waiting'
+    frontLandmarksRef.current   = null
+    phaseRef.current            = 'photo'
     faceOkRef.current           = false
     scanLineT.current           = 0
 
     // Reset du state UI
-    setPhase('waiting')
+    setPhase('photo')
     setScanError(null)
     setSectors(new Array(SECTORS).fill(false))
     setMsgIndex(0)
@@ -156,6 +264,12 @@ export default function Step8FaceID({ onNext, onRetry }) {
     setVideoReady(false)
     setHoldProgress(0)
     setCompletedSteps([])
+    setPhotoFlash(false)
+    setFaceTooFar(false)
+    setHeadTilted(false)
+    setLookingAway(false)
+    setGazeOff(false)
+    setCenterHint(null)
     setCamStatus('idle')
 
     // Déclenche la réinitialisation de la caméra
@@ -213,7 +327,7 @@ export default function Step8FaceID({ onNext, onRetry }) {
     })
     mesh.setOptions({
       maxNumFaces:            1,
-      refineLandmarks:        false,
+      refineLandmarks:        true,   // active les iris (landmarks 468-477)
       minDetectionConfidence: 0.45,
       minTrackingConfidence:  0.45,
     })
@@ -269,9 +383,88 @@ export default function Step8FaceID({ onNext, onRetry }) {
         // ── Phases de positionnement (front → left → right) ──
         if (posPhases.includes(phaseRef.current)) {
           lastActivePosPhase.current = phaseRef.current
+
+          // ── Vérifications qualité (uniquement phase front) ─────────────────
+          const faceHeight  = lm[152] && lm[10] ? Math.abs(lm[152].y - lm[10].y) : 0
+          const faceTooSmall = faceHeight < 0.22
+
+          // Roll : angle d'inclinaison de la tête (gauche/droite)
+          // lm[33] = coin externe oeil gauche, lm[263] = coin externe oeil droit
+          // On utilise les coordonnées brutes (sans miroir) pour ce calcul angulaire
+          let tiltDeg = 0
+          if (lm[33] && lm[263]) {
+            const dx = lm[263].x - lm[33].x  // toujours positif pour un visage normal
+            const dy = lm[263].y - lm[33].y  // ≈ 0 si tête droite
+            tiltDeg  = Math.atan2(dy, dx) * (180 / Math.PI)
+          }
+          const isTilted = Math.abs(tiltDeg) > 12  // tolérance ±12°
+
+          // Pitch : nez trop haut ou trop bas par rapport aux yeux
+          // On vérifie juste que le nez est SOUS le milieu des yeux (regard frontal)
+          let isLookingAway = false
+          if (lm[1] && lm[33] && lm[263]) {
+            const eyeMidY  = (lm[33].y + lm[263].y) / 2
+            const eyeWidth = Math.abs(lm[263].x - lm[33].x) || 0.1
+            const ratio    = (lm[1].y - eyeMidY) / eyeWidth
+            // ratio ≈ 0.4–1.2 pour un visage frontal normal
+            isLookingAway  = ratio < 0.2 || ratio > 1.6
+          }
+
+          // ── Centrage dans l'ovale ──────────────────────────────────────────
+          const noseX = 1 - nose.x  // miroir horizontal
+          const noseY = nose.y
+
+          // Horizontal : nez entre 40% et 60%
+          let hintH = null
+          if      (noseX < 0.40) hintH = 'right'
+          else if (noseX > 0.60) hintH = 'left'
+
+          // Vertical : nez entre 38% et 68%
+          let hintV = null
+          if      (noseY < 0.38) hintV = 'down'
+          else if (noseY > 0.68) hintV = 'up'
+
+          const newHint = hintH || hintV || null
+
+          // ── Détection regard par iris (refineLandmarks=true → lm[468] et lm[473]) ──
+          // lm[468] = iris gauche centre, lm[473] = iris droit centre
+          // lm[33]  = coin ext œil gauche, lm[133] = coin int œil gauche
+          // lm[362] = coin int œil droit,  lm[263] = coin ext œil droit
+          let isGazeOff = false
+          const irisL = lm[468], irisR = lm[473]
+          if (irisL && irisR && lm[33] && lm[133] && lm[362] && lm[263]) {
+            // Ratio horizontal de l'iris dans l'œil : 0 = côté externe, 1 = côté nez
+            // Pour regarder droit : ratio ≈ 0.35–0.65
+            const eyeWidthL  = Math.abs(lm[133].x - lm[33].x)  || 0.01
+            const eyeWidthR  = Math.abs(lm[263].x - lm[362].x) || 0.01
+            const gazeRatioL = (irisL.x - lm[33].x)  / eyeWidthL
+            const gazeRatioR = (irisR.x - lm[362].x) / eyeWidthR
+            const avgGaze    = (gazeRatioL + gazeRatioR) / 2
+            // Hors tolérance = regard décalé sur le côté
+            isGazeOff = avgGaze < 0.25 || avgGaze > 0.75
+          }
+
+          // Phase photo ET front : mise à jour des hints visuels
+          if (phaseRef.current === 'photo' || phaseRef.current === 'front') {
+            setFaceTooFar(faceTooSmall)
+            setHeadTilted(isTilted)
+            setLookingAway(isLookingAway)
+            setGazeOff(isGazeOff)
+            setCenterHint(newHint)
+          }
+
+          // Phase photo : ne pas auto-avancer, attendre le bouton déclencheur
+          if (phaseRef.current === 'photo') return
+
           const stepDef = POSITION_STEPS.find(s => s.key === phaseRef.current)
 
-          if (stepDef && stepDef.check(nose.x)) {
+          const isCenteredX = noseX >= 0.38 && noseX <= 0.62
+          const isCenteredY = noseY >= 0.35 && noseY <= 0.72
+          const sizeOk = phaseRef.current === 'front'
+            ? (faceHeight >= 0.18 && faceHeight <= 0.85 && isCenteredX && isCenteredY && !isGazeOff)
+            : true
+
+          if (stepDef && (phaseRef.current !== 'front' ? stepDef.check(nose.x) : isCenteredX) && sizeOk) {
             holdCount.current++
             const pct = Math.min(100, Math.round((holdCount.current / HOLD_FRAMES) * 100))
             setHoldProgress(pct)
@@ -281,10 +474,7 @@ export default function Step8FaceID({ onNext, onRetry }) {
               setHoldProgress(0)
               const stepIdx = POSITION_STEPS.findIndex(s => s.key === phaseRef.current)
 
-              // Capture la photo de face au moment où la phase "front" est validée
-              if (phaseRef.current === 'front') {
-                try { frontPhotoRef.current = captureVideoFrame(videoRef.current) } catch { /* ignore */ }
-              }
+              // Photo déjà prise manuellement en phase 'photo' — pas de re-capture ici
 
               const newCompleted = [...completedStepsRef.current, phaseRef.current]
               completedStepsRef.current = newCompleted
@@ -352,20 +542,14 @@ export default function Step8FaceID({ onNext, onRetry }) {
 
                 streamRef.current?.getTracks().forEach(t => t.stop())
 
-                setTimeout(async () => {
-                  try {
-                    const scores = await analyzeWithAI(imageDataUrl, landmarksSnapshot)
-                    onNext({ ...scores, photoUrl: frontPhotoRef.current })
-                  } catch (err) {
-                    console.error('Analyse échouée :', err)
-                    const msg = err.message?.includes('401')
-                      ? 'Problème de connexion au serveur. Vérifie ta connexion internet.'
-                      : err.message?.includes('abort') || err.message?.includes('timeout')
-                      ? 'L\'analyse a pris trop de temps. Assure-toi d\'avoir une bonne connexion internet.'
-                      : 'Impossible de calculer ton analyse. Réessaie le scan en gardant le visage bien centré.'
-                    restartScan(msg)
-                  }
-                }, 1200)
+                // Avance après 2s max — l'appel IA se fait dans Step9AnalyzingIA
+                setTimeout(() => {
+                  onNext({
+                    photoUrl:       frontPhotoRef.current,
+                    photoLandmarks: frontLandmarksRef.current,
+                    analysisData:   { imageDataUrl, landmarksSnapshot },
+                  })
+                }, 2000)
               }
             }
           }
@@ -566,6 +750,248 @@ export default function Step8FaceID({ onNext, onRetry }) {
     : 'rgba(255,255,255,0.15)'
 
   // ── Écran erreur + retry ─────────────────────────────────────────────────
+  // ── Écran phase PHOTO ────────────────────────────────────────────────────
+  if (phase === 'photo') {
+    const photoReady = faceOk && !centerHint && !gazeOff && !faceTooFar
+    return (
+      <div className="flex flex-col min-h-full items-center justify-between pt-6 pb-8"
+        style={{ background: '#000' }}>
+
+        {/* Header */}
+        <div className="w-full px-5 text-center">
+          <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}
+            className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full mb-4"
+            style={{ background: PINK_A(0.12), border: `1px solid ${PINK_A(0.35)}` }}>
+            <span className="text-xs font-black uppercase tracking-widest" style={{ color: PINK }}>
+              Étape 1 sur 2
+            </span>
+          </motion.div>
+          <motion.h2 initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1 }}
+            className="text-2xl font-black text-white leading-tight mb-2">
+            Prends-toi en photo
+          </motion.h2>
+          <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2 }}
+            className="text-sm leading-relaxed px-4"
+            style={{ color: 'rgba(255,255,255,0.4)' }}>
+            Centre ton visage dans le cercle,<br />
+            regarde droit dans la caméra, puis appuie sur le bouton.
+          </motion.p>
+        </div>
+
+        {/* Zone caméra */}
+        <div className="flex-1 flex items-center justify-center">
+          <div style={{ position: 'relative', width: SVG_W, height: SVG_H }}>
+
+            {/* Anneau de statut */}
+            <motion.div
+              animate={{ boxShadow: photoReady
+                ? `0 0 0 3px ${GREEN}, 0 0 20px ${GREEN}55`
+                : `0 0 0 2px ${PINK_A(0.5)}` }}
+              transition={{ duration: 0.3 }}
+              style={{
+                position: 'absolute',
+                left: SVG_CX - OVAL_W / 2, top: SVG_CY - OVAL_H / 2,
+                width: OVAL_W, height: OVAL_H,
+                borderRadius: '50%', overflow: 'hidden',
+                zIndex: 1, background: '#0a0a0a',
+              }}>
+              <video ref={videoRef} autoPlay playsInline muted
+                onLoadedData={() => setVideoReady(true)}
+                style={{ width: '100%', height: '100%', objectFit: 'cover', transform: 'scaleX(-1)' }} />
+
+              {/* Flash */}
+              <AnimatePresence>
+                {photoFlash && (
+                  <motion.div initial={{ opacity: 1 }} animate={{ opacity: 0 }} exit={{ opacity: 0 }}
+                    transition={{ duration: 0.45 }}
+                    className="absolute inset-0 pointer-events-none"
+                    style={{ background: '#fff', zIndex: 10 }} />
+                )}
+              </AnimatePresence>
+
+              {/* Chargement vidéo */}
+              <AnimatePresence>
+                {!videoReady && (
+                  <motion.div initial={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.4 }}
+                    className="absolute inset-0 flex flex-col items-center justify-center gap-3"
+                    style={{ background: '#0a0a0a' }}>
+                    <motion.div animate={{ rotate: 360 }}
+                      transition={{ duration: 1.2, repeat: Infinity, ease: 'linear' }}
+                      className="w-8 h-8 rounded-full"
+                      style={{ border: `2px solid ${PINK_A(0.3)}`, borderTopColor: PINK }} />
+                  </motion.div>
+                )}
+              </AnimatePresence>
+
+              {/* Flèches de guidage centrage */}
+              <AnimatePresence>
+                {centerHint && !photoFlash && (
+                  <motion.div key={centerHint}
+                    initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+                    className="absolute pointer-events-none flex items-center justify-center"
+                    style={{
+                      ...(centerHint === 'up'    && { bottom: 14, left: '50%', transform: 'translateX(-50%)' }),
+                      ...(centerHint === 'down'  && { top: 14,    left: '50%', transform: 'translateX(-50%)' }),
+                      ...(centerHint === 'left'  && { right: 14,  top:  '50%', transform: 'translateY(-50%)' }),
+                      ...(centerHint === 'right' && { left: 14,   top:  '50%', transform: 'translateY(-50%)' }),
+                      width: 32, height: 32, borderRadius: '50%', zIndex: 8,
+                      background: 'rgba(204,60,105,0.3)',
+                      border: '1.5px solid rgba(204,60,105,0.7)',
+                    }}>
+                    <motion.span
+                      animate={{ x: centerHint === 'left' ? [-2,2,-2] : centerHint === 'right' ? [2,-2,2] : 0,
+                                 y: centerHint === 'up'   ? [-2,2,-2] : centerHint === 'down'  ? [2,-2,2] : 0 }}
+                      transition={{ duration: 0.7, repeat: Infinity }}
+                      style={{ fontSize: 14, color: '#ff4d88' }}>
+                      {centerHint === 'up' ? '↑' : centerHint === 'down' ? '↓' : centerHint === 'left' ? '←' : '→'}
+                    </motion.span>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </motion.div>
+
+            {/* Coins guides */}
+            {['tl','tr','bl','br'].map(pos => {
+              const top  = pos.startsWith('t')
+              const left = pos.endsWith('l')
+              return (
+                <motion.div key={pos}
+                  animate={{ opacity: photoReady ? 1 : 0.3, borderColor: photoReady ? GREEN : PINK }}
+                  style={{
+                    position: 'absolute', width: 20, height: 20, zIndex: 3,
+                    top:    top  ? SVG_CY - OVAL_H / 2 - 10 : undefined,
+                    bottom: !top ? SVG_H - SVG_CY - OVAL_H / 2 - 10 : undefined,
+                    left:   left ? SVG_CX - OVAL_W / 2 - 10 : undefined,
+                    right:  !left? SVG_W - SVG_CX - OVAL_W / 2 - 10 : undefined,
+                    borderTop:    top  ? '2px solid' : undefined,
+                    borderBottom: !top ? '2px solid' : undefined,
+                    borderLeft:   left ? '2px solid' : undefined,
+                    borderRight:  !left? '2px solid' : undefined,
+                  }}
+                />
+              )
+            })}
+          </div>
+        </div>
+
+        {/* Badge état + bouton déclencheur */}
+        <div className="w-full px-6 flex flex-col items-center gap-4">
+
+          {/* Message d'état */}
+          <AnimatePresence mode="wait">
+            <motion.div key={faceTooFar ? 'far' : gazeOff ? 'gaze' : centerHint ?? 'ok'}
+              initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -4 }}
+              className="flex items-center gap-2 px-4 py-2 rounded-full"
+              style={{
+                background: photoReady ? 'rgba(52,211,153,0.1)' : PINK_A(0.08),
+                border: `1px solid ${photoReady ? 'rgba(52,211,153,0.4)' : PINK_A(0.3)}`,
+              }}>
+              <motion.div animate={{ scale: [1, 1.4, 1] }} transition={{ duration: 1, repeat: Infinity }}
+                className="w-1.5 h-1.5 rounded-full"
+                style={{ background: photoReady ? GREEN : PINK }} />
+              <span className="text-xs font-semibold"
+                style={{ color: photoReady ? GREEN : PINK }}>
+                {!faceOk
+                  ? 'Place ton visage dans le cercle'
+                  : faceTooFar
+                  ? 'Rapproche-toi de la caméra 📷'
+                  : centerHint === 'left'  ? 'Décale-toi vers la gauche ←'
+                  : centerHint === 'right' ? 'Décale-toi vers la droite →'
+                  : centerHint === 'up'    ? 'Remonte ton visage ↑'
+                  : centerHint === 'down'  ? 'Descends ton visage ↓'
+                  : gazeOff
+                  ? 'Regarde directement dans la caméra 👁'
+                  : '✓ Parfait ! Appuie sur le bouton'}
+              </span>
+            </motion.div>
+          </AnimatePresence>
+
+          {/* Bouton déclencheur */}
+          <motion.button
+            onClick={capturePhoto}
+            disabled={!faceOk || !!photoFlash}
+            whileTap={{ scale: 0.93 }}
+            animate={{ opacity: faceOk ? 1 : 0.35 }}
+            className="relative flex items-center justify-center rounded-full"
+            style={{ width: 72, height: 72,
+              background: photoReady
+                ? `radial-gradient(circle, ${GREEN}, #059669)`
+                : `radial-gradient(circle, ${PINK}, #991f45)`,
+              boxShadow: photoReady
+                ? `0 0 28px ${GREEN}88, 0 0 0 4px rgba(52,211,153,0.2)`
+                : `0 0 28px ${PINK_A(0.6)}, 0 0 0 4px ${PINK_A(0.15)}`,
+              transition: 'background 0.3s, box-shadow 0.3s',
+            }}>
+            {/* Anneau extérieur */}
+            <div className="absolute rounded-full pointer-events-none"
+              style={{ inset: -6, border: `2px solid ${photoReady ? GREEN : PINK}44`, borderRadius: '50%' }} />
+            {/* Icône */}
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none"
+              stroke="white" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
+              <circle cx="12" cy="13" r="4"/>
+            </svg>
+          </motion.button>
+
+          <p className="text-[10px] text-center" style={{ color: 'rgba(255,255,255,0.2)' }}>
+            Cette photo reste sur ton appareil — elle n'est jamais partagée
+          </p>
+        </div>
+
+        {/* Erreur qualité photo */}
+        <AnimatePresence>
+          {photoQualError && (
+            <motion.div
+              initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 20 }}
+              transition={{ type: 'spring', stiffness: 220, damping: 22 }}
+              className="fixed inset-0 z-50 flex flex-col items-center justify-end pb-10 px-6"
+              style={{ background: 'rgba(0,0,0,0.82)', backdropFilter: 'blur(12px)' }}
+            >
+              <div className="w-full max-w-sm flex flex-col items-center gap-4 text-center">
+                {/* Icône */}
+                <div className="w-20 h-20 rounded-full flex items-center justify-center text-4xl"
+                  style={{ background: 'rgba(239,68,68,0.1)', border: '2px solid rgba(239,68,68,0.35)' }}>
+                  {photoQualError.emoji}
+                </div>
+
+                <div>
+                  <p className="text-xl font-black text-white mb-2">{photoQualError.title}</p>
+                  <p className="text-sm leading-relaxed" style={{ color: 'rgba(255,255,255,0.5)' }}>
+                    {photoQualError.detail}
+                  </p>
+                </div>
+
+                {/* Conseils */}
+                <div className="w-full rounded-2xl px-4 py-3 space-y-2 text-left"
+                  style={{ background: 'rgba(204,60,105,0.07)', border: '1px solid rgba(204,60,105,0.2)' }}>
+                  <p className="text-[10px] font-black uppercase tracking-widest mb-1"
+                    style={{ color: 'rgba(204,60,105,0.7)' }}>Comment corriger</p>
+                  {photoQualError.tips.map((tip, i) => (
+                    <div key={i} className="flex items-start gap-2">
+                      <span style={{ color: PINK, fontSize: 10, marginTop: 2 }}>›</span>
+                      <span className="text-xs leading-snug" style={{ color: 'rgba(255,255,255,0.6)' }}>{tip}</span>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Bouton retry */}
+                <motion.button
+                  whileTap={{ scale: 0.96 }}
+                  onClick={() => setPhotoQualError(null)}
+                  className="w-full py-4 rounded-2xl font-black text-base text-white"
+                  style={{ background: 'linear-gradient(135deg, #cc3c69, #e8608a)',
+                    boxShadow: '0 0 24px rgba(204,60,105,0.45)' }}>
+                  📸 Réessayer la photo
+                </motion.button>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
+    )
+  }
+
   if (phase === 'error') {
     return (
       <div className="flex flex-col min-h-full items-center justify-center gap-7 px-8 text-center"
@@ -711,11 +1137,33 @@ export default function Step8FaceID({ onNext, onRetry }) {
             {isPosPhase && (
               <motion.div key={`pos-${phase}`} initial={{ opacity: 0 }} animate={{ opacity: 1 }}
                 className="flex items-center gap-2 px-3 py-1 rounded-full"
-                style={{ background: PINK_A(0.08), border: `1px solid ${PINK_A(0.3)}` }}>
+                style={{
+                  background: phase === 'front' && holdProgress > 60
+                    ? 'rgba(255,255,255,0.1)' : PINK_A(0.08),
+                  border: `1px solid ${phase === 'front' && holdProgress > 60 ? 'rgba(255,255,255,0.3)' : PINK_A(0.3)}`,
+                }}>
                 <motion.div animate={{ opacity: [0.5, 1, 0.5] }} transition={{ duration: 0.8, repeat: Infinity }}
-                  className="w-1.5 h-1.5 rounded-full" style={{ background: PINK }} />
-                <span className="text-xs font-semibold" style={{ color: PINK }}>
-                  {faceOk ? 'Maintiens la position…' : 'Positionne ton visage'}
+                  className="w-1.5 h-1.5 rounded-full"
+                  style={{ background: phase === 'front' && holdProgress > 60 ? '#fff' : PINK }} />
+                <span className="text-xs font-semibold"
+                  style={{ color: phase === 'front' && holdProgress > 60 ? '#fff' : PINK }}>
+                  {phase === 'front' && faceTooFar
+                    ? 'Rapproche-toi de la caméra 📷'
+                    : phase === 'front' && centerHint === 'left'
+                    ? 'Décale-toi vers la gauche ←'
+                    : phase === 'front' && centerHint === 'right'
+                    ? 'Décale-toi vers la droite →'
+                    : phase === 'front' && centerHint === 'up'
+                    ? 'Remonte ton visage ↑'
+                    : phase === 'front' && centerHint === 'down'
+                    ? 'Descends ton visage ↓'
+                    : phase === 'front' && gazeOff
+                    ? 'Regarde directement dans la caméra 👁'
+                    : phase === 'front' && holdProgress > 60
+                    ? '📸 Ne bouge plus…'
+                    : faceOk
+                    ? 'Maintiens la position…'
+                    : 'Positionne ton visage'}
                 </span>
               </motion.div>
             )}
@@ -773,6 +1221,51 @@ export default function Step8FaceID({ onNext, onRetry }) {
                     Activation caméra…
                   </span>
                 </motion.div>
+              )}
+            </AnimatePresence>
+
+            {/* Flèche de guidage centrage */}
+            <AnimatePresence>
+              {phase === 'front' && centerHint && !photoFlash && (
+                <motion.div
+                  key={centerHint}
+                  initial={{ opacity: 0, scale: 0.7 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.7 }}
+                  transition={{ duration: 0.2 }}
+                  className="absolute pointer-events-none flex items-center justify-center"
+                  style={{
+                    ...(centerHint === 'up'    && { bottom: 12, left: '50%', transform: 'translateX(-50%)' }),
+                    ...(centerHint === 'down'  && { top: 12,    left: '50%', transform: 'translateX(-50%)' }),
+                    ...(centerHint === 'left'  && { right: 12,  top:  '50%', transform: 'translateY(-50%)' }),
+                    ...(centerHint === 'right' && { left: 12,   top:  '50%', transform: 'translateY(-50%)' }),
+                    width: 32, height: 32,
+                    borderRadius: '50%',
+                    background: 'rgba(204,60,105,0.3)',
+                    border: '1.5px solid rgba(204,60,105,0.7)',
+                    backdropFilter: 'blur(4px)',
+                    zIndex: 8,
+                  }}>
+                  <motion.span
+                    animate={{ x: centerHint === 'left' ? [-2,2,-2] : centerHint === 'right' ? [2,-2,2] : 0,
+                               y: centerHint === 'up'   ? [-2,2,-2] : centerHint === 'down'  ? [2,-2,2] : 0 }}
+                    transition={{ duration: 0.7, repeat: Infinity }}
+                    style={{ fontSize: 14, color: '#ff4d88' }}>
+                    {centerHint === 'up' ? '↑' : centerHint === 'down' ? '↓' : centerHint === 'left' ? '←' : '→'}
+                  </motion.span>
+                </motion.div>
+              )}
+            </AnimatePresence>
+
+            {/* Flash photo */}
+            <AnimatePresence>
+              {photoFlash && (
+                <motion.div
+                  initial={{ opacity: 0.9 }} animate={{ opacity: 0 }}
+                  exit={{ opacity: 0 }} transition={{ duration: 0.5, ease: 'easeOut' }}
+                  className="absolute inset-0 pointer-events-none"
+                  style={{ background: '#fff', zIndex: 10 }}
+                />
               )}
             </AnimatePresence>
 
