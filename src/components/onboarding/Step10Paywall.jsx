@@ -9,6 +9,24 @@ import { supabase } from '../../lib/supabase'
 const PINK   = '#cc3c69'
 const PINK_A = (a) => `rgba(204,60,105,${a})`
 
+// Compresse la photo en JPEG 500px max / qualité 0.65 avant stockage localStorage
+async function compressPhoto(dataUrl, maxW = 500, quality = 0.65) {
+  if (!dataUrl) return null
+  return new Promise((resolve) => {
+    const img = new Image()
+    img.onload = () => {
+      const scale = Math.min(1, maxW / img.width)
+      const canvas = document.createElement('canvas')
+      canvas.width  = Math.round(img.width  * scale)
+      canvas.height = Math.round(img.height * scale)
+      canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height)
+      resolve(canvas.toDataURL('image/jpeg', quality))
+    }
+    img.onerror = () => resolve(dataUrl) // fallback si erreur
+    img.src = dataUrl
+  })
+}
+
 const PAYWALL_ZONE_ICONS = {
   nez:       { icon: '👃', color: '#e8608a' },
   nasal:     { icon: '👃', color: '#e8608a' },
@@ -130,7 +148,21 @@ export default function Step10Paywall({ pseudo, faceScores = {}, onNext, onClose
       if (faceScores) {
         const { photoUrl, photoLandmarks, ...scoresOnly } = faceScores
         try { localStorage.setItem('shemaxx_pending_scores', JSON.stringify(scoresOnly)) } catch { /* ignore */ }
-        if (photoUrl) try { localStorage.setItem('shemaxx_pending_photo', photoUrl) } catch { /* ignore */ }
+        // Compresse la photo avant de la sauvegarder (réduit de ~2MB à ~150KB)
+        if (photoUrl) {
+          try {
+            const compressed = await compressPhoto(photoUrl)
+            localStorage.setItem('shemaxx_pending_photo', compressed)
+            // sessionStorage survit aux redirections dans le même onglet
+            sessionStorage.setItem('shemaxx_pending_photo', compressed)
+          } catch {
+            // Même si localStorage échoue, sessionStorage a plus de chances
+            try {
+              const compressed = await compressPhoto(photoUrl, 400, 0.55)
+              sessionStorage.setItem('shemaxx_pending_photo', compressed)
+            } catch { /* ignore */ }
+          }
+        }
         if (photoLandmarks) try { localStorage.setItem('shemaxx_pending_landmarks', JSON.stringify(photoLandmarks)) } catch { /* ignore */ }
       }
 

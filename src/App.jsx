@@ -73,13 +73,16 @@ function AppInner() {
         const saved = localStorage.getItem('shemaxx_pending_scores')
         if (saved) {
           const scores = JSON.parse(saved)
+          // Cherche dans localStorage d'abord, puis sessionStorage (survit aux redirects)
           const photo = localStorage.getItem('shemaxx_pending_photo')
+            || sessionStorage.getItem('shemaxx_pending_photo')
           const rawLandmarks = localStorage.getItem('shemaxx_pending_landmarks')
           if (photo) scores.photoUrl = photo
           if (rawLandmarks) scores.photoLandmarks = JSON.parse(rawLandmarks)
           setPendingScores(scores)
           localStorage.removeItem('shemaxx_pending_scores')
           localStorage.removeItem('shemaxx_pending_photo')
+          sessionStorage.removeItem('shemaxx_pending_photo')
           localStorage.removeItem('shemaxx_pending_landmarks')
         }
       } catch { /* ignore */ }

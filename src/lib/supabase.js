@@ -1,5 +1,23 @@
 import { createClient } from '@supabase/supabase-js'
 
+// Compresse photo avant stockage localStorage (~2MB → ~150KB)
+async function compressPhotoForStorage(dataUrl, maxW = 500, quality = 0.65) {
+  if (!dataUrl) return null
+  return new Promise((resolve) => {
+    const img = new Image()
+    img.onload = () => {
+      const scale = Math.min(1, maxW / img.width)
+      const canvas = document.createElement('canvas')
+      canvas.width  = Math.round(img.width  * scale)
+      canvas.height = Math.round(img.height * scale)
+      canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height)
+      resolve(canvas.toDataURL('image/jpeg', quality))
+    }
+    img.onerror = () => resolve(dataUrl)
+    img.src = dataUrl
+  })
+}
+
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL
 const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY
 
@@ -74,11 +92,22 @@ export async function startOneTimePayment(type, currentScores) {
   const priceId = import.meta.env.VITE_STRIPE_ONETIME_PRICE_ID
   const origin  = window.location.origin
 
-  // Sauvegarde les scores avant le redirect Stripe
+  // Sauvegarde les scores avant le redirect Stripe (photo compressée)
   if (currentScores) {
     const { photoUrl, photoLandmarks, ...scoresOnly } = currentScores
     try { localStorage.setItem('shemaxx_pending_scores', JSON.stringify(scoresOnly)) } catch { /* ignore */ }
-    if (photoUrl) try { localStorage.setItem('shemaxx_pending_photo', photoUrl) } catch { /* ignore */ }
+    if (photoUrl) {
+      try {
+        const compressed = await compressPhotoForStorage(photoUrl)
+        localStorage.setItem('shemaxx_pending_photo', compressed)
+        sessionStorage.setItem('shemaxx_pending_photo', compressed)
+      } catch {
+        try {
+          const compressed = await compressPhotoForStorage(photoUrl, 400, 0.55)
+          sessionStorage.setItem('shemaxx_pending_photo', compressed)
+        } catch { /* ignore */ }
+      }
+    }
     if (photoLandmarks) try { localStorage.setItem('shemaxx_pending_landmarks', JSON.stringify(photoLandmarks)) } catch { /* ignore */ }
   }
 

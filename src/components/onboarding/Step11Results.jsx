@@ -761,7 +761,7 @@ function CtaScanCard({ onRefaire, currentScores }) {
     <div className="relative rounded-[28px] overflow-hidden w-full select-none"
       style={{ minHeight: 'calc(100svh - 210px)', background: '#0d0d1a' }}>
       <img src="/woman-scan-placeholder.png" alt="scan"
-        style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center top' }} />
+        style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', objectPosition: '50% 15%' }} />
       <FaceAnalysisGrid />
       <div className="absolute inset-0 pointer-events-none"
         style={{ background: 'linear-gradient(to top, rgba(0,0,0,0.88) 0%, rgba(0,0,0,0.2) 45%, transparent 68%)', zIndex: 4 }} />
@@ -835,13 +835,16 @@ function ScanCard({ scan, onShowDetail, onDelete }) {
     day: 'numeric', month: 'long', year: 'numeric',
   })
 
+  // Récupère la photo : depuis l'objet ou depuis la clé séparée (fallback quota)
+  const photoUrl = scan.photoUrl || loadPhotoSeparately(scan.id)
+
   return (
     <div className="relative rounded-[28px] overflow-hidden w-full select-none"
       style={{ minHeight: 'calc(100svh - 210px)', background: '#0d0d1a' }}>
 
       {/* Photo ou placeholder animé */}
-      {scan.photoUrl ? (
-        <img src={scan.photoUrl} alt="scan"
+      {photoUrl ? (
+        <img src={photoUrl} alt="scan"
           style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center top' }} />
       ) : (
         <div className="absolute inset-0 flex items-center justify-center overflow-hidden"
@@ -1012,6 +1015,17 @@ function ScanPhotoCard({ scores, pseudo, onViewResults }) {
 
 // ── Onglet Scan : carousel historique avec effet peek ────────────────────────
 const HISTORY_KEY   = 'shemaxx_scan_history'
+const PHOTO_PREFIX  = 'shemaxx_scan_photo_'
+
+function savePhotoSeparately(scanId, photoUrl) {
+  if (!scanId || !photoUrl) return
+  try { localStorage.setItem(PHOTO_PREFIX + scanId, photoUrl) } catch { /* quota */ }
+}
+
+function loadPhotoSeparately(scanId) {
+  if (!scanId) return null
+  try { return localStorage.getItem(PHOTO_PREFIX + scanId) } catch { return null }
+}
 const DELETED_KEY   = 'shemaxx_scan_deleted'   // liste noire des IDs supprimés
 
 // Empreinte de session stockée dans sessionStorage :
@@ -1248,8 +1262,12 @@ function TabScan({ scores, pseudo, onRescan, onShowDetail }) {
 
       // Nouvelle analyse → sauvegarde
       setSessionFP(fingerprint)
+      const newId = scanId ?? Date.now()
+      // Sauvegarder la photo dans une clé séparée pour éviter les quotas
+      if (scores?.photoUrl) savePhotoSeparately(newId, scores.photoUrl)
+
       const current = {
-        id:             scanId ?? Date.now(),
+        id:             newId,
         scanId:         scanId ?? null,
         date:           new Date().toISOString(),
         createdAt:      new Date().toISOString(),
