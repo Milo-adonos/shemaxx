@@ -79,9 +79,9 @@ export default function FaceGrid() {
             <div className="w-[110px] h-[110px] rounded-full overflow-hidden"
               style={{
                 border: '2px solid #cc3c69',
-                backgroundImage: 'url(/woman-scan-placeholder.png)',
-                backgroundSize: '190%',
-                backgroundPosition: '52% 18%',
+                backgroundImage: 'url(/woman-card-demo.png)',
+                backgroundSize: '220%',
+                backgroundPosition: '48% 22%',
                 backgroundRepeat: 'no-repeat',
               }} />
           </div>
