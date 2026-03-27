@@ -183,7 +183,6 @@ Si imageQuality != "ok" : mets quand meme des scores plausibles mais NE genere P
 
 Genere UNIQUEMENT le JSON brut ci-dessous, zero texte avant ou apres, pas de blocs markdown :
 {"imageQuality":"ok","symmetry":X,"proportions":X,"regard":X,"structure":X,"skin":X,"photogenie":X,"total":X,"ranking":"...","beautyScore":"X.X","rank":"...","defauts":[{"zone":"...","probleme":"...","conseil":"..."}]}`
-}`
 }
 
 Deno.serve(async (req) => {
