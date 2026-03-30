@@ -1,4 +1,5 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
+import html2canvas from 'html2canvas'
 import { motion, AnimatePresence } from 'framer-motion'
 import { fal } from '@fal-ai/client'
 import HolographicFaceTraits from './HolographicFaceTraits'
@@ -1038,6 +1039,61 @@ function setSessionFP(fp)      { try { sessionStorage.setItem(SESSION_FP_KEY, fp
 function ScanDetailModal({ scan, pseudo, onClose, currentScores = null }) {
   const [slideIdx,  setSlideIdx]  = useState(0)
   const carouselRef               = useRef(null)
+  const cardRef                   = useRef(null)
+  const [saving,    setSaving]    = useState(false)
+  const [sharing,   setSharing]   = useState(false)
+
+  const captureCard = useCallback(async () => {
+    if (!cardRef.current) return null
+    const canvas = await html2canvas(cardRef.current, {
+      backgroundColor: '#050508',
+      scale: 2,
+      useCORS: true,
+      logging: false,
+    })
+    return canvas
+  }, [])
+
+  const handleSave = async () => {
+    setSaving(true)
+    try {
+      const canvas = await captureCard()
+      if (!canvas) return
+      const link = document.createElement('a')
+      link.download = 'shemaxx-analyse.png'
+      link.href = canvas.toDataURL('image/png')
+      link.click()
+    } catch (e) { console.error(e) }
+    finally { setSaving(false) }
+  }
+
+  const handleShare = async () => {
+    setSharing(true)
+    try {
+      const canvas = await captureCard()
+      if (!canvas) return
+      if (navigator.share && navigator.canShare) {
+        canvas.toBlob(async (blob) => {
+          const file = new File([blob], 'shemaxx-analyse.png', { type: 'image/png' })
+          if (navigator.canShare({ files: [file] })) {
+            await navigator.share({ files: [file], title: 'Mon analyse Shemaxx' })
+          } else {
+            // fallback : téléchargement
+            const link = document.createElement('a')
+            link.download = 'shemaxx-analyse.png'
+            link.href = canvas.toDataURL('image/png')
+            link.click()
+          }
+        }, 'image/png')
+      } else {
+        const link = document.createElement('a')
+        link.download = 'shemaxx-analyse.png'
+        link.href = canvas.toDataURL('image/png')
+        link.click()
+      }
+    } catch (e) { console.error(e) }
+    finally { setSharing(false) }
+  }
 
   const dateStr = new Date(scan.date).toLocaleDateString('fr-FR', {
     weekday: 'long', day: 'numeric', month: 'long', year: 'numeric',
@@ -1121,8 +1177,37 @@ function ScanDetailModal({ scan, pseudo, onClose, currentScores = null }) {
           {/* Slide 1 — Carte résultats */}
           <div className="overflow-y-auto no-scrollbar"
             style={{ flex: '0 0 calc(100% - 40px)', scrollSnapAlign: 'start', minWidth: 0,
-              paddingTop: 16, paddingBottom: 16 }}>
-            <ResultsCard scores={sc} pseudo={pseudo} />
+              paddingTop: 16, paddingBottom: 24 }}>
+            <div ref={cardRef}>
+              <ResultsCard scores={sc} pseudo={pseudo} />
+            </div>
+            {/* Boutons Enregistrer / Partager */}
+            <div className="flex gap-3 mt-4">
+              <button
+                onClick={handleSave}
+                disabled={saving}
+                className="flex-1 flex items-center justify-center gap-2 rounded-2xl py-3 font-bold text-sm transition-opacity active:opacity-70"
+                style={{ background: 'rgba(204,60,105,0.12)', border: '1px solid rgba(204,60,105,0.35)', color: '#ff4d88' }}>
+                {saving ? (
+                  <svg className="animate-spin" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><circle cx="12" cy="12" r="10" strokeOpacity="0.25"/><path d="M12 2a10 10 0 0 1 10 10"/></svg>
+                ) : (
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                )}
+                {saving ? 'Enregistrement...' : 'Enregistrer'}
+              </button>
+              <button
+                onClick={handleShare}
+                disabled={sharing}
+                className="flex-1 flex items-center justify-center gap-2 rounded-2xl py-3 font-bold text-sm transition-opacity active:opacity-70"
+                style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.12)', color: 'rgba(255,255,255,0.8)' }}>
+                {sharing ? (
+                  <svg className="animate-spin" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><circle cx="12" cy="12" r="10" strokeOpacity="0.25"/><path d="M12 2a10 10 0 0 1 10 10"/></svg>
+                ) : (
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+                )}
+                {sharing ? 'Partage...' : 'Partager'}
+              </button>
+            </div>
           </div>
 
           {/* Slide 2 — Photo avec points (si disponible) */}
