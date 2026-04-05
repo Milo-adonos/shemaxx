@@ -91,9 +91,14 @@ function AppInner() {
     }
   }, [])
 
-  // Ouvre l'app dès que l'utilisateur est prêt après paiement
+  // Ouvre l'app dès que le paiement est détecté et que le chargement est terminé.
+  // Pour un abonnement (subscription), on n'attend pas forcément user car justPaid bypasse le check.
+  // Pour les autres types de paiement, on attend user.
   useEffect(() => {
-    if (pendingPayment !== 'none' && !loading && user) {
+    if (pendingPayment === 'none' || loading) return
+    if (pendingPayment === 'subscription') {
+      setOnboardingOpen(true)
+    } else if (user) {
       setOnboardingOpen(true)
     }
   }, [pendingPayment, loading, user])
