@@ -85,11 +85,11 @@ function formatScores(raw) {
 }
 
 /**
- * Appelle la Edge Function Supabase avec timeout de 30s
+ * Appelle la Edge Function Supabase avec timeout de 90s
  */
 async function callAPI(imageDataUrl, age = null) {
   const controller = new AbortController()
-  const timer = setTimeout(() => controller.abort(), 30000)
+  const timer = setTimeout(() => controller.abort(), 90000)
 
   try {
     const response = await fetch(ANALYZE_FUNCTION_URL, {
@@ -120,7 +120,7 @@ async function callAPI(imageDataUrl, age = null) {
  */
 export async function analyzeWithAI(imageDataUrl, _landmarks = null, age = null) {
   let lastError
-  for (let attempt = 1; attempt <= 3; attempt++) {
+  for (let attempt = 1; attempt <= 2; attempt++) {
     try {
       const raw = await callAPI(imageDataUrl, age)
 
@@ -133,7 +133,9 @@ export async function analyzeWithAI(imageDataUrl, _landmarks = null, age = null)
       lastError = err
       console.warn(`Analyse IA — tentative ${attempt} échouée :`, err.message)
       if (err.isImageQuality) throw err
-      if (attempt < 3) await new Promise(r => setTimeout(r, 1500))
+      // Ne réessaye pas si c'est un timeout (déjà long)
+      if (err.message?.includes('abort') || err.message?.includes('timeout')) throw err
+      if (attempt < 2) await new Promise(r => setTimeout(r, 2000))
     }
   }
 
