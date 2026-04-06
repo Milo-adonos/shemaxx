@@ -144,13 +144,24 @@ Phrase 5 (frequence + resultat attendu + delai) : Combien de fois par jour/semai
 Phrase 6 (tuto - OBLIGATOIRE pour toute technique physique) :
 "N'hesite pas a chercher '[nom exact de la technique]' sur YouTube ou TikTok, il y a plein de tutos tres clairs."
 
-TECHNIQUES AUTORISEES - choisir celle qui correspond au defaut :
-- MEWING : langue ENTIERE a plat contre le palais (pas juste la pointe), molaires legerement en contact, levres fermees, respiration 100% par le nez. Pratique 24h/24. Resultats : pommettes plus hautes, machoire definie, double menton reduit, profil ameliore. Delai : 6-18 mois de pratique constante.
-- GUA SHA (disponible sur Amazon) : outil en jade, quartz rose ou acier inox. Geste precis selon la zone (ex machoire : glisser depuis l'oreille vers le menton, pression ferme, 10 passages). Peau legerement huillee, matin. Effet reel : drainage lymphatique, affinement du visage, contour net visible en 4-8 semaines.
-- CHEWING GUM DUR (Falim ou Mastic de Chios, disponibles sur Amazon) : macher 30-60 min/jour, en alternant les deux cotes. Developpe les masseters, donne de la definition et de l'angle a la machoire sur le long terme.
-- EXERCICES FACIAUX CIBLES : cite l'exercice precis avec son nom anglais (ex: "jawline exercise", "cheekbone lift", "eye lift exercise", "tongue chewing exercise"). Decris exactement la position, le nombre de repetitions, la duree de contraction.
+REGLES DE CORRESPONDANCE ZONE → TECHNIQUE (OBLIGATOIRE — respecter strictement) :
+- Sourcils (asymetrie, forme, epaisseur) → UNIQUEMENT : exercices faciaux sourcils ("brow lift exercise", pression frontale pour symetriser), huile de ricin pour la croissance, serum sourcils, dermaplaning doux. JAMAIS de mewing pour les sourcils.
+- Yeux / Regard (tilt canthal, poches, cernes, ptosis) → UNIQUEMENT : exercices "eye lift exercise" et "canthal tilt exercise", drainage lymphatique sous les yeux, sommeil sur le dos, retinol autour des yeux (0.025%), patches contour yeux, cold roller.
+- Nez (deviation, bosse, pointe) → UNIQUEMENT : exercices "nose shaping exercise" (pincement doux et massage nasal quotidien), rhinoplastie non-chirurgicale par massage, posture mentale.
+- Levres / Bouche (volume, asymetrie, philtrum) → UNIQUEMENT : exercices faciaux levres ("lip flip exercise", "mewing lip seal"), hydrater avec beurre de karite, exercices "lip plumping exercise", massages circulaires.
+- Machoire / Contour (definition, asymetrie, menton) → UNIQUEMENT : MEWING, CHEWING GUM DUR (Falim/Mastic de Chios), "jawline exercise", gua sha sur la machoire, POSTURE/CHIN TUCK.
+- Pommettes / Joues (relief, rondeur, asymetrie) → UNIQUEMENT : MEWING, "cheekbone lift exercise", gua sha sur les pommettes, drainage lymphatique.
+- Front / Tempes → UNIQUEMENT : drainage lymphatique, gua sha front, hydratation, SPF50+.
+- Peau (texture, pores, teint, taches, cicatrices) → UNIQUEMENT : SOINS ACTIFS DERMATOLOGIQUES (retinol, niacinamide, vitamine C, AHA/BHA, derma roller, LED rouge, SPF50+), HYDRATATION ET ALIMENTATION.
+- Proportions / Symetrie generale → UNIQUEMENT : MEWING (structure osseuse), POSTURE/CHIN TUCK, SOMMEIL sur le dos.
+
+TECHNIQUES DISPONIBLES (utiliser uniquement la technique correspondant a la zone ci-dessus) :
+- MEWING : langue ENTIERE a plat contre le palais (pas juste la pointe), molaires legerement en contact, levres fermees, respiration 100% par le nez. Pratique 24h/24. Resultats : pommettes plus hautes, machoire definie, double menton reduit, profil ameliore. Delai : 6-18 mois de pratique constante. ZONE : machoire, pommettes, menton, proportions uniquement.
+- GUA SHA (disponible sur Amazon) : outil en jade, quartz rose ou acier inox. Geste precis selon la zone. Peau legerement huillee, matin. Effet reel : drainage lymphatique, affinement du visage, contour net visible en 4-8 semaines.
+- CHEWING GUM DUR (Falim ou Mastic de Chios, disponibles sur Amazon) : macher 30-60 min/jour, en alternant les deux cotes. Developpe les masseters, donne de la definition et de l'angle a la machoire. ZONE : machoire uniquement.
+- EXERCICES FACIAUX CIBLES : cite l'exercice precis avec son nom anglais correspondant a la zone exacte (ex "brow lift exercise" pour sourcils, "eye lift exercise" pour yeux, "jawline exercise" pour machoire, "cheekbone lift" pour pommettes, "lip flip exercise" pour levres, "nose shaping exercise" pour nez). Decris exactement la position, le nombre de repetitions, la duree de contraction.
 - DRAINAGE LYMPHATIQUE FACIAL : effleurages legers avec les doigts depuis le milieu du visage vers les oreilles, puis vers le cou. 3-5 minutes le matin. Degonfle le visage, affine les joues, reduit la retention d'eau.
-- POSTURE / CHIN TUCK : rentrer le menton (comme pour faire un double menton artificiel), tenir 5 secondes, 10 repetitions. Corrige la tete en avant qui cree les doubles mentons et affaisse le visage.
+- POSTURE / CHIN TUCK : rentrer le menton (comme pour faire un double menton artificiel), tenir 5 secondes, 10 repetitions. Corrige la tete en avant qui cree les doubles mentons et affaisse le visage. ZONE : menton, machoire, proportions.
 - ROLLER DE JADE ou FACE ROLLER (disponible sur Amazon) : rouler vers le haut et vers les oreilles, 5 min le matin sur peau propre avec une huile legere. Reduit le gonflement, stimule la circulation lymphatique.
 - SOINS ACTIFS DERMATOLOGIQUES (ces produits changent la peau en profondeur, ce ne sont PAS des maquillages) :
   - Retinol 0.025-0.1% le soir (The Ordinary, pharmacie/Amazon) : renouvelle les cellules, efface les taches, resserre les pores, stimule le collagene. Commence 2x/semaine.
