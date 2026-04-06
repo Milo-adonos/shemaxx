@@ -1,12 +1,8 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { fal } from '@fal-ai/client'
 import HolographicFaceTraits from './HolographicFaceTraits'
 import { useAuth } from '../../contexts/AuthContext'
 import { saveScans, loadScans, upsertProfile, startOneTimePayment } from '../../lib/supabase'
-
-// Configure Fal.ai (face swap)
-fal.config({ credentials: import.meta.env.VITE_FAL_API_KEY || '' })
 
 const PINK   = '#cc3c69'
 const PINK_A = (a) => `rgba(204,60,105,${a})`
@@ -24,9 +20,9 @@ const DEFAULT_SCORES = {
   symmetry: 72, proportions: 68, regard: 75, structure: 70, skin: 65, photogenie: 78,
   total: 71, ranking: 'Top 50 %', beautyScore: '7.1',
   defauts: [
-    { zone: 'Sourcils', probleme: 'Légère asymétrie — le gauche est plus haut', conseil: 'Utilise la technique du mapping en 3 points pour rééquilibrer tes arches. Remplis avec une poudre sourcils ton-sur-ton et fixe avec un gel transparent.' },
-    { zone: 'Mâchoire', probleme: 'Manque de définition latérale', conseil: 'Pratique le mewing quotidiennement (langue sur le palais, dents légèrement serrées). Associe à du contouring avec une poudre bronze sous la mâchoire.' },
-    { zone: 'Peau',     probleme: 'Irrégularités de texture visibles', conseil: 'Intègre un sérum vitamine C 15% le matin + exfoliant AHA 2×/semaine le soir. Tu verras une différence notable en 3 semaines.' },
+    { zone: 'Sourcils', probleme: 'Légère asymétrie — le gauche est plus haut', conseil: 'Pratique l\'exercice "brow lift exercise" chaque matin : pose deux doigts sous tes sourcils, appuie légèrement vers le haut puis essaie d\'abaisser tes sourcils contre la résistance. 3 séries de 10 contractions de 3 secondes. Applique de l\'huile de ricin sur les sourcils chaque soir pour favoriser une croissance symétrique. Résultats visibles en 4–8 semaines. Cherche "brow lift exercise" sur YouTube pour voir la technique exacte.' },
+    { zone: 'Mâchoire', probleme: 'Manque de définition latérale — contour peu marqué', conseil: 'Le mewing strict repositionne progressivement la structure osseuse du visage. Place toute la langue à plat contre le palais supérieur, molaires légèrement en contact, lèvres fermées, respiration uniquement par le nez — pratique constante 24h/24. Ajoute 30 min de chewing gum dur (Falim ou Mastic de Chios, disponibles sur Amazon) par jour en alternant les deux côtés pour développer les masseters. Résultats sur la définition de mâchoire visibles en 6–18 mois. Cherche "mewing tutorial" sur YouTube ou TikTok.' },
+    { zone: 'Peau',     probleme: 'Irrégularités de texture et éclat atténué', conseil: 'La niacinamide 10% (The Ordinary, disponible sur Amazon) réduit les pores visibles, unifie le teint et réduit les irrégularités en profondeur — applique matin et soir. Ajoute un exfoliant AHA/BHA (The Ordinary AHA 30% + BHA 2%) 2×/semaine le soir pour lisser la texture. Un SPF50+ chaque matin est obligatoire pour stopper la dégradation photo-induite. Résultats visibles en 3 semaines. Cherche "niacinamide routine" sur YouTube.' },
   ],
 }
 
@@ -1698,7 +1694,24 @@ function TabConseils({ defauts }) {
 // ONGLET 3 — EXTRAS
 // ════════════════════════════════════════════════════════════════════════
 // ── Helpers IA pour Extras ───────────────────────────────────────────────────
-const OAI_KEY = () => import.meta.env.VITE_OPENAI_API_KEY || ''
+
+// Appelle la Edge Function Supabase sécurisée — la clé OpenAI n'est jamais exposée côté client
+async function callExtrasAI(payload) {
+  const url     = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/extras-ai`
+  const anonKey = import.meta.env.VITE_SUPABASE_ANON_KEY
+  const resp = await fetch(url, {
+    method:  'POST',
+    headers: {
+      'Content-Type':  'application/json',
+      'apikey':        anonKey,
+      'Authorization': `Bearer ${anonKey}`,
+    },
+    body: JSON.stringify(payload),
+  })
+  const data = await resp.json()
+  if (!resp.ok) throw new Error(data?.error || `Erreur serveur ${resp.status}`)
+  return data
+}
 
 async function toBase64(file) {
   return new Promise((res, rej) => {
@@ -1742,78 +1755,24 @@ async function compressToJpeg(file, maxPx = 800, quality = 0.85) {
   })
 }
 
-// Transformation de style via OpenAI GPT-image-1 (image edit)
+// Transformation de style via Edge Function → GPT-image-1 (image edit)
 async function transformStyleWithOpenAI(file, stylePrompt) {
-  const key = OAI_KEY()
-  if (!key) throw new Error('Clé OpenAI manquante dans .env')
-
-  // Compresse en PNG max 1024px (OpenAI accepte PNG/JPEG, max 20 Mo)
-  const compressed = await compressToJpeg(file, 1024, 0.92)
-
-  const form = new FormData()
-  form.append('model',   'gpt-image-1')
-  form.append('image[]', compressed, 'photo.jpg')
-  form.append('prompt',  stylePrompt)
-  form.append('size',    '1024x1024')
-  form.append('quality', 'medium')
-  form.append('n',       '1')
-
-  const resp = await fetch('https://api.openai.com/v1/images/edits', {
-    method:  'POST',
-    headers: { Authorization: `Bearer ${key}` },
-    body:    form,
-  })
-
-  if (!resp.ok) {
-    const err = await resp.json().catch(() => ({}))
-    throw new Error(err?.error?.message || `HTTP ${resp.status}`)
-  }
-
-  const data = await resp.json()
-  const b64  = data?.data?.[0]?.b64_json
-  if (!b64) throw new Error(`Réponse inattendue : ${JSON.stringify(data)}`)
-  return `data:image/png;base64,${b64}`
+  const compressed   = await compressToJpeg(file, 1024, 0.92)
+  const imageBase64  = await toBase64(compressed)
+  const data = await callExtrasAI({ type: 'style_transform', imageBase64, prompt: stylePrompt })
+  if (!data.b64_json) throw new Error('Réponse inattendue du serveur')
+  return `data:image/png;base64,${data.b64_json}`
 }
 
 async function describePersonWithGPT(base64) {
-  const resp = await fetch('https://api.openai.com/v1/chat/completions', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${OAI_KEY()}` },
-    body: JSON.stringify({
-      model: 'gpt-4o',
-      max_tokens: 350,
-      messages: [{
-        role: 'user',
-        content: [
-          { type: 'image_url', image_url: { url: `data:image/jpeg;base64,${base64}`, detail: 'high' } },
-          { type: 'text', text: `Describe this woman's exact physical appearance in detail for a photorealistic portrait generation. Include:
-- Exact hair color (shade), texture, length, style
-- Eye color and shape
-- Skin tone (exact shade: fair, olive, medium-brown, dark-brown, etc.)
-- Face shape (oval, square, round, heart, diamond)
-- Nose shape (button, straight, aquiline, etc.)
-- Lip fullness and shape
-- Eyebrow shape and color
-- Approximate age range
-- Any distinctive features (freckles, dimples, etc.)
-Write as a dense paragraph of physical descriptors only. Be extremely precise.` },
-        ],
-      }],
-    }),
-  })
-  const d = await resp.json()
-  return d.choices?.[0]?.message?.content ?? 'a young woman with natural features'
+  const data = await callExtrasAI({ type: 'describe_person', imageBase64: base64 })
+  return data.description ?? 'a young woman with natural features'
 }
 
 async function generateWithDALLE(prompt) {
-  const resp = await fetch('https://api.openai.com/v1/images/generations', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${OAI_KEY()}` },
-    body: JSON.stringify({ model: 'dall-e-3', prompt, n: 1, size: '1024x1024', quality: 'hd' }),
-  })
-  const d = await resp.json()
-  if (d.error) throw new Error(d.error.message)
-  return d.data?.[0]?.url ?? null
+  const data = await callExtrasAI({ type: 'generate_image', prompt })
+  if (data.error) throw new Error(data.error)
+  return data.url ?? null
 }
 
 // ── Outil 1 : Qui est la plus belle ? ────────────────────────────────────────
@@ -1885,43 +1844,7 @@ function ExtrasGroupRanking({ onBack }) {
     setPhase('loading'); setError(null)
     try {
       const b64 = await toBase64(file)
-      const resp = await fetch('https://api.openai.com/v1/chat/completions', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${OAI_KEY()}` },
-        body: JSON.stringify({
-          model: 'gpt-4o',
-          max_tokens: 1800,
-          response_format: { type: 'json_object' },
-          messages: [{
-            role: 'user',
-            content: [
-              { type: 'image_url', image_url: { url: `data:image/jpeg;base64,${b64}`, detail: 'high' } },
-              { type: 'text', text: `Tu es un expert en détection de visages et looksmaxxing féminin.
-
-ÉTAPE 1 — Compte TOUS les visages féminins visibles sur cette photo. Note ce nombre.
-ÉTAPE 2 — Pour CHACUN de ces visages (sans en oublier aucun) :
-
-A. Note looksmaxxing 1→10 basée sur : mâchoire définie, structure osseuse, tilt canthal, pommettes, symétrie, sous-orbite, nez, regard, peau. IGNORE maquillage et vêtements.
-
-B. Bbox du visage en coordonnées normalisées 0→1. RÈGLES CRITIQUES :
-   - bbox.x = position X du bord GAUCHE de la tête ÷ largeur totale image
-   - bbox.y = position Y du sommet du FRONT ÷ hauteur totale image  
-   - bbox.w = largeur de la tête ÷ largeur totale image
-   - bbox.h = hauteur tête (front→menton) ÷ hauteur totale image
-   - Chaque bbox = 1 seul visage. Pas de chevauchement.
-   - Sois précis : si une personne est à x=400px sur image 1000px large, bbox.x=0.40
-
-C. 1 trait looksmaxxing en français (ex: "pommettes hautes et saillantes").
-
-Désigne la plus hot.
-JSON : { "total_faces": 7, "girls": [ { "id": 1, "score": 8.4, "traits": "...", "winner": false, "bbox": { "x": 0.08, "y": 0.03, "w": 0.18, "h": 0.32 } } ], "winner_id": 1, "winner_reason": "..." }
-IMPORTANT : girls.length DOIT être égal à total_faces. Aucun visage de face ne doit être omis.` },
-            ],
-          }],
-        }),
-      })
-      const d   = await resp.json()
-      const raw = JSON.parse(d.choices?.[0]?.message?.content ?? '{}')
+      const raw = await callExtrasAI({ type: 'group_ranking', imageBase64: b64 })
       if (!raw.girls?.length) throw new Error('Aucun visage détecté. Utilise une photo nette avec les visages bien visibles.')
       const expected = raw.total_faces ?? raw.girls.length
       console.log(`[Looksmaxxing] ${raw.girls.length}/${expected} visages détectés`)
