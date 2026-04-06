@@ -1,5 +1,4 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
-import html2canvas from 'html2canvas'
 import { motion, AnimatePresence } from 'framer-motion'
 import { fal } from '@fal-ai/client'
 import HolographicFaceTraits from './HolographicFaceTraits'
@@ -1035,65 +1034,186 @@ const SESSION_FP_KEY = 'shemaxx_session_fp'
 function getSessionFP()        { try { return sessionStorage.getItem(SESSION_FP_KEY) } catch { return null } }
 function setSessionFP(fp)      { try { sessionStorage.setItem(SESSION_FP_KEY, fp)   } catch { /* ignore */ } }
 
+// ── Rendu Canvas de la carte résultats (pour export/partage) ─────────────────
+async function buildResultsCanvas(scores, photoDataUrl = null) {
+  const DPR = 2
+  const W = 390, H = 600
+  const canvas = document.createElement('canvas')
+  canvas.width  = W * DPR
+  canvas.height = H * DPR
+  const c = canvas.getContext('2d')
+  c.scale(DPR, DPR)
+
+  const PINK      = '#cc3c69'
+  const PINK_TEXT = '#ff4d88'
+  const PAD       = 18
+
+  function rrect(x, y, w, h, r) {
+    c.beginPath()
+    c.moveTo(x + r, y)
+    c.lineTo(x + w - r, y)
+    c.arcTo(x + w, y, x + w, y + r, r)
+    c.lineTo(x + w, y + h - r)
+    c.arcTo(x + w, y + h, x + w - r, y + h, r)
+    c.lineTo(x + r, y + h)
+    c.arcTo(x, y + h, x, y + h - r, r)
+    c.lineTo(x, y + r)
+    c.arcTo(x, y, x + r, y, r)
+    c.closePath()
+  }
+
+  // ── Fond carte ──
+  c.fillStyle = '#0f0c14'
+  rrect(0, 0, W, H, 28); c.fill()
+
+  // Glow rose en haut
+  const glow = c.createRadialGradient(W / 2, 0, 0, W / 2, 0, W * 0.6)
+  glow.addColorStop(0, 'rgba(205,55,103,0.28)')
+  glow.addColorStop(1, 'rgba(0,0,0,0)')
+  c.fillStyle = glow
+  rrect(0, 0, W, 160, 28); c.fill()
+
+  // Bordure rose
+  c.strokeStyle = 'rgba(205,55,103,0.35)'
+  c.lineWidth = 1
+  rrect(0.5, 0.5, W - 1, H - 1, 28); c.stroke()
+
+  c.textBaseline = 'middle'
+  let y = PAD + 10
+
+  // ── Shemaxx ──
+  const FONT = 'Arial, Helvetica, sans-serif'
+  c.font = `900 20px ${FONT}`
+  const sheW  = c.measureText('She').width
+  const maxxW = c.measureText('maxx').width
+  const totalW = sheW + maxxW
+  c.textAlign = 'left'
+  c.fillStyle = PINK_TEXT
+  c.fillText('She', W / 2 - totalW / 2, y + 10)
+  c.fillStyle = 'white'
+  c.fillText('maxx', W / 2 - totalW / 2 + sheW, y + 10)
+  y += 30
+
+  // ── Badge TOTAL ──
+  const bW = 106, bH = 56, bX = (W - bW) / 2
+  c.fillStyle = 'rgba(204,60,105,0.13)'
+  rrect(bX, y, bW, bH, 14); c.fill()
+  c.strokeStyle = 'rgba(204,60,105,0.4)'
+  c.lineWidth = 1
+  rrect(bX + 0.5, y + 0.5, bW - 1, bH - 1, 14); c.stroke()
+
+  c.textAlign = 'center'
+  c.font = `700 9px ${FONT}`
+  c.fillStyle = 'rgba(204,60,105,0.85)'
+  c.fillText('TOTAL', W / 2, y + 13)
+
+  c.font = `900 32px ${FONT}`
+  c.fillStyle = PINK_TEXT
+  c.fillText(String(scores.total ?? 71), W / 2, y + 40)
+  y += bH + 14
+
+  // ── Cercle photo ──
+  const CRAD = 54, CX = W / 2, CY = y + CRAD + 6
+  c.strokeStyle = 'rgba(205,55,103,0.75)'
+  c.lineWidth = 2
+  c.beginPath(); c.arc(CX, CY, CRAD + 7, 0, Math.PI * 2); c.stroke()
+
+  const circBg = c.createLinearGradient(CX - CRAD, CY - CRAD, CX + CRAD, CY + CRAD)
+  circBg.addColorStop(0, '#1d1424'); circBg.addColorStop(1, '#231929')
+  c.fillStyle = circBg
+  c.beginPath(); c.arc(CX, CY, CRAD, 0, Math.PI * 2); c.fill()
+  c.strokeStyle = PINK; c.lineWidth = 2
+  c.beginPath(); c.arc(CX, CY, CRAD, 0, Math.PI * 2); c.stroke()
+
+  if (photoDataUrl) {
+    await new Promise((resolve) => {
+      const img = new Image()
+      img.onload = () => {
+        c.save()
+        c.beginPath(); c.arc(CX, CY, CRAD - 1, 0, Math.PI * 2); c.clip()
+        const scale = Math.max((CRAD * 2) / img.width, (CRAD * 2) / img.height)
+        const dw = img.width * scale, dh = img.height * scale
+        c.drawImage(img, CX - dw / 2, CY - dh / 2, dw, dh)
+        c.restore(); resolve()
+      }
+      img.onerror = resolve
+      img.src = photoDataUrl
+    })
+  } else {
+    // Icône placeholder
+    c.strokeStyle = 'rgba(255,255,255,0.2)'; c.lineWidth = 1.5
+    const iX = CX - 14, iY = CY - 12
+    rrect(iX, iY, 28, 24, 3); c.stroke()
+    c.beginPath(); c.arc(iX + 9, iY + 8, 3, 0, Math.PI * 2); c.stroke()
+    c.beginPath(); c.moveTo(iX, iY + 16); c.lineTo(iX + 8, iY + 10)
+    c.lineTo(iX + 16, iY + 17); c.lineTo(iX + 21, iY + 13); c.lineTo(iX + 28, iY + 19); c.stroke()
+  }
+
+  y = CY + CRAD + 16
+
+  // ── Classement global ──
+  const rH = 38
+  c.fillStyle = 'rgba(205,55,103,0.09)'
+  rrect(PAD, y, W - PAD * 2, rH, 12); c.fill()
+  c.strokeStyle = 'rgba(205,55,103,0.22)'; c.lineWidth = 1
+  rrect(PAD + 0.5, y + 0.5, W - PAD * 2 - 1, rH - 1, 12); c.stroke()
+
+  c.font = `600 12px ${FONT}`
+  c.textAlign = 'left'; c.fillStyle = 'rgba(255,255,255,0.6)'
+  c.fillText('\uD83C\uDFC6  Classement global', PAD + 12, y + rH / 2)
+  c.font = `900 13px ${FONT}`
+  c.textAlign = 'right'; c.fillStyle = PINK_TEXT
+  c.fillText(scores.ranking || 'Top 50 %', W - PAD - 12, y + rH / 2)
+  y += rH + 10
+
+  // ── Grille métriques 2×3 ──
+  const MKEYS = [
+    { label: 'Symétrie',            key: 'symmetry'    },
+    { label: 'Proportions',         key: 'proportions' },
+    { label: 'Impact du regard',    key: 'regard'      },
+    { label: 'Structure du visage', key: 'structure'   },
+    { label: 'Qualité de peau',     key: 'skin'        },
+    { label: 'Photogénie',          key: 'photogenie'  },
+  ]
+  const GAP = 8
+  const cW  = (W - PAD * 2 - GAP) / 2
+  const cH  = 66
+
+  MKEYS.forEach((m, i) => {
+    const col = i % 2, row = Math.floor(i / 2)
+    const cx = PAD + col * (cW + GAP), cy = y + row * (cH + GAP)
+    const val = scores[m.key] ?? 70
+
+    c.fillStyle = 'rgba(255,255,255,0.035)'
+    rrect(cx, cy, cW, cH, 12); c.fill()
+    c.strokeStyle = 'rgba(255,255,255,0.09)'; c.lineWidth = 1
+    rrect(cx + 0.5, cy + 0.5, cW - 1, cH - 1, 12); c.stroke()
+
+    c.font = `600 11px ${FONT}`
+    c.textAlign = 'left'; c.fillStyle = 'rgba(255,255,255,0.52)'
+    c.fillText(m.label, cx + 10, cy + 18)
+
+    c.font = `900 28px ${FONT}`
+    c.fillStyle = PINK_TEXT
+    c.fillText(String(val), cx + 10, cy + 46)
+
+    // Barre de progression
+    const barW = cW - 20, barH = 3, barY = cy + cH - 9
+    c.fillStyle = 'rgba(204,60,105,0.15)'
+    rrect(cx + 10, barY, barW, barH, 2); c.fill()
+    c.fillStyle = PINK
+    rrect(cx + 10, barY, barW * (val / 100), barH, 2); c.fill()
+  })
+
+  return canvas
+}
+
 // ── Modal détail d'un scan historique ────────────────────────────────────────
 function ScanDetailModal({ scan, pseudo, onClose, currentScores = null }) {
   const [slideIdx,  setSlideIdx]  = useState(0)
   const carouselRef               = useRef(null)
-  const cardRef                   = useRef(null)
   const [saving,    setSaving]    = useState(false)
   const [sharing,   setSharing]   = useState(false)
-
-  const captureCard = useCallback(async () => {
-    if (!cardRef.current) return null
-    const canvas = await html2canvas(cardRef.current, {
-      backgroundColor: '#050508',
-      scale: 2,
-      useCORS: true,
-      logging: false,
-    })
-    return canvas
-  }, [])
-
-  const handleSave = async () => {
-    setSaving(true)
-    try {
-      const canvas = await captureCard()
-      if (!canvas) return
-      const link = document.createElement('a')
-      link.download = 'shemaxx-analyse.png'
-      link.href = canvas.toDataURL('image/png')
-      link.click()
-    } catch (e) { console.error(e) }
-    finally { setSaving(false) }
-  }
-
-  const handleShare = async () => {
-    setSharing(true)
-    try {
-      const canvas = await captureCard()
-      if (!canvas) return
-      if (navigator.share && navigator.canShare) {
-        canvas.toBlob(async (blob) => {
-          const file = new File([blob], 'shemaxx-analyse.png', { type: 'image/png' })
-          if (navigator.canShare({ files: [file] })) {
-            await navigator.share({ files: [file], title: 'Mon analyse Shemaxx' })
-          } else {
-            // fallback : téléchargement
-            const link = document.createElement('a')
-            link.download = 'shemaxx-analyse.png'
-            link.href = canvas.toDataURL('image/png')
-            link.click()
-          }
-        }, 'image/png')
-      } else {
-        const link = document.createElement('a')
-        link.download = 'shemaxx-analyse.png'
-        link.href = canvas.toDataURL('image/png')
-        link.click()
-      }
-    } catch (e) { console.error(e) }
-    finally { setSharing(false) }
-  }
 
   const dateStr = new Date(scan.date).toLocaleDateString('fr-FR', {
     weekday: 'long', day: 'numeric', month: 'long', year: 'numeric',
@@ -1101,6 +1221,45 @@ function ScanDetailModal({ scan, pseudo, onClose, currentScores = null }) {
   const sc = scan.scores
     ? { ...scan.scores, photoUrl: scan.photoUrl, photoLandmarks: scan.photoLandmarks }
     : { total: scan.total, ranking: scan.ranking }
+
+  const getCanvas = useCallback(async () => {
+    const photo = sc.photoUrl || loadPhotoSeparately(scan.id) || null
+    return buildResultsCanvas(sc, photo)
+  }, [sc, scan.id])
+
+  const shareBlob = async (blob, title, text) => {
+    const file = new File([blob], 'shemaxx-analyse.png', { type: 'image/png' })
+    if (navigator.share && navigator.canShare?.({ files: [file] })) {
+      await navigator.share({ files: [file], title, text })
+    } else {
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url; a.download = 'shemaxx-analyse.png'; a.click()
+      URL.revokeObjectURL(url)
+    }
+  }
+
+  const handleSave = async () => {
+    setSaving(true)
+    try {
+      const canvas = await getCanvas()
+      canvas.toBlob(async (blob) => {
+        await shareBlob(blob, 'Mon analyse Shemaxx', `Score total : ${sc.total}/100`)
+        setSaving(false)
+      }, 'image/png')
+    } catch (e) { console.error(e); setSaving(false) }
+  }
+
+  const handleShare = async () => {
+    setSharing(true)
+    try {
+      const canvas = await getCanvas()
+      canvas.toBlob(async (blob) => {
+        await shareBlob(blob, 'Mon analyse Shemaxx 🔥', `J'ai obtenu ${sc.total}/100 sur Shemaxx !`)
+        setSharing(false)
+      }, 'image/png')
+    } catch (e) { console.error(e); setSharing(false) }
+  }
 
   const defauts  = currentScores?.defauts?.length > 0
     ? currentScores.defauts
@@ -1178,9 +1337,7 @@ function ScanDetailModal({ scan, pseudo, onClose, currentScores = null }) {
           <div className="overflow-y-auto no-scrollbar"
             style={{ flex: '0 0 calc(100% - 40px)', scrollSnapAlign: 'start', minWidth: 0,
               paddingTop: 16, paddingBottom: 24 }}>
-            <div ref={cardRef}>
-              <ResultsCard scores={sc} pseudo={pseudo} />
-            </div>
+            <ResultsCard scores={sc} pseudo={pseudo} />
             {/* Boutons Enregistrer / Partager */}
             <div className="flex gap-3 mt-4">
               <button
