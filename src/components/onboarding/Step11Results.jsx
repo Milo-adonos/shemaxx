@@ -535,12 +535,11 @@ function ResultsCard({ scores, pseudo, cardRef }) {
         </div>
 
         {/* ── Photo seule, centrée ── */}
-        <div className="flex justify-center mb-3">
+        <div className="flex justify-center mb-3" style={{ overflow: 'hidden' }}>
           <div className="relative">
             <motion.div className="absolute rounded-full pointer-events-none"
               animate={{ opacity: [0.45, 1, 0.45] }} transition={{ duration: 2.2, repeat: Infinity }}
-              style={{ inset: -5, border: '2px solid rgba(205,55,103,0.75)', borderRadius: '50%',
-                boxShadow: '0 0 22px rgba(205,55,103,0.55)' }} />
+              style={{ inset: -5, border: '2px solid rgba(205,55,103,0.75)', borderRadius: '50%' }} />
             <input ref={fileInputRef} type="file" accept="image/*" onChange={handleFileChange} style={{ display: 'none' }} />
             <button onClick={() => fileInputRef.current?.click()}
               className="w-[100px] h-[100px] rounded-full overflow-hidden flex items-center justify-center relative"
