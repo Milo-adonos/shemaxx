@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { X } from 'lucide-react'
+import { track } from '../../lib/posthog.js'
 import Step1 from './Step1Qualification'
 import Step2 from './Step2Age'
 import Step3 from './Step3Zones'
@@ -38,6 +39,34 @@ export default function Onboarding({ onClose, initialUser, initialSubscribed, in
   const [direction, setDirection] = useState(1)
   const [faceidKey, setFaceidKey] = useState(0)
   const [rescanMode, setRescanMode] = useState(false)
+
+  // Noms des étapes pour PostHog
+  const STEP_NAMES = {
+    1:  'qualification',
+    2:  'age',
+    3:  'zones_preoccupations',
+    4:  'apercu_resultats',
+    5:  'graphique_potentiel',
+    6:  'pseudo',
+    7:  'intro_photo',
+    8:  'capture_photo',
+    9:  'analyse_ia',
+    10: 'chargement',
+    11: 'potentiel_revele',
+    12: 'teaser_resultats',
+    13: 'paywall',
+    14: 'resultats_debloques',
+  }
+
+  // Tracker chaque changement d'étape
+  useEffect(() => {
+    track('funnel_step_viewed', {
+      step_number: step,
+      step_name:   STEP_NAMES[step] ?? `step_${step}`,
+      rescan_mode: rescanMode,
+    })
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [step])
   // Priorité : scores en attente (retour Stripe) → scans Supabase → null
   const restoredScores = pendingScores
     ?? (initialUser && initialScans?.length > 0 ? initialScans[0] : null)

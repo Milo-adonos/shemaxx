@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { analyzeWithAI } from '../../utils/analyzeWithAI'
+import { track } from '../../lib/posthog.js'
 
 const PINK   = '#cc3c69'
 const PINK_A = (a) => `rgba(204,60,105,${a})`
@@ -27,6 +28,7 @@ export default function Step9AnalyzingIA({ onNext, onRescan, analysisData = null
 
     const run = async () => {
       setError(null)
+      track('ai_analysis_started', { age })
       try {
         const imageDataUrl       = analysisData?.imageDataUrl       ?? null
         const landmarksSnapshot  = analysisData?.landmarksSnapshot  ?? null
@@ -34,6 +36,14 @@ export default function Step9AnalyzingIA({ onNext, onRescan, analysisData = null
         const scores = await analyzeWithAI(imageDataUrl, landmarksSnapshot, age)
 
         if (cancelled) return
+
+        track('ai_analysis_completed', {
+          total:       scores.total,
+          ranking:     scores.ranking,
+          beauty_score: scores.beautyScore,
+          rank:        scores.rank,
+          image_quality: 'ok',
+        })
 
         const elapsed = Date.now() - startTime
         const remaining = Math.max(0, MIN_DISPLAY_MS - elapsed)
@@ -44,10 +54,17 @@ export default function Step9AnalyzingIA({ onNext, onRescan, analysisData = null
         if (cancelled) return
         console.error('Analyse IA échouée :', err)
 
+        let errorType = 'unknown'
+        if (err.isConfig)        errorType = 'config_missing'
+        else if (err.isImageQuality) errorType = `image_quality_${err.qualityEmoji === '💡' ? 'bad_lighting' : err.qualityEmoji === '📷' ? 'blurry' : err.qualityEmoji === '↔️' ? 'bad_angle' : 'no_face'}`
+        else if (err.message?.includes('abort') || err.message?.includes('timeout')) errorType = 'timeout'
+        else if (err.message?.includes('401')) errorType = 'auth_error'
+
+        track('ai_analysis_failed', { error_type: errorType, error_message: err.message?.slice(0, 200) })
+
         if (err.isConfig) {
           setError({ title: 'Configuration manquante', detail: 'La clé API n\'est pas configurée. Contacte le support Shemaxx.', emoji: '⚙️', isImageQuality: false })
         } else if (err.isImageQuality) {
-          // Erreur de qualité image — typée avec titre + emoji
           setError({
             title: err.qualityTitle,
             detail: err.message,
@@ -55,7 +72,6 @@ export default function Step9AnalyzingIA({ onNext, onRescan, analysisData = null
             isImageQuality: true,
           })
         } else {
-          // Erreur réseau / API
           const detail = err.message?.includes('401')
             ? 'Problème de connexion au serveur. Vérifie ta connexion internet.'
             : err.message?.includes('abort') || err.message?.includes('timeout')

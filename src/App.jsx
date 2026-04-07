@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
+import { track, identifyUser, resetUser } from './lib/posthog.js'
 import Navbar from './components/Navbar'
 import Hero from './components/Hero'
 import Reveal from './components/Reveal'
@@ -50,6 +51,26 @@ function AppInner() {
   const [pendingScores,    setPendingScores]    = useState(null)
   // 'none' | 'subscription' | 'rescan' | 'extra_style' | 'extra_10' | 'extra_ranking' | 'extra_advice'
   const [pendingPayment,   setPendingPayment]   = useState('none')
+
+  // ── Analytics : landing page view ──
+  useEffect(() => {
+    track('landing_page_viewed')
+  }, [])
+
+  // ── Analytics : identification utilisateur connecté ──
+  useEffect(() => {
+    if (!loading) {
+      if (user) {
+        identifyUser(user.id, {
+          email:      user.email,
+          subscribed: subscribed,
+          scans_count: scans?.length ?? 0,
+        })
+      } else {
+        resetUser()
+      }
+    }
+  }, [user, loading, subscribed, scans])
 
   // Détecte retour depuis Stripe — une seule fois au montage
   useEffect(() => {
@@ -105,18 +126,20 @@ function AppInner() {
 
   const openOnboarding = (e) => {
     e?.preventDefault()
+    track('cta_clicked', { source: 'landing', subscribed, has_account: !!user })
     setOnboardingOpen(true)
   }
 
   // Bouton "Mon compte" / "Connexion" dans la Navbar
   const handleConnexion = () => {
     if (user && subscribed) {
-      // Connecté ET abonné → ouvre l'app directement
+      track('cta_clicked', { source: 'navbar', action: 'open_app' })
       setOnboardingOpen(true)
     } else if (user && !subscribed) {
-      // Connecté mais pas abonné → ouvre le flow (ira jusqu'au paywall)
+      track('cta_clicked', { source: 'navbar', action: 'resume_onboarding' })
       setOnboardingOpen(true)
     } else {
+      track('cta_clicked', { source: 'navbar', action: 'signin' })
       setAuthMode('signin')
       setAuthModalOpen(true)
     }
@@ -124,6 +147,7 @@ function AppInner() {
 
   // Callback après connexion via AuthModal (depuis Navbar)
   const handleAuthSuccess = () => {
+    track('user_signed_in')
     setAuthModalOpen(false)
     setOnboardingOpen(true)
   }

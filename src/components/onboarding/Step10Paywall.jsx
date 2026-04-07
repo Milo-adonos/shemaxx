@@ -1,10 +1,11 @@
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import HolographicFaceTraits from './HolographicFaceTraits'
 import { DEFAULT_DEFAUTS } from './Step9Reveal'
 import AuthModal from '../AuthModal'
 import { useAuth } from '../../contexts/AuthContext'
 import { supabase } from '../../lib/supabase'
+import { track } from '../../lib/posthog.js'
 
 const PINK   = '#cc3c69'
 const PINK_A = (a) => `rgba(204,60,105,${a})`
@@ -89,6 +90,14 @@ export default function Step10Paywall({ pseudo, faceScores = {}, onNext, onClose
   const [checkoutLoading, setCheckoutLoading] = useState(false)
   const touchStartX = useRef(null)
 
+  useEffect(() => {
+    track('paywall_viewed', {
+      total:   faceScores?.total,
+      ranking: faceScores?.ranking,
+    })
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
   const goTo = (idx) => {
     if (idx < 0 || idx >= SLIDES.length) return
     setDir(idx > slideIdx ? 1 : -1)
@@ -118,6 +127,10 @@ export default function Step10Paywall({ pseudo, faceScores = {}, onNext, onClose
   const startCheckout = async () => {
     setCheckoutLoading(true)
     setCheckoutErr(null)
+    track('checkout_started', {
+      total:   faceScores?.total,
+      ranking: faceScores?.ranking,
+    })
     try {
       const { data: { session } } = await supabase.auth.getSession()
       if (!session?.access_token) throw new Error('Session introuvable — reconnecte-toi.')

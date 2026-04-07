@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import HolographicFaceTraits from './HolographicFaceTraits'
 import { useAuth } from '../../contexts/AuthContext'
 import { saveScans, loadScans, upsertProfile, startOneTimePayment } from '../../lib/supabase'
+import { track } from '../../lib/posthog.js'
 
 const PINK   = '#cc3c69'
 const PINK_A = (a) => `rgba(204,60,105,${a})`
@@ -738,6 +739,7 @@ function CtaScanCard({ onRefaire, currentScores }) {
     if (needsPayment) {
       setPayErr(null)
       setPayLoading(true)
+      track('rescan_checkout_started', { reason: 'weekly_limit_reached' })
       try {
         await startOneTimePayment('rescan', currentScores)
       } catch (e) {
@@ -746,6 +748,7 @@ function CtaScanCard({ onRefaire, currentScores }) {
       }
       return
     }
+    track('rescan_started', { reason: hasBonus ? 'bonus_invite' : 'free_weekly' })
     if (hasBonus) {
       try { localStorage.setItem(INVITE_KEY, JSON.stringify(0)) } catch { /* ignore */ }
     }
@@ -1225,6 +1228,7 @@ function ScanDetailModal({ scan, pseudo, onClose, currentScores = null }) {
 
   const handleSave = async () => {
     setSaving(true)
+    track('card_saved', { total: sc.total, ranking: sc.ranking })
     try {
       const blob = await captureCard()
       await shareBlob(blob, 'Mon analyse Shemaxx', `Score total : ${sc.total}/100`)
@@ -1234,6 +1238,7 @@ function ScanDetailModal({ scan, pseudo, onClose, currentScores = null }) {
 
   const handleShare = async () => {
     setSharing(true)
+    track('card_shared', { total: sc.total, ranking: sc.ranking })
     try {
       const blob = await captureCard()
       await shareBlob(blob, 'Mon analyse Shemaxx 🔥', `J'ai obtenu ${sc.total}/100 sur Shemaxx !`)
@@ -2924,6 +2929,18 @@ export default function Step11Results({ faceScores = null, pseudo = '', age = nu
   const [prevTab,       setPrevTab]       = useState(null)
   const [showSettings,  setShowSettings]  = useState(false)
   const [detailScan,    setDetailScan]    = useState(null)
+
+  // Analytics : résultats débloqués
+  useEffect(() => {
+    track('results_viewed', {
+      total:       scores.total,
+      ranking:     scores.ranking,
+      beauty_score: scores.beautyScore,
+      rank:        scores.rank,
+      is_new_scan: !!faceScores,
+    })
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   // Sync profil vers Supabase à l'entrée dans l'app
   useEffect(() => {
