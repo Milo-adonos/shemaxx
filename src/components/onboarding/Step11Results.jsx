@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import HolographicFaceTraits from './HolographicFaceTraits'
 import { useAuth } from '../../contexts/AuthContext'
@@ -476,7 +476,7 @@ function PhotoCropPicker({ src, onConfirm, onCancel }) {
 }
 
 // ── Slide 1 : carte résultats ─────────────────────────────────────────────────
-function ResultsCard({ scores, pseudo }) {
+function ResultsCard({ scores, pseudo, cardRef }) {
   const total        = scores.total ?? 71
   const displayTotal = useCounter(total, 1300, 200)
   const [pendingSrc, setPendingSrc] = useState(null)   // photo en attente de recadrage
@@ -507,7 +507,7 @@ function ResultsCard({ scores, pseudo }) {
       )}
     </AnimatePresence>
 
-    <div className="relative overflow-hidden rounded-[28px]"
+    <div ref={cardRef} className="relative overflow-hidden rounded-[28px]"
       style={{ background: 'linear-gradient(160deg, #16121a 0%, #110e16 100%)',
         border: '1px solid rgba(205,55,103,0.22)',
         boxShadow: '0 0 48px rgba(205,55,103,0.12), 0 20px 48px rgba(0,0,0,0.65)' }}>
@@ -1191,6 +1191,7 @@ async function buildResultsCanvas(scores) {
 function ScanDetailModal({ scan, pseudo, onClose, currentScores = null }) {
   const [slideIdx,  setSlideIdx]  = useState(0)
   const carouselRef               = useRef(null)
+  const cardRef                   = useRef(null)
   const [saving,    setSaving]    = useState(false)
   const [sharing,   setSharing]   = useState(false)
 
@@ -1201,9 +1202,15 @@ function ScanDetailModal({ scan, pseudo, onClose, currentScores = null }) {
     ? { ...scan.scores, photoUrl: scan.photoUrl, photoLandmarks: scan.photoLandmarks }
     : { total: scan.total, ranking: scan.ranking }
 
-  const getCanvas = useCallback(async () => {
-    return buildResultsCanvas(sc)
-  }, [sc])
+  // Capture le composant React exact tel qu'il est affiché → image pixel-perfect
+  const captureCard = async () => {
+    const { toBlob } = await import('html-to-image')
+    const el = cardRef.current
+    if (!el) throw new Error('Carte introuvable')
+    const blob = await toBlob(el, { pixelRatio: 3, cacheBust: true })
+    if (!blob) throw new Error('Capture échouée')
+    return blob
+  }
 
   const shareBlob = async (blob, title, text) => {
     const file = new File([blob], 'shemaxx-analyse.png', { type: 'image/png' })
@@ -1220,23 +1227,19 @@ function ScanDetailModal({ scan, pseudo, onClose, currentScores = null }) {
   const handleSave = async () => {
     setSaving(true)
     try {
-      const canvas = await getCanvas()
-      canvas.toBlob(async (blob) => {
-        await shareBlob(blob, 'Mon analyse Shemaxx', `Score total : ${sc.total}/100`)
-        setSaving(false)
-      }, 'image/png')
-    } catch (e) { console.error(e); setSaving(false) }
+      const blob = await captureCard()
+      await shareBlob(blob, 'Mon analyse Shemaxx', `Score total : ${sc.total}/100`)
+    } catch (e) { console.error(e) }
+    setSaving(false)
   }
 
   const handleShare = async () => {
     setSharing(true)
     try {
-      const canvas = await getCanvas()
-      canvas.toBlob(async (blob) => {
-        await shareBlob(blob, 'Mon analyse Shemaxx 🔥', `J'ai obtenu ${sc.total}/100 sur Shemaxx !`)
-        setSharing(false)
-      }, 'image/png')
-    } catch (e) { console.error(e); setSharing(false) }
+      const blob = await captureCard()
+      await shareBlob(blob, 'Mon analyse Shemaxx 🔥', `J'ai obtenu ${sc.total}/100 sur Shemaxx !`)
+    } catch (e) { console.error(e) }
+    setSharing(false)
   }
 
   const defauts  = currentScores?.defauts?.length > 0
@@ -1315,7 +1318,7 @@ function ScanDetailModal({ scan, pseudo, onClose, currentScores = null }) {
           <div className="overflow-y-auto no-scrollbar"
             style={{ flex: '0 0 calc(100% - 40px)', scrollSnapAlign: 'start', minWidth: 0,
               paddingTop: 16, paddingBottom: 24 }}>
-            <ResultsCard scores={sc} pseudo={pseudo} />
+            <ResultsCard scores={sc} pseudo={pseudo} cardRef={cardRef} />
             {/* Boutons Enregistrer / Partager */}
             <div className="flex gap-3 mt-4">
               <button
