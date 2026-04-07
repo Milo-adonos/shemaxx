@@ -1031,9 +1031,14 @@ function getSessionFP()        { try { return sessionStorage.getItem(SESSION_FP_
 function setSessionFP(fp)      { try { sessionStorage.setItem(SESSION_FP_KEY, fp)   } catch { /* ignore */ } }
 
 // ── Rendu Canvas de la carte résultats (pour export/partage) ─────────────────
-async function buildResultsCanvas(scores, photoDataUrl = null) {
+async function buildResultsCanvas(scores) {
+  // Charge Inter (même police que l'app) avant de dessiner
+  await document.fonts.load('900 32px Inter')
+  await document.fonts.load('700 12px Inter')
+  await document.fonts.ready
+
   const DPR = 2
-  const W = 390, H = 600
+  const W = 390, H = 540
   const canvas = document.createElement('canvas')
   canvas.width  = W * DPR
   canvas.height = H * DPR
@@ -1043,6 +1048,7 @@ async function buildResultsCanvas(scores, photoDataUrl = null) {
   const PINK      = '#cc3c69'
   const PINK_TEXT = '#ff4d88'
   const PAD       = 18
+  const FONT      = 'Inter, system-ui, -apple-system, sans-serif'
 
   function rrect(x, y, w, h, r) {
     c.beginPath()
@@ -1063,104 +1069,73 @@ async function buildResultsCanvas(scores, photoDataUrl = null) {
   rrect(0, 0, W, H, 28); c.fill()
 
   // Glow rose en haut
-  const glow = c.createRadialGradient(W / 2, 0, 0, W / 2, 0, W * 0.6)
-  glow.addColorStop(0, 'rgba(205,55,103,0.28)')
+  const glow = c.createRadialGradient(W / 2, 0, 0, W / 2, 0, W * 0.65)
+  glow.addColorStop(0, 'rgba(205,55,103,0.32)')
   glow.addColorStop(1, 'rgba(0,0,0,0)')
   c.fillStyle = glow
-  rrect(0, 0, W, 160, 28); c.fill()
+  rrect(0, 0, W, 180, 28); c.fill()
 
   // Bordure rose
-  c.strokeStyle = 'rgba(205,55,103,0.35)'
-  c.lineWidth = 1
-  rrect(0.5, 0.5, W - 1, H - 1, 28); c.stroke()
+  c.strokeStyle = 'rgba(205,55,103,0.4)'
+  c.lineWidth = 1.5
+  rrect(0.75, 0.75, W - 1.5, H - 1.5, 28); c.stroke()
 
   c.textBaseline = 'middle'
-  let y = PAD + 10
+  let y = PAD + 14
 
-  // ── Shemaxx ──
-  const FONT = 'Arial, Helvetica, sans-serif'
-  c.font = `900 20px ${FONT}`
-  const sheW  = c.measureText('She').width
-  const maxxW = c.measureText('maxx').width
-  const totalW = sheW + maxxW
-  c.textAlign = 'left'
-  c.fillStyle = PINK_TEXT
-  c.fillText('She', W / 2 - totalW / 2, y + 10)
+  // ── Logo Shemaxx ──
+  c.font = `900 22px ${FONT}`
+  const sheW   = c.measureText('She').width
+  const maxxW  = c.measureText('maxx').width
+  const logoW  = sheW + maxxW
+  c.textAlign  = 'left'
+  c.fillStyle  = PINK_TEXT
+  c.fillText('She', W / 2 - logoW / 2, y + 11)
   c.fillStyle = 'white'
-  c.fillText('maxx', W / 2 - totalW / 2 + sheW, y + 10)
-  y += 30
+  c.fillText('maxx', W / 2 - logoW / 2 + sheW, y + 11)
+  y += 34
 
   // ── Badge TOTAL ──
-  const bW = 106, bH = 56, bX = (W - bW) / 2
-  c.fillStyle = 'rgba(204,60,105,0.13)'
-  rrect(bX, y, bW, bH, 14); c.fill()
-  c.strokeStyle = 'rgba(204,60,105,0.4)'
+  const bW = 112, bH = 60, bX = (W - bW) / 2
+  c.fillStyle = 'rgba(204,60,105,0.14)'
+  rrect(bX, y, bW, bH, 16); c.fill()
+  c.strokeStyle = 'rgba(204,60,105,0.45)'
   c.lineWidth = 1
-  rrect(bX + 0.5, y + 0.5, bW - 1, bH - 1, 14); c.stroke()
+  rrect(bX + 0.5, y + 0.5, bW - 1, bH - 1, 16); c.stroke()
 
   c.textAlign = 'center'
   c.font = `700 9px ${FONT}`
-  c.fillStyle = 'rgba(204,60,105,0.85)'
-  c.fillText('TOTAL', W / 2, y + 13)
+  c.letterSpacing = '0.12em'
+  c.fillStyle = 'rgba(204,60,105,0.9)'
+  c.fillText('TOTAL', W / 2, y + 14)
+  c.letterSpacing = '0'
 
-  c.font = `900 32px ${FONT}`
+  c.font = `900 34px ${FONT}`
   c.fillStyle = PINK_TEXT
-  c.fillText(String(scores.total ?? 71), W / 2, y + 40)
+  c.fillText(String(scores.total ?? 71), W / 2, y + 43)
   y += bH + 14
 
-  // ── Cercle photo ──
-  const CRAD = 54, CX = W / 2, CY = y + CRAD + 6
-  c.strokeStyle = 'rgba(205,55,103,0.75)'
-  c.lineWidth = 2
-  c.beginPath(); c.arc(CX, CY, CRAD + 7, 0, Math.PI * 2); c.stroke()
-
-  const circBg = c.createLinearGradient(CX - CRAD, CY - CRAD, CX + CRAD, CY + CRAD)
-  circBg.addColorStop(0, '#1d1424'); circBg.addColorStop(1, '#231929')
-  c.fillStyle = circBg
-  c.beginPath(); c.arc(CX, CY, CRAD, 0, Math.PI * 2); c.fill()
-  c.strokeStyle = PINK; c.lineWidth = 2
-  c.beginPath(); c.arc(CX, CY, CRAD, 0, Math.PI * 2); c.stroke()
-
-  if (photoDataUrl) {
-    await new Promise((resolve) => {
-      const img = new Image()
-      img.onload = () => {
-        c.save()
-        c.beginPath(); c.arc(CX, CY, CRAD - 1, 0, Math.PI * 2); c.clip()
-        const scale = Math.max((CRAD * 2) / img.width, (CRAD * 2) / img.height)
-        const dw = img.width * scale, dh = img.height * scale
-        c.drawImage(img, CX - dw / 2, CY - dh / 2, dw, dh)
-        c.restore(); resolve()
-      }
-      img.onerror = resolve
-      img.src = photoDataUrl
-    })
-  } else {
-    // Icône placeholder
-    c.strokeStyle = 'rgba(255,255,255,0.2)'; c.lineWidth = 1.5
-    const iX = CX - 14, iY = CY - 12
-    rrect(iX, iY, 28, 24, 3); c.stroke()
-    c.beginPath(); c.arc(iX + 9, iY + 8, 3, 0, Math.PI * 2); c.stroke()
-    c.beginPath(); c.moveTo(iX, iY + 16); c.lineTo(iX + 8, iY + 10)
-    c.lineTo(iX + 16, iY + 17); c.lineTo(iX + 21, iY + 13); c.lineTo(iX + 28, iY + 19); c.stroke()
-  }
-
-  y = CY + CRAD + 16
+  // ── Score beauté ──
+  c.font = `600 13px ${FONT}`
+  c.textAlign = 'center'
+  c.fillStyle = 'rgba(255,255,255,0.38)'
+  c.fillText(`Score beauté : ${scores.beautyScore ?? '7.1'} / 10`, W / 2, y)
+  y += 22
 
   // ── Classement global ──
-  const rH = 38
+  const rH = 40
   c.fillStyle = 'rgba(205,55,103,0.09)'
   rrect(PAD, y, W - PAD * 2, rH, 12); c.fill()
-  c.strokeStyle = 'rgba(205,55,103,0.22)'; c.lineWidth = 1
+  c.strokeStyle = 'rgba(205,55,103,0.25)'; c.lineWidth = 1
   rrect(PAD + 0.5, y + 0.5, W - PAD * 2 - 1, rH - 1, 12); c.stroke()
 
   c.font = `600 12px ${FONT}`
   c.textAlign = 'left'; c.fillStyle = 'rgba(255,255,255,0.6)'
-  c.fillText('\uD83C\uDFC6  Classement global', PAD + 12, y + rH / 2)
-  c.font = `900 13px ${FONT}`
+  c.fillText('🏆  Classement global', PAD + 12, y + rH / 2)
+  c.font = `800 13px ${FONT}`
   c.textAlign = 'right'; c.fillStyle = PINK_TEXT
   c.fillText(scores.ranking || 'Top 50 %', W - PAD - 12, y + rH / 2)
-  y += rH + 10
+  y += rH + 12
 
   // ── Grille métriques 2×3 ──
   const MKEYS = [
@@ -1173,33 +1148,41 @@ async function buildResultsCanvas(scores, photoDataUrl = null) {
   ]
   const GAP = 8
   const cW  = (W - PAD * 2 - GAP) / 2
-  const cH  = 66
+  const cH  = 70
 
   MKEYS.forEach((m, i) => {
     const col = i % 2, row = Math.floor(i / 2)
     const cx = PAD + col * (cW + GAP), cy = y + row * (cH + GAP)
     const val = scores[m.key] ?? 70
 
-    c.fillStyle = 'rgba(255,255,255,0.035)'
-    rrect(cx, cy, cW, cH, 12); c.fill()
-    c.strokeStyle = 'rgba(255,255,255,0.09)'; c.lineWidth = 1
-    rrect(cx + 0.5, cy + 0.5, cW - 1, cH - 1, 12); c.stroke()
+    c.fillStyle = 'rgba(255,255,255,0.04)'
+    rrect(cx, cy, cW, cH, 14); c.fill()
+    c.strokeStyle = 'rgba(255,255,255,0.1)'; c.lineWidth = 1
+    rrect(cx + 0.5, cy + 0.5, cW - 1, cH - 1, 14); c.stroke()
 
     c.font = `600 11px ${FONT}`
-    c.textAlign = 'left'; c.fillStyle = 'rgba(255,255,255,0.52)'
-    c.fillText(m.label, cx + 10, cy + 18)
+    c.textAlign = 'left'; c.fillStyle = 'rgba(255,255,255,0.5)'
+    c.fillText(m.label, cx + 12, cy + 20)
 
-    c.font = `900 28px ${FONT}`
+    c.font = `900 30px ${FONT}`
     c.fillStyle = PINK_TEXT
-    c.fillText(String(val), cx + 10, cy + 46)
+    c.fillText(String(val), cx + 12, cy + 50)
 
     // Barre de progression
-    const barW = cW - 20, barH = 3, barY = cy + cH - 9
+    const barW = cW - 24, barH = 3, barY = cy + cH - 10
     c.fillStyle = 'rgba(204,60,105,0.15)'
-    rrect(cx + 10, barY, barW, barH, 2); c.fill()
+    rrect(cx + 12, barY, barW, barH, 2); c.fill()
     c.fillStyle = PINK
-    rrect(cx + 10, barY, barW * (val / 100), barH, 2); c.fill()
+    rrect(cx + 12, barY, barW * (val / 100), barH, 2); c.fill()
   })
+
+  y += 3 * (cH + GAP) + 14
+
+  // ── Watermark Shemaxx en bas ──
+  c.font = `700 10px ${FONT}`
+  c.textAlign = 'center'
+  c.fillStyle = 'rgba(204,60,105,0.4)'
+  c.fillText('shemaxx.com', W / 2, y)
 
   return canvas
 }
@@ -1219,9 +1202,8 @@ function ScanDetailModal({ scan, pseudo, onClose, currentScores = null }) {
     : { total: scan.total, ranking: scan.ranking }
 
   const getCanvas = useCallback(async () => {
-    const photo = sc.photoUrl || loadPhotoSeparately(scan.id) || null
-    return buildResultsCanvas(sc, photo)
-  }, [sc, scan.id])
+    return buildResultsCanvas(sc)
+  }, [sc])
 
   const shareBlob = async (blob, title, text) => {
     const file = new File([blob], 'shemaxx-analyse.png', { type: 'image/png' })
