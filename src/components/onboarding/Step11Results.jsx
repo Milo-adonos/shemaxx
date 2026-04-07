@@ -583,11 +583,11 @@ function ResultsCard({ scores, pseudo, cardRef }) {
         {/* ── Classement global — compact ── */}
         <div className="flex items-center justify-between rounded-xl px-3 py-2 mb-3"
           style={{ background: 'rgba(205,55,103,0.08)', border: '1px solid rgba(205,55,103,0.2)' }}>
-          <div className="flex items-center gap-2">
-            <span style={{ fontSize: 13 }}>🏆</span>
-            <span className="text-[12px] font-semibold" style={{ color: 'rgba(255,255,255,0.6)' }}>Classement global</span>
+          <div className="flex items-center gap-2 min-w-0 shrink">
+            <span style={{ fontSize: 13, flexShrink: 0 }}>🏆</span>
+            <span className="text-[12px] font-semibold truncate" style={{ color: 'rgba(255,255,255,0.6)' }}>Classement global</span>
           </div>
-          <span className="text-[14px] font-black" style={{ color: '#ff4d88' }}>{scores.ranking}</span>
+          <span className="text-[14px] font-black shrink-0 ml-2" style={{ color: '#ff4d88', whiteSpace: 'nowrap' }}>{scores.ranking}</span>
         </div>
 
         {/* ── Grille métriques 2×3 — cases compactes ── */}
@@ -598,15 +598,15 @@ function ResultsCard({ scores, pseudo, cardRef }) {
               <motion.div key={i}
                 initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.1 + i * 0.06 }}
-                className="rounded-xl px-3 py-2 flex flex-col gap-1"
-                style={{ background: 'rgba(255,255,255,0.035)', border: '1px solid rgba(255,255,255,0.07)' }}>
-                <div className="flex items-center gap-1 min-w-0">
-                  <span style={{ color: 'rgba(205,55,103,0.65)', fontSize: 11, flexShrink: 0 }}>{m.icon}</span>
-                  <span className="text-[11px] font-semibold leading-tight" style={{ color: 'rgba(255,255,255,0.55)' }}>{m.label}</span>
+                className="rounded-xl px-3 pt-2 pb-2.5 flex flex-col"
+                style={{ background: 'rgba(255,255,255,0.035)', border: '1px solid rgba(255,255,255,0.07)', minHeight: 80 }}>
+                <div className="flex items-center gap-1 mb-1" style={{ overflow: 'hidden' }}>
+                  <span style={{ color: 'rgba(205,55,103,0.65)', fontSize: 10, flexShrink: 0 }}>{m.icon}</span>
+                  <span className="text-[10px] font-semibold" style={{ color: 'rgba(255,255,255,0.55)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{m.label}</span>
                 </div>
-                <span className="text-[22px] font-black tabular-nums leading-none"
+                <span className="text-[26px] font-black tabular-nums leading-none mt-auto"
                   style={{ color: '#ff4d88', textShadow: '0 0 14px rgba(255,77,136,0.4)' }}>{val}</span>
-                <div className="h-1 rounded-full overflow-hidden" style={{ background: 'rgba(255,255,255,0.07)' }}>
+                <div className="h-1 rounded-full overflow-hidden mt-2" style={{ background: 'rgba(255,255,255,0.07)' }}>
                   <FillBar value={val} color="#ff4d88" delayMs={300 + i * 80} />
                 </div>
               </motion.div>
