@@ -1,4 +1,5 @@
 import { motion } from 'framer-motion'
+import { useT } from '../../contexts/LangContext'
 
 const PINK   = '#cc3c69'
 const PINK_A = (a) => `rgba(204,60,105,${a})`
@@ -89,13 +90,11 @@ function getZoneStyle(zone) {
 }
 
 // ── Indicateur d'impact visuel ────────────────────────────────────────────
-function ImpactBar({ index }) {
-  // Premier défaut = impact fort, décroissant ensuite
+function ImpactBar({ index, labels }) {
   const level = Math.max(1, 3 - Math.floor(index / 2))
   const colors = ['#ef4444', '#f97316', '#eab308']
-  const labels = ['Impact fort', 'Impact moyen', 'À corriger']
   const color  = colors[3 - level] || colors[2]
-  const label  = labels[3 - level] || labels[2]
+  const label  = (labels ?? ['Impact fort', 'Impact moyen', 'À corriger'])[3 - level] ?? labels?.[2]
   return (
     <div className="flex items-center gap-1.5">
       {[1, 2, 3].map(i => (
@@ -111,6 +110,7 @@ function ImpactBar({ index }) {
 }
 
 export default function Step9Reveal({ onNext, pseudo = '', faceScores = null, zones = null }) {
+  const t = useT()
   const rawDefauts = (faceScores?.defauts && faceScores.defauts.length > 0)
     ? faceScores.defauts
     : DEFAULT_DEFAUTS
@@ -181,21 +181,21 @@ export default function Step9Reveal({ onNext, pseudo = '', faceScores = null, zo
             </motion.span>
             <span className="text-xs font-bold uppercase tracking-widest"
               style={{ color: '#ff4d88' }}>
-              Analyse complète
+              {t.step9Reveal.badge}
             </span>
           </motion.div>
 
           {/* Titre principal */}
           <h1 className="font-black text-white leading-tight mb-2"
             style={{ fontSize: 'clamp(1.7rem, 6vw, 2.2rem)' }}>
-            +{count} améliorations<br />
-            <span style={{ color: '#ff4d88' }}>détectées</span>{' '}
+            +{count} {t.step9Reveal.improvementsDetected}<br />
+            <span style={{ color: '#ff4d88' }}>{t.step9Reveal.detected}</span>{' '}
             <span className="text-white/40 font-medium text-xl">{contextHint}</span>
           </h1>
 
           <p className="text-sm leading-relaxed" style={{ color: 'rgba(255,255,255,0.35)' }}>
-            Notre IA a analysé ton visage en détail.<br />
-            Les conseils sont verrouillés — débloque-les avec Pro.
+            {t.step9Reveal.aiAnalyzed}<br />
+            {t.step9Reveal.locked}
           </p>
         </motion.div>
 
@@ -230,7 +230,7 @@ export default function Step9Reveal({ onNext, pseudo = '', faceScores = null, zo
                         {defaut.zone}
                       </span>
                     </div>
-                    <ImpactBar index={i} />
+                    <ImpactBar index={i} labels={[t.step9Reveal.impact.high, t.step9Reveal.impact.medium, t.step9Reveal.impact.low]} />
                   </div>
 
                   {/* Ligne 2 : problème détecté */}
@@ -301,7 +301,7 @@ export default function Step9Reveal({ onNext, pseudo = '', faceScores = null, zo
               <span className="text-sm">✦</span>
               <span className="text-[10px] font-black uppercase tracking-widest px-2 py-0.5 rounded-full"
                 style={{ background: 'rgba(255,255,255,0.06)', color: 'rgba(255,255,255,0.4)', border: '1px solid rgba(255,255,255,0.1)' }}>
-                Et bien plus encore…
+                {t.step9Reveal.moreImprovements}
               </span>
             </div>
 
@@ -319,12 +319,12 @@ export default function Step9Reveal({ onNext, pseudo = '', faceScores = null, zo
 
             <p className="text-xs font-semibold leading-snug"
               style={{ color: 'rgba(255,255,255,0.3)' }}>
-              Notre IA a détecté{' '}
+              {t.step9Reveal.aiDetected}{' '}
               <span className="font-black" style={{ color: '#ff4d88' }}>
-                {totalCount}+ améliorations au total
+                {totalCount}{t.step9Reveal.totalLabel}
               </span>{' '}
-              — seules {count} sont visibles ici.
-              Débloque l'analyse complète pour tout voir.
+              {t.step9Reveal.onlyVisible} {count} {t.step9Reveal.areVisible}
+              {t.step9Reveal.unlockFull}
             </p>
           </div>
         </motion.div>
@@ -340,11 +340,11 @@ export default function Step9Reveal({ onNext, pseudo = '', faceScores = null, zo
             backdropFilter: 'blur(8px)',
           }}>
           <p className="text-sm font-black text-white mb-1">
-            {pseudo ? `${pseudo}, ` : ''}tes conseils personnalisés t'attendent 🔒
+            {t.step9Reveal.fomoTitle(pseudo)}
           </p>
           <p className="text-xs leading-relaxed" style={{ color: 'rgba(255,255,255,0.4)' }}>
-            Chaque conseil est basé sur ton analyse réelle.<br />
-            Débloque-les maintenant pour commencer à progresser.
+            {t.step9Reveal.fomoSub1}<br />
+            {t.step9Reveal.fomoSub2}
           </p>
         </motion.div>
 
@@ -369,7 +369,7 @@ export default function Step9Reveal({ onNext, pseudo = '', faceScores = null, zo
           transition={{ duration: 2.2, repeat: Infinity, repeatDelay: 1.5, ease: 'easeInOut' }}
           style={{ background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.18), transparent)', width: '60%' }}
         />
-        <span className="relative z-10">Voir ce que l'IA a trouvé →</span>
+        <span className="relative z-10">{t.step9Reveal.cta}</span>
       </motion.button>
     </div>
   )

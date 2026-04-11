@@ -1,8 +1,10 @@
 import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
+import { useT } from '../contexts/LangContext'
 
 export default function Navbar({ onCta, onSignOut, user }) {
   const [scrolled, setScrolled] = useState(false)
+  const t = useT()
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 20)
@@ -35,10 +37,10 @@ export default function Navbar({ onCta, onSignOut, user }) {
             {user ? (
               <>
                 <span className="w-2 h-2 rounded-full bg-white/80" />
-                Mon compte
+                {t.navbar.account}
               </>
             ) : (
-              'Connexion'
+              t.navbar.login
             )}
           </button>
 

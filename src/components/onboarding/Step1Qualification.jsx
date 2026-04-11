@@ -1,35 +1,19 @@
 import { useState } from 'react'
 import { motion } from 'framer-motion'
 import StepLayout from './StepLayout'
+import { useT } from '../../contexts/LangContext'
 
-const options = [
-  {
-    id: 'curious',
-    emoji: '💡',
-    label: 'Curieuse',
-    desc: 'Je commence à m\'intéresser à mon potentiel et à mon apparence.',
-  },
-  {
-    id: 'progressing',
-    emoji: '💪',
-    label: 'En progression',
-    desc: 'Je connais déjà quelques techniques et je veux aller plus loin.',
-  },
-  {
-    id: 'determined',
-    emoji: '👑',
-    label: 'Déterminée',
-    desc: 'Je veux atteindre mon plein potentiel et optimiser chaque détail.',
-  },
-]
+const EMOJIS = ['💡', '💪', '👑']
 
 export default function Step1Qualification({ onNext }) {
   const [selected, setSelected] = useState(null)
+  const t = useT()
+  const options = t.step1.options.map((o, i) => ({ id: ['curious','progressing','determined'][i], emoji: EMOJIS[i], ...o }))
 
   return (
     <StepLayout
-      title="Où en es-tu dans le looksmaxxing ?"
-      cta="Continuer"
+      title={t.step1.title}
+      cta={t.step1.cta}
       ctaDisabled={!selected}
       onCta={() => onNext(selected)}
     >

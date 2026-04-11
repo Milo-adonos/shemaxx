@@ -3,7 +3,7 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
-function buildPrompt(age: number | null): string {
+function buildPrompt(age: number | null, english = false): string {
   let ageContext = ''
   if (age) {
     if (age <= 18) {
@@ -56,7 +56,11 @@ Sois encourageante, valorise chaque amelioration possible.`
     }
   }
 
-  return `Tu es une intelligence artificielle specialisee en analyse faciale clinique, looksmaxxing et morphologie feminine. Tu analyses des visages avec une precision clinique pour identifier CHAQUE defaut visible, meme mineur. Reponds UNIQUEMENT en francais.
+  const langInstruction = english
+    ? 'You are an AI specialized in clinical facial analysis, looksmaxxing, and female morphology. Analyze faces with clinical precision to identify EACH visible flaw, even minor ones. Respond ONLY in English. Zone names, problems, and advice must ALL be in English.'
+    : 'Tu es une intelligence artificielle specialisee en analyse faciale clinique, looksmaxxing et morphologie feminine. Tu analyses des visages avec une precision clinique pour identifier CHAQUE defaut visible, meme mineur. Reponds UNIQUEMENT en francais.'
+
+  return `${langInstruction}
 ${ageContext}
 DETECTION DU GENRE :
 Avant tout, determine si le visage est feminin ou masculin.
@@ -200,7 +204,8 @@ Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders })
 
   try {
-    const { imageDataUrl, age } = await req.json()
+    const { imageDataUrl, age, lang } = await req.json()
+    const isEnglish = lang === 'en'
 
     const apiKey = Deno.env.get('OPENAI_API_KEY')
     if (!apiKey) {
@@ -209,7 +214,7 @@ Deno.serve(async (req) => {
       })
     }
 
-    const prompt = buildPrompt(age ? parseInt(age) : null)
+    const prompt = buildPrompt(age ? parseInt(age) : null, isEnglish)
 
     const content = imageDataUrl
       ? [

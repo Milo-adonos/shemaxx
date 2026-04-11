@@ -1,5 +1,6 @@
 import { motion } from 'framer-motion'
 import StepLayout from './StepLayout'
+import { useT } from '../../contexts/LangContext'
 
 // SVG paths
 const SHEMAXX_PATH = "M 28,148 C 60,148 80,130 110,108 S 160,72 195,50 S 240,28 272,18"
@@ -10,10 +11,11 @@ const SHEMAXX_LEN  = 340
 const INTERNET_LEN = 310
 
 export default function Step6Graph({ onNext }) {
+  const t = useT()
   return (
     <StepLayout
-      title="Révèle ton potentiel avec l'IA"
-      cta="Continuer"
+      title={t.step6.title}
+      cta={t.step6.cta}
       onCta={onNext}
     >
       <div className="mt-3">
@@ -108,7 +110,7 @@ export default function Step6Graph({ onNext }) {
                 initial={{ opacity: 0 }} animate={{ opacity: 1 }}
                 transition={{ delay: 2 }}
               >
-                Tutos en ligne
+                {t.step6.onlineTutos}
               </motion.text>
 
               {/* ── X Axis ── */}
@@ -123,7 +125,7 @@ export default function Step6Graph({ onNext }) {
 
             {/* X-axis labels */}
             <div className="flex justify-around px-4 pb-4 -mt-1">
-              {['Semaine 1', 'Semaine 2', 'Semaine 3'].map(w => (
+              {t.step6.weeks.map(w => (
                 <span key={w} className="text-[10px]" style={{ color: 'rgba(255,255,255,0.35)' }}>{w}</span>
               ))}
             </div>
@@ -140,7 +142,7 @@ export default function Step6Graph({ onNext }) {
         >
           <span className="text-3xl font-black shrink-0" style={{ color: '#cc3c69' }}>3x</span>
           <p className="text-xs leading-relaxed" style={{ color: 'rgba(255,255,255,0.5)' }}>
-            plus de résultats visibles en 3 semaines avec l'analyse IA Shemaxx
+            {t.step6.stat}
           </p>
         </motion.div>
       </div>

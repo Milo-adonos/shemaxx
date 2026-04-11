@@ -2,16 +2,16 @@ import { motion } from 'framer-motion'
 import { useInView } from 'framer-motion'
 import { useRef } from 'react'
 import { ShieldCheck, Clock, Sparkles } from 'lucide-react'
-
-
-const reassurances = [
-  { icon: ShieldCheck, text: '100% confidentiel' },
-  { icon: Clock, text: 'Résultats en 30 sec' },
-]
+import { useT } from '../contexts/LangContext'
 
 export default function FinalCTA({ onCta }) {
   const ref = useRef(null)
   const inView = useInView(ref, { once: true, margin: '-80px' })
+  const t = useT()
+  const reassurances = [
+    { icon: ShieldCheck, text: t.finalCta.confidential },
+    { icon: Clock,       text: t.finalCta.results },
+  ]
 
   return (
     <section id="cta" ref={ref} className="relative py-20 md:py-28 overflow-hidden">
@@ -28,19 +28,19 @@ export default function FinalCTA({ onCta }) {
         >
           <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-[#cc3c69]/30 bg-[#cc3c69]/10 text-[#cc3c69] text-xs font-semibold tracking-widest uppercase mb-6">
             <span className="w-1.5 h-1.5 rounded-full bg-[#cc3c69] animate-pulse" />
-            Rejoins les +12 000 femmes
+            {t.finalCta.badge}
           </div>
 
           <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black leading-[1.08] tracking-tight mb-5">
-            Prête à mog
+            {t.finalCta.title1}
             <br />
             <span className="bg-gradient-to-r from-[#cc3c69] to-[#e0557f] bg-clip-text text-transparent">
-              toutes tes copines ?
+              {t.finalCta.title2}
             </span>
           </h2>
 
           <p className="text-base text-white/50 leading-relaxed mb-8 max-w-sm mx-auto">
-            Lance ta première analyse et découvre ton potentiel beauté.
+            {t.finalCta.subtitle}
           </p>
 
           <motion.button
@@ -49,7 +49,7 @@ export default function FinalCTA({ onCta }) {
             className="inline-flex items-center justify-center gap-2 w-full sm:w-auto px-8 py-4 rounded-full font-bold text-base bg-[#cc3c69] text-white shadow-[0_0_30px_rgba(204,60,105,0.35)] mb-8 active:scale-95 transition-transform duration-150"
           >
             <Sparkles size={18} />
-            Analyser mon visage gratuitement
+            {t.finalCta.cta}
           </motion.button>
 
           {/* Reassurances */}

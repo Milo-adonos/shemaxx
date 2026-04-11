@@ -1,5 +1,8 @@
+import { useT } from '../contexts/LangContext'
+
 export default function Footer() {
   const year = new Date().getFullYear()
+  const t = useT()
 
   return (
     <footer className="border-t border-white/5 bg-[#0d0d0d]">
@@ -13,9 +16,9 @@ export default function Footer() {
           </div>
 
           <div className="flex items-center gap-6 text-xs text-white/30">
-            <a href="#" className="hover:text-white/60 transition-colors py-1">Confidentialité</a>
-            <a href="#" className="hover:text-white/60 transition-colors py-1">Conditions</a>
-            <a href="#" className="hover:text-white/60 transition-colors py-1">Contact</a>
+            <a href="#" className="hover:text-white/60 transition-colors py-1">{t.footer.privacy}</a>
+            <a href="#" className="hover:text-white/60 transition-colors py-1">{t.footer.terms}</a>
+            <a href="#" className="hover:text-white/60 transition-colors py-1">{t.footer.contact}</a>
           </div>
 
           <p className="text-xs text-white/20">© {year} Shemaxx</p>

@@ -2,17 +2,12 @@ import { motion } from 'framer-motion'
 import { useInView } from 'framer-motion'
 import { useRef } from 'react'
 import FaceGrid from './FaceGrid'
-
-const points = [
-  { label: 'Symétrie faciale', desc: 'Mesure l\'équilibre entre les deux côtés de ton visage.' },
-  { label: 'Proportions dorées', desc: 'Analyse tes traits selon les ratios de la divine proportion.' },
-  { label: 'Structure osseuse', desc: 'Évalue la définition de ta mâchoire et de tes pommettes.' },
-  { label: 'Harmonie des traits', desc: 'Comprend comment tes traits interagissent ensemble.' },
-]
+import { useT } from '../contexts/LangContext'
 
 export default function Reveal() {
   const ref = useRef(null)
   const inView = useInView(ref, { once: true, margin: '-80px' })
+  const t = useT()
 
   return (
     <section ref={ref} className="relative py-16 md:py-24 overflow-hidden">
@@ -31,7 +26,7 @@ export default function Reveal() {
               transition={{ duration: 0.5 }}
               className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-[#cc3c69]/30 bg-[#cc3c69]/10 text-[#cc3c69] text-xs font-semibold tracking-widest uppercase mb-5"
             >
-              Analyse IA
+              {t.reveal.badge}
             </motion.div>
 
             <motion.h2
@@ -40,8 +35,8 @@ export default function Reveal() {
               transition={{ duration: 0.6, delay: 0.1 }}
               className="text-3xl sm:text-4xl md:text-5xl font-black leading-tight tracking-tight mb-5"
             >
-              Découvre ce que ton visage
-              <br /><span className="text-[#cc3c69]">révèle vraiment.</span>
+              {t.reveal.title1}
+              <br /><span className="text-[#cc3c69]">{t.reveal.title2}</span>
             </motion.h2>
 
             <motion.p
@@ -50,12 +45,12 @@ export default function Reveal() {
               transition={{ duration: 0.5, delay: 0.2 }}
               className="text-sm text-white/50 leading-relaxed mb-8 max-w-sm mx-auto lg:mx-0"
             >
-              Notre IA analyse +68 points de référence pour te donner une lecture précise et personnalisée de ton visage.
+              {t.reveal.subtitle}
             </motion.p>
 
             {/* Points — desktop only */}
             <div className="hidden lg:flex flex-col gap-3">
-              {points.map((p, i) => (
+              {t.reveal.points.map((p, i) => (
                 <motion.div
                   key={i}
                   initial={{ opacity: 0, x: -16 }}

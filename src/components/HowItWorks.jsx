@@ -2,41 +2,15 @@ import { motion } from 'framer-motion'
 import { useInView } from 'framer-motion'
 import { useRef } from 'react'
 import { Camera, Cpu, Sparkles, Download } from 'lucide-react'
+import { useT } from '../contexts/LangContext'
 
-const steps = [
-  {
-    icon: Camera,
-    number: '01',
-    title: 'Prends ou télécharge ta photo',
-    desc: 'Un selfie en bonne lumière suffit. Ton visage naturel est parfait.',
-    detail: '30 sec',
-  },
-  {
-    icon: Cpu,
-    number: '02',
-    title: 'L\'IA analyse ton visage',
-    desc: 'Notre algorithme examine plus de 68 points de référence faciaux en temps réel.',
-    detail: '< 30 sec',
-  },
-  {
-    icon: Sparkles,
-    number: '03',
-    title: 'Découvre ton rapport',
-    desc: 'Symétrie, proportions, structure — des insights actionnables et bienveillants.',
-    detail: 'Instantané',
-  },
-  {
-    icon: Download,
-    number: '04',
-    title: 'Accède à tes conseils',
-    desc: 'Coiffures, maquillage, skincare — des recommandations ciblées pour toi.',
-    detail: 'Sur-mesure',
-  },
-]
+const ICONS = [Camera, Cpu, Sparkles, Download]
 
 export default function HowItWorks() {
   const ref = useRef(null)
   const inView = useInView(ref, { once: true, margin: '-80px' })
+  const t = useT()
+  const steps = t.howItWorks.steps.map((s, i) => ({ ...s, icon: ICONS[i], number: String(i + 1).padStart(2, '0') }))
 
   return (
     <section id="how" ref={ref} className="relative py-16 md:py-24 bg-[#111]">
@@ -54,7 +28,7 @@ export default function HowItWorks() {
             transition={{ duration: 0.5 }}
             className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-[#cc3c69]/30 bg-[#cc3c69]/10 text-[#cc3c69] text-xs font-semibold tracking-widest uppercase mb-5"
           >
-            Comment ça marche
+            {t.howItWorks.badge}
           </motion.div>
           <motion.h2
             initial={{ opacity: 0, y: 20 }}
@@ -62,8 +36,8 @@ export default function HowItWorks() {
             transition={{ duration: 0.6, delay: 0.1 }}
             className="text-3xl sm:text-4xl md:text-5xl font-black leading-tight tracking-tight mb-3"
           >
-            Tout ce qu'il te faut pour devenir
-            <br /><span className="text-[#cc3c69]">la meilleure version de toi-même.</span>
+            {t.howItWorks.title1}
+            <br /><span className="text-[#cc3c69]">{t.howItWorks.title2}</span>
           </motion.h2>
         </div>
 

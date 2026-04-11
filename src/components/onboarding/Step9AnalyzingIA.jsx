@@ -2,20 +2,18 @@ import { useEffect, useRef, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { analyzeWithAI } from '../../utils/analyzeWithAI'
 import { track } from '../../lib/posthog.js'
+import { useT } from '../../contexts/LangContext'
 
 const PINK   = '#cc3c69'
 const PINK_A = (a) => `rgba(204,60,105,${a})`
 
-const STEPS = [
-  'Symétrie faciale',
-  'Proportions dorées',
-  'Structure osseuse',
-  'Qualité de peau',
-]
+
 
 const MIN_DISPLAY_MS = 30000  // 30 secondes minimum
 
 export default function Step9AnalyzingIA({ onNext, onRescan, analysisData = null, age = null }) {
+  const t    = useT()
+  const STEPS = t.step9Analyzing.steps
   const onNextRef     = useRef(onNext)
   onNextRef.current   = onNext
   const [error, setError]       = useState(null)
@@ -63,7 +61,7 @@ export default function Step9AnalyzingIA({ onNext, onRescan, analysisData = null
         track('ai_analysis_failed', { error_type: errorType, error_message: err.message?.slice(0, 200) })
 
         if (err.isConfig) {
-          setError({ title: 'Configuration manquante', detail: 'La clé API n\'est pas configurée. Contacte le support Shemaxx.', emoji: '⚙️', isImageQuality: false })
+          setError({ title: t.step9Analyzing.errors.configTitle, detail: t.step9Analyzing.errors.configDetail, emoji: '⚙️', isImageQuality: false })
         } else if (err.isImageQuality) {
           setError({
             title: err.qualityTitle,
@@ -73,11 +71,11 @@ export default function Step9AnalyzingIA({ onNext, onRescan, analysisData = null
           })
         } else {
           const detail = err.message?.includes('401')
-            ? 'Problème de connexion au serveur. Vérifie ta connexion internet.'
+            ? t.step9Analyzing.errors.authDetail
             : err.message?.includes('abort') || err.message?.includes('timeout')
-            ? "L'analyse a pris trop de temps. Assure-toi d'avoir une bonne connexion Wi-Fi."
-            : 'Erreur inattendue. Réessaie en gardant le visage bien centré dans le cercle.'
-          setError({ title: 'Analyse échouée', detail, emoji: '⚠️', isImageQuality: false })
+            ? t.step9Analyzing.errors.timeoutDetail
+            : t.step9Analyzing.errors.networkDetail
+          setError({ title: t.step9Analyzing.errors.analysisTitle, detail, emoji: '⚠️', isImageQuality: false })
         }
       }
     }
@@ -115,30 +113,30 @@ export default function Step9AnalyzingIA({ onNext, onRescan, analysisData = null
             className="w-full max-w-xs rounded-2xl px-4 py-3 text-left"
             style={{ background: 'rgba(204,60,105,0.07)', border: '1px solid rgba(204,60,105,0.2)' }}>
             <p className="text-[11px] font-black uppercase tracking-widest mb-2"
-              style={{ color: 'rgba(204,60,105,0.8)' }}>Comment corriger</p>
+              style={{ color: 'rgba(204,60,105,0.8)' }}>{t.step9Analyzing.errors.howToFix}</p>
             {error.emoji === '💡' && (
               <ul className="space-y-1">
-                {['Mets-toi face à une fenêtre ou une lampe', 'Évite la lumière dans le dos', 'Préfère la lumière naturelle du jour'].map(t => (
-                  <li key={t} className="text-xs flex gap-2" style={{ color: 'rgba(255,255,255,0.6)' }}>
-                    <span style={{ color: '#cc3c69' }}>›</span>{t}
+                {t.step9Analyzing.errors.badLighting.tips.map(tip => (
+                  <li key={tip} className="text-xs flex gap-2" style={{ color: 'rgba(255,255,255,0.6)' }}>
+                    <span style={{ color: '#cc3c69' }}>›</span>{tip}
                   </li>
                 ))}
               </ul>
             )}
             {error.emoji === '📷' && (
               <ul className="space-y-1">
-                {['Nettoie l\'objectif de ta caméra', 'Reste immobile pendant le scan', 'Rapproche-toi un peu de l\'écran'].map(t => (
-                  <li key={t} className="text-xs flex gap-2" style={{ color: 'rgba(255,255,255,0.6)' }}>
-                    <span style={{ color: '#cc3c69' }}>›</span>{t}
+                {t.step9Analyzing.errors.blurry.tips.map(tip => (
+                  <li key={tip} className="text-xs flex gap-2" style={{ color: 'rgba(255,255,255,0.6)' }}>
+                    <span style={{ color: '#cc3c69' }}>›</span>{tip}
                   </li>
                 ))}
               </ul>
             )}
             {(error.emoji === '↔️' || error.emoji === '👤') && (
               <ul className="space-y-1">
-                {['Regarde droit dans la caméra', 'Tête bien droite, pas inclinée', 'Visage centré dans le cercle'].map(t => (
-                  <li key={t} className="text-xs flex gap-2" style={{ color: 'rgba(255,255,255,0.6)' }}>
-                    <span style={{ color: '#cc3c69' }}>›</span>{t}
+                {t.step9Analyzing.errors.badAngle.tips.map(tip => (
+                  <li key={tip} className="text-xs flex gap-2" style={{ color: 'rgba(255,255,255,0.6)' }}>
+                    <span style={{ color: '#cc3c69' }}>›</span>{tip}
                   </li>
                 ))}
               </ul>
@@ -155,7 +153,7 @@ export default function Step9AnalyzingIA({ onNext, onRescan, analysisData = null
               className="w-full py-4 rounded-2xl font-black text-base text-white"
               style={{ background: 'linear-gradient(135deg, #cc3c69, #e8608a)',
                 boxShadow: '0 0 28px rgba(204,60,105,0.4)' }}>
-              📸 Refaire le scan
+              {t.step9Analyzing.errors.rescanBtn}
             </button>
           )}
           <button
@@ -163,7 +161,7 @@ export default function Step9AnalyzingIA({ onNext, onRescan, analysisData = null
             className="w-full py-3.5 rounded-2xl font-bold text-sm"
             style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)',
               color: 'rgba(255,255,255,0.6)' }}>
-            Réessayer quand même
+            {t.step9Analyzing.errors.retryBtn}
           </button>
         </motion.div>
       </div>
@@ -197,9 +195,9 @@ export default function Step9AnalyzingIA({ onNext, onRescan, analysisData = null
               </div>
               {/* Texte */}
               <div className="text-center">
-                <p className="text-white font-black text-lg mb-2">Analyse en cours</p>
+                <p className="text-white font-black text-lg mb-2">{t.step9Analyzing.popup.title}</p>
                 <p className="text-[14px] leading-relaxed" style={{ color: 'rgba(255,255,255,0.55)' }}>
-                  L'analyse dure entre <span className="font-bold" style={{ color: '#ff4d88' }}>1 à 2 minutes</span>.<br />Veuillez patienter.
+                  {t.step9Analyzing.popup.desc1}<span className="font-bold" style={{ color: '#ff4d88' }}>{t.step9Analyzing.popup.duration}</span>{t.step9Analyzing.popup.desc2}
                 </p>
               </div>
               {/* Bouton OK */}
@@ -207,7 +205,7 @@ export default function Step9AnalyzingIA({ onNext, onRescan, analysisData = null
                 onClick={() => setShowPopup(false)}
                 className="w-full py-3.5 rounded-2xl font-black text-base text-white"
                 style={{ background: 'linear-gradient(135deg, #cc3c69, #e8608a)', boxShadow: '0 0 24px rgba(204,60,105,0.4)' }}>
-                OK
+                {t.step9Analyzing.popup.ok}
               </button>
             </motion.div>
           </motion.div>
@@ -240,11 +238,11 @@ export default function Step9AnalyzingIA({ onNext, onRescan, analysisData = null
         <motion.h1 animate={{ opacity: [0.85, 1, 0.85] }}
           transition={{ duration: 1.8, repeat: Infinity }}
           className="text-2xl font-black text-white mb-2">
-          Analyse IA
+          {t.step9Analyzing.title}
         </motion.h1>
         <p className="text-sm leading-relaxed" style={{ color: 'rgba(255,255,255,0.38)' }}>
-          Notre intelligence artificielle interprète ton scan facial
-          <br />pour préparer ton rapport personnalisé.
+          {t.step9Analyzing.subtitle.split('\n')[0]}
+          <br />{t.step9Analyzing.subtitle.split('\n')[1]}
         </p>
       </div>
 
@@ -269,7 +267,7 @@ export default function Step9AnalyzingIA({ onNext, onRescan, analysisData = null
 
       <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1.2 }}
         className="text-[11px]" style={{ color: 'rgba(255,255,255,0.22)' }}>
-        Étape suivante : traitement détaillé de ton visage
+        {t.step9Analyzing.nextStep}
       </motion.p>
     </div>
   )

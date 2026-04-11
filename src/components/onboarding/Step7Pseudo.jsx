@@ -1,9 +1,11 @@
 import { useState } from 'react'
 import { motion } from 'framer-motion'
 import StepLayout from './StepLayout'
+import { useT } from '../../contexts/LangContext'
 
 export default function Step7Pseudo({ onNext }) {
   const [pseudo, setPseudo] = useState('')
+  const t = useT()
 
   const handleKey = (e) => {
     if (e.key === 'Enter' && pseudo.trim().length >= 2) {
@@ -13,8 +15,8 @@ export default function Step7Pseudo({ onNext }) {
 
   return (
     <StepLayout
-      title="Comment veux-tu qu'on t'appelle ?"
-      cta="Continuer"
+      title={t.step7.title}
+      cta={t.step7.cta}
       ctaDisabled={pseudo.trim().length < 2}
       onCta={() => onNext(pseudo.trim())}
     >
@@ -25,14 +27,14 @@ export default function Step7Pseudo({ onNext }) {
         className="mt-4"
       >
         <label className="block text-xs font-semibold mb-3 uppercase tracking-widest" style={{ color: 'rgba(255,255,255,0.35)' }}>
-          Entre ton pseudo
+          {t.step7.label}
         </label>
         <input
           type="text"
           value={pseudo}
           onChange={e => setPseudo(e.target.value)}
           onKeyDown={handleKey}
-          placeholder="Ex: Sarah, Léa, Alex..."
+          placeholder={t.step7.placeholder}
           autoFocus
           maxLength={30}
           className="w-full bg-transparent text-white text-xl font-semibold outline-none border-b-2 pb-3 transition-all duration-200 placeholder:font-normal"
@@ -48,7 +50,7 @@ export default function Step7Pseudo({ onNext }) {
             className="text-xs mt-4"
             style={{ color: 'rgba(204,60,105,0.7)' }}
           >
-            Parfait, {pseudo} ! Appuie sur Entrée ou "Continuer" ↓
+            {t.step7.confirm(pseudo)}
           </motion.p>
         )}
       </motion.div>

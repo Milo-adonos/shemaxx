@@ -6,6 +6,7 @@ import AuthModal from '../AuthModal'
 import { useAuth } from '../../contexts/AuthContext'
 import { supabase } from '../../lib/supabase'
 import { track } from '../../lib/posthog.js'
+import { useT } from '../../contexts/LangContext'
 
 const PINK   = '#cc3c69'
 const PINK_A = (a) => `rgba(204,60,105,${a})`
@@ -70,6 +71,7 @@ const SLIDES = [
 ]
 
 export default function Step10Paywall({ pseudo, faceScores = {}, onNext, onClose }) {
+  const t = useT()
   const { user } = useAuth()
   const scores  = faceScores ?? {}
   const total   = scores.total   ?? 70
@@ -490,7 +492,7 @@ export default function Step10Paywall({ pseudo, faceScores = {}, onNext, onClose
 
         {/* Note de frais */}
         <p className="text-center text-xs" style={{ color: 'rgba(255,255,255,0.3)' }}>
-          Analyse avancée par IA — résultats détaillés et personnalisés
+          {t.paywall.unlockSub}
         </p>
 
         {/* Erreur checkout */}
@@ -527,22 +529,22 @@ export default function Step10Paywall({ pseudo, faceScores = {}, onNext, onClose
                   <circle cx="12" cy="12" r="10" stroke="rgba(255,255,255,0.3)" strokeWidth="3"/>
                   <path d="M12 2a10 10 0 0 1 10 10" stroke="white" strokeWidth="3" strokeLinecap="round"/>
                 </svg>
-                Redirection vers le paiement…
+                {t.paywall.processing}
               </>
             ) : 'Obtiens tes résultats maintenant 🙌'}
           </span>
         </motion.button>
 
         {/* Prix */}
-        <p className="text-center font-black text-white text-sm">3,99 € par semaine</p>
+        <p className="text-center font-black text-white text-sm">3,99 € {t.paywall.priceLabel}</p>
 
         {/* Liens légaux */}
         <div className="flex items-center justify-center gap-4">
           <button className="text-xs" style={{ color: 'rgba(255,255,255,0.3)' }}>
-            Conditions d'utilisation
+            {t.footer.terms}
           </button>
           <button className="text-xs" style={{ color: 'rgba(255,255,255,0.3)' }}>
-            Confidentialité
+            {t.footer.privacy}
           </button>
         </div>
 
@@ -559,8 +561,8 @@ export default function Step10Paywall({ pseudo, faceScores = {}, onNext, onClose
         {showAuth && (
           <AuthModal
             mode="signup"
-            title="Crée ton compte"
-            subtitle="Pour accéder à tes résultats complets."
+            title={t.paywall.signupTitle}
+            subtitle={t.paywall.signupSubtitle}
             onSuccess={handleAuthSuccess}
             onClose={() => setShowAuth(false)}
           />

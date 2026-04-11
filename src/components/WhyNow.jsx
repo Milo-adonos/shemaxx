@@ -1,11 +1,6 @@
 import { motion, useInView, useMotionValue, useTransform, animate } from 'framer-motion'
 import { useRef, useEffect } from 'react'
-
-const stats = [
-  { value: 94, suffix: '%', label: 'des femmes se sentent mal représentées par les apps d\'attractivité existantes' },
-  { value: 3, suffix: 'x', label: 'plus de précision grâce à des algorithmes entraînés sur des visages féminins' },
-  { value: 0, suffix: '', label: 'jugement. Seulement des insights basés sur les standards de la beauté dorée' },
-]
+import { useT } from '../contexts/LangContext'
 
 function CountUp({ target, suffix, inView }) {
   const count = useMotionValue(0)
@@ -56,6 +51,8 @@ function AnimatedStat({ target, suffix, inView }) {
 export default function WhyNow() {
   const ref = useRef(null)
   const inView = useInView(ref, { once: true, margin: '-80px' })
+  const t = useT()
+  const stats = t.whyNow.stats
 
   return (
     <section ref={ref} className="relative py-16 md:py-24 bg-[#111] overflow-hidden">
@@ -76,7 +73,7 @@ export default function WhyNow() {
           className="flex justify-center mb-6"
         >
           <span className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-[#cc3c69]/30 bg-[#cc3c69]/10 text-[#cc3c69] text-xs font-semibold tracking-widest uppercase">
-            Pourquoi maintenant
+            {t.whyNow.badge}
           </span>
         </motion.div>
 
@@ -87,8 +84,8 @@ export default function WhyNow() {
           transition={{ duration: 0.6, delay: 0.1 }}
           className="text-3xl sm:text-4xl md:text-5xl font-black leading-tight tracking-tight text-center mb-8"
         >
-          Enfin une IA qui<br />
-          <span className="text-[#cc3c69]">te comprend, toi.</span>
+          {t.whyNow.title1}<br />
+          <span className="text-[#cc3c69]">{t.whyNow.title2}</span>
         </motion.h2>
 
         {/* Paragraphs */}
@@ -98,9 +95,9 @@ export default function WhyNow() {
           transition={{ duration: 0.6, delay: 0.2 }}
           className="space-y-3 text-sm text-white/50 leading-relaxed text-center max-w-lg mx-auto"
         >
-          <p>Les outils existants ont été conçus pour les hommes — algorithmes biaisés, conseils inadaptés, expérience pensée sans nous.</p>
-          <p><span className="text-white font-medium">Shemaxx change ça.</span> Une IA entraînée sur des visages féminins, dans toute leur diversité.</p>
-          <p>Des insights qui célèbrent tes forces et révèlent ce qui te rend unique.</p>
+          <p>{t.whyNow.p1}</p>
+          <p><span className="text-white font-medium">{t.whyNow.p2}</span>{t.whyNow.p2b}</p>
+          <p>{t.whyNow.p3}</p>
         </motion.div>
 
         {/* Divider */}

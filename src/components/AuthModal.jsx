@@ -1,12 +1,14 @@
 import { useState } from 'react'
 import { motion } from 'framer-motion'
 import { useAuth } from '../contexts/AuthContext'
+import { useT } from '../contexts/LangContext'
 
 const PINK   = '#cc3c69'
 const PINK_A = (a) => `rgba(204,60,105,${a})`
 
 export default function AuthModal({ mode = 'signup', onSuccess, onClose, title, subtitle }) {
   const { signIn, signUp } = useAuth()
+  const t = useT()
   const [tab,      setTab]      = useState(mode)
   const [email,    setEmail]    = useState('')
   const [password, setPassword] = useState('')
@@ -37,9 +39,9 @@ export default function AuthModal({ mode = 'signup', onSuccess, onClose, title, 
       }
     } catch (err) {
       const msg = err?.message ?? 'Une erreur est survenue.'
-      if (msg.includes('Invalid login credentials')) setError('Email ou mot de passe incorrect.')
-      else if (msg.includes('User already registered')) setError('Cet email est déjà utilisé. Connecte-toi.')
-      else if (msg.includes('Password should be')) setError('Le mot de passe doit contenir au moins 6 caractères.')
+      if (msg.includes('Invalid login credentials')) setError(t.auth.errors.invalidCredentials)
+      else if (msg.includes('User already registered')) setError(t.auth.errors.alreadyRegistered)
+      else if (msg.includes('Password should be')) setError(t.auth.errors.weakPassword)
       else setError(msg)
     }
     setLoading(false)
@@ -82,15 +84,15 @@ export default function AuthModal({ mode = 'signup', onSuccess, onClose, title, 
 
           {/* Tabs */}
           <div className="flex rounded-2xl p-1 mb-6" style={{ background: 'rgba(255,255,255,0.05)' }}>
-            {(['signup', 'signin']).map((t) => (
-              <button key={t} onClick={() => { setTab(t); setError(null) }}
+            {(['signup', 'signin']).map((tabId) => (
+              <button key={tabId} onClick={() => { setTab(tabId); setError(null) }}
                 className="flex-1 py-2.5 rounded-xl text-sm font-black transition-all"
                 style={{
-                  background: tab === t ? PINK : 'transparent',
-                  color: tab === t ? '#fff' : 'rgba(255,255,255,0.35)',
-                  boxShadow: tab === t ? `0 0 16px ${PINK_A(0.4)}` : 'none',
+                  background: tab === tabId ? PINK : 'transparent',
+                  color: tab === tabId ? '#fff' : 'rgba(255,255,255,0.35)',
+                  boxShadow: tab === tabId ? `0 0 16px ${PINK_A(0.4)}` : 'none',
                 }}>
-                {t === 'signup' ? "S'inscrire" : 'Se connecter'}
+                {tabId === 'signup' ? t.auth.signup : t.auth.signin}
               </button>
             ))}
           </div>
@@ -99,11 +101,11 @@ export default function AuthModal({ mode = 'signup', onSuccess, onClose, title, 
                 initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
                 <div>
                   <label className="block text-xs font-bold uppercase tracking-widest mb-2"
-                    style={{ color: 'rgba(255,255,255,0.35)' }}>Email</label>
+                    style={{ color: 'rgba(255,255,255,0.35)' }}>{t.auth.email}</label>
                   <input
                     type="email" value={email}
                     onChange={e => setEmail(e.target.value)}
-                    placeholder="ton@email.com"
+                    placeholder={t.auth.emailPlaceholder}
                     required autoComplete="email"
                     style={inputStyle}
                     onFocus={e => e.target.style.borderColor = PINK}
@@ -112,11 +114,11 @@ export default function AuthModal({ mode = 'signup', onSuccess, onClose, title, 
                 </div>
                 <div>
                   <label className="block text-xs font-bold uppercase tracking-widest mb-2"
-                    style={{ color: 'rgba(255,255,255,0.35)' }}>Mot de passe</label>
+                    style={{ color: 'rgba(255,255,255,0.35)' }}>{t.auth.password}</label>
                   <input
                     type="password" value={password}
                     onChange={e => setPassword(e.target.value)}
-                    placeholder="••••••••"
+                    placeholder={t.auth.passwordPlaceholder}
                     required autoComplete={tab === 'signup' ? 'new-password' : 'current-password'}
                     style={inputStyle}
                     onFocus={e => e.target.style.borderColor = PINK}
@@ -145,17 +147,17 @@ export default function AuthModal({ mode = 'signup', onSuccess, onClose, title, 
                         <circle cx="12" cy="12" r="10" stroke="rgba(255,255,255,0.3)" strokeWidth="3"/>
                         <path d="M12 2a10 10 0 0 1 10 10" stroke="white" strokeWidth="3" strokeLinecap="round"/>
                       </svg>
-                      Chargement…
+                      {t.auth.loading}
                     </span>
-                  ) : tab === 'signup' ? "Créer mon compte" : "Se connecter"}
+                  ) : tab === 'signup' ? t.auth.createAccount : t.auth.signin}
                 </button>
 
                 {tab === 'signin' && (
                   <p className="text-center text-xs" style={{ color: 'rgba(255,255,255,0.3)' }}>
-                    Pas encore de compte ?{' '}
+                    {t.auth.noAccount}{' '}
                     <button type="button" onClick={() => { setTab('signup'); setError(null) }}
                       className="font-black" style={{ color: PINK }}>
-                      S'inscrire
+                      {t.auth.signup}
                     </button>
                   </p>
                 )}

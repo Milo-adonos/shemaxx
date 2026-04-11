@@ -2,6 +2,12 @@
 const ANALYZE_FUNCTION_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/analyze-face`
 const SUPABASE_ANON_KEY    = import.meta.env.VITE_SUPABASE_ANON_KEY
 
+// Détecte la langue de l'utilisatrice pour l'envoyer au serveur
+function detectLang() {
+  const nav = (navigator.language || 'fr').toLowerCase()
+  return nav.startsWith('en') ? 'en' : 'fr'
+}
+
 /**
  * Capture une frame de la vidéo et retourne un data URL base64 (JPEG)
  */
@@ -100,7 +106,7 @@ async function callAPI(imageDataUrl, age = null) {
         'apikey':        SUPABASE_ANON_KEY,
         'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
       },
-      body: JSON.stringify({ imageDataUrl, age }),
+      body: JSON.stringify({ imageDataUrl, age, lang: detectLang() }),
     })
 
     if (!response.ok) {

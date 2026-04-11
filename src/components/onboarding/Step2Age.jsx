@@ -1,19 +1,21 @@
 import { useState } from 'react'
 import { motion } from 'framer-motion'
 import StepLayout from './StepLayout'
+import { useT } from '../../contexts/LangContext'
 
 const MIN = 13
 const MAX = 45
 
 export default function Step2Age({ value, onNext }) {
   const [age, setAge] = useState(value || 22)
+  const t = useT()
 
   const pct = ((age - MIN) / (MAX - MIN)) * 100
 
   return (
     <StepLayout
-      title="Quel âge as-tu ?"
-      cta="Continuer"
+      title={t.step2.title}
+      cta={t.step2.cta}
       onCta={() => onNext(age)}
     >
       <style>{`
@@ -73,7 +75,7 @@ export default function Step2Age({ value, onNext }) {
         >
           {age}
         </motion.div>
-        <p className="text-sm mt-3" style={{ color: 'rgba(255,255,255,0.3)' }}>ans</p>
+        <p className="text-sm mt-3" style={{ color: 'rgba(255,255,255,0.3)' }}>{t.step2.unit}</p>
       </div>
 
       {/* Slider */}
@@ -87,8 +89,8 @@ export default function Step2Age({ value, onNext }) {
           className="age-slider"
         />
         <div className="flex justify-between mt-3">
-          <span className="text-xs" style={{ color: 'rgba(255,255,255,0.2)' }}>{MIN} ans</span>
-          <span className="text-xs" style={{ color: 'rgba(255,255,255,0.2)' }}>{MAX} ans</span>
+          <span className="text-xs" style={{ color: 'rgba(255,255,255,0.2)' }}>{MIN} {t.step2.unit}</span>
+          <span className="text-xs" style={{ color: 'rgba(255,255,255,0.2)' }}>{MAX} {t.step2.unit}</span>
         </div>
       </div>
     </StepLayout>

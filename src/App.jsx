@@ -12,6 +12,7 @@ import Footer from './components/Footer'
 import Onboarding from './components/onboarding/Onboarding'
 import AuthModal from './components/AuthModal'
 import { AuthProvider, useAuth } from './contexts/AuthContext'
+import { LangProvider, useT } from './contexts/LangContext'
 
 const CONFIRMED_KEY = 'shemaxx_confirmed_refs'
 const PENDING_REF_KEY = 'shemaxx_pending_ref'
@@ -44,6 +45,7 @@ function confirmPendingRef() {
 
 function AppInner() {
   const { user, subscribed, scans, profile, loading, signOut } = useAuth()
+  const t = useT()
   const [onboardingOpen,   setOnboardingOpen]   = useState(false)
   const [authModalOpen,    setAuthModalOpen]    = useState(false)
   const [authMode,         setAuthMode]         = useState('signup')
@@ -168,13 +170,13 @@ function AppInner() {
             style={{ background: 'linear-gradient(135deg,#cc3c69,#e8608a)', boxShadow: '0 4px 20px rgba(204,60,105,0.5)' }}>
             <div className="flex items-center gap-2">
               <span className="text-base">🎉</span>
-              <p className="text-sm font-black text-white">Une amie t'a invitée sur Shemaxx !</p>
+              <p className="text-sm font-black text-white">{t.app.inviteBanner}</p>
             </div>
             <div className="flex items-center gap-2">
               <button
                 onClick={() => { setRefBanner(null); openOnboarding() }}
                 className="text-xs font-black px-3 py-1.5 rounded-full bg-white text-pink-600">
-                Analyser
+                {t.app.inviteAnalyze}
               </button>
               <button onClick={() => setRefBanner(null)} className="text-white/60 text-lg leading-none">×</button>
             </div>
@@ -212,8 +214,6 @@ function AppInner() {
         {authModalOpen && (
           <AuthModal
             mode={authMode}
-            title="Bon retour 👋"
-            subtitle="Retrouve tous tes résultats d'analyse."
             onSuccess={handleAuthSuccess}
             onClose={() => setAuthModalOpen(false)}
           />
@@ -225,8 +225,10 @@ function AppInner() {
 
 export default function App() {
   return (
-    <AuthProvider>
-      <AppInner />
-    </AuthProvider>
+    <LangProvider>
+      <AuthProvider>
+        <AppInner />
+      </AuthProvider>
+    </LangProvider>
   )
 }

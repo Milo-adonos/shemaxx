@@ -4,6 +4,7 @@ import HolographicFaceTraits from './HolographicFaceTraits'
 import { useAuth } from '../../contexts/AuthContext'
 import { saveScans, loadScans, upsertProfile, startOneTimePayment } from '../../lib/supabase'
 import { track } from '../../lib/posthog.js'
+import { useT } from '../../contexts/LangContext'
 
 const PINK   = '#cc3c69'
 const PINK_A = (a) => `rgba(204,60,105,${a})`
@@ -478,6 +479,7 @@ function PhotoCropPicker({ src, onConfirm, onCancel }) {
 
 // ── Slide 1 : carte résultats ─────────────────────────────────────────────────
 function ResultsCard({ scores, pseudo, cardRef }) {
+  const t = useT()
   const total        = scores.total ?? 71
   const displayTotal = useCounter(total, 1300, 200)
   const [pendingSrc, setPendingSrc] = useState(null)   // photo en attente de recadrage
@@ -585,7 +587,7 @@ function ResultsCard({ scores, pseudo, cardRef }) {
           style={{ background: 'rgba(205,55,103,0.08)', border: '1px solid rgba(205,55,103,0.2)' }}>
           <div className="flex items-center gap-2 min-w-0 shrink">
             <span style={{ fontSize: 13, flexShrink: 0 }}>🏆</span>
-            <span className="text-[12px] font-semibold truncate" style={{ color: 'rgba(255,255,255,0.6)' }}>Classement global</span>
+            <span className="text-[12px] font-semibold truncate" style={{ color: 'rgba(255,255,255,0.6)' }}>{t.results.card.globalRanking}</span>
           </div>
           <span className="text-[14px] font-black shrink-0 ml-2" style={{ color: '#ff4d88', whiteSpace: 'nowrap' }}>{scores.ranking}</span>
         </div>
@@ -622,10 +624,11 @@ function ResultsCard({ scores, pseudo, cardRef }) {
 
 // ── Slide 2 : photo avec points débloqués ────────────────────────────────────
 function FaceAnalysisSlide({ scores }) {
+  const t = useT()
   return (
     <div className="pb-2">
       <div className="mb-3 text-center">
-        <p className="text-base font-black text-white">Analyse par zone</p>
+        <p className="text-base font-black text-white">{t.results.detail.zoneAnalysis}</p>
         <p className="text-[11px]" style={{ color: 'rgba(255,255,255,0.35)' }}>
           Touche un point pour voir ta note
         </p>
@@ -713,6 +716,7 @@ function FaceAnalysisGrid() {
 
 // ── Carte CTA fixe (toujours à gauche) ───────────────────────────────────────
 function CtaScanCard({ onRefaire, currentScores }) {
+  const t = useT()
   const { user, subscription } = useAuth()
   const [invites] = useState(() => {
     try { return JSON.parse(localStorage.getItem(INVITE_KEY) || '0') } catch { return 0 }
@@ -771,7 +775,7 @@ function CtaScanCard({ onRefaire, currentScores }) {
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-black"
             style={{ background: 'linear-gradient(135deg,#10b981,#34d399)',
               boxShadow: '0 4px 16px rgba(16,185,129,0.45)', color: '#fff' }}>
-            🎁 1 analyse Gratuite disponible !
+            🎁 {t.results.scan.freeAvailable}
           </motion.div>
         </div>
       )}
@@ -783,7 +787,7 @@ function CtaScanCard({ onRefaire, currentScores }) {
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold"
             style={{ background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(10px)',
               border: '1px solid rgba(255,255,255,0.12)', color: 'rgba(255,255,255,0.7)' }}>
-            ⚡ Analyse hebdo déjà utilisée — 3,99€ pour en refaire une
+            ⚡ {t.results.scan.freeScanUsed}
           </motion.div>
         </div>
       )}
@@ -808,16 +812,16 @@ function CtaScanCard({ onRefaire, currentScores }) {
           {payLoading ? (
             <>⏳ Redirection Stripe…</>
           ) : hasBonus ? (
-            <>🎁 Utiliser mon analyse gratuite</>
+            <>🎁 {t.results.scan.scanAgain}</>
           ) : needsPayment ? (
-            <>⚡ Nouvelle analyse — 3,99€</>
+            <>⚡ {t.results.scan.payScan}</>
           ) : (
             <>
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
                 <circle cx="12" cy="13" r="4"/>
               </svg>
-              Refaire une analyse
+              {t.results.scan.rescan}
             </>
           )}
         </motion.button>
@@ -828,6 +832,7 @@ function CtaScanCard({ onRefaire, currentScores }) {
 
 // ── Carte d'un scan historique ────────────────────────────────────────────────
 function ScanCard({ scan, onShowDetail, onDelete }) {
+  const t = useT()
   const [confirmDelete, setConfirmDelete] = useState(false)
   const dateStr = new Date(scan.date).toLocaleDateString('fr-FR', {
     day: 'numeric', month: 'long', year: 'numeric',
@@ -913,12 +918,12 @@ function ScanCard({ scan, onShowDetail, onDelete }) {
 
       {/* Contenu bas */}
       <div className="absolute bottom-0 left-0 right-0 px-5 pb-6" style={{ zIndex: 5 }}>
-        <p className="text-[11px] font-semibold mb-0.5" style={{ color: 'rgba(255,255,255,0.4)' }}>Analyse du</p>
+        <p className="text-[11px] font-semibold mb-0.5" style={{ color: 'rgba(255,255,255,0.4)' }}>{t.results.history.scanDate}</p>
         <p className="text-xl font-black text-white mb-4">{dateStr}</p>
         <motion.button whileTap={{ scale: 0.97 }} onClick={onShowDetail}
           className="w-full py-3.5 rounded-full font-black text-base text-white flex items-center justify-center gap-2"
           style={{ background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.18)', backdropFilter: 'blur(10px)' }}>
-          Voir les résultats →
+          {t.results.history.scanDate} →
         </motion.button>
       </div>
     </div>
@@ -927,6 +932,7 @@ function ScanCard({ scan, onShowDetail, onDelete }) {
 
 // ── Slide photo scan (slide 2 du carousel Scan) — KEPT for internal use ──────
 function ScanPhotoCard({ scores, pseudo, onViewResults }) {
+  const t = useT()
   const photoUrl = scores?.photoUrl ?? null
   const dateStr  = new Date().toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })
 
@@ -995,7 +1001,7 @@ function ScanPhotoCard({ scores, pseudo, onViewResults }) {
       {/* Contenu bas */}
       <div className="absolute bottom-0 left-0 right-0 px-5 pb-5">
         <p className="text-[11px] font-semibold mb-0.5" style={{ color: 'rgba(255,255,255,0.45)' }}>
-          {pseudo ? `Scan de ${pseudo}` : 'Mon scan'}
+          {pseudo ? `Scan de ${pseudo}` : t.results.history.noHistory}
         </p>
         <p className="text-xl font-black text-white mb-4">{dateStr}</p>
         <motion.button
@@ -1004,7 +1010,7 @@ function ScanPhotoCard({ scores, pseudo, onViewResults }) {
           className="w-full py-3.5 rounded-full font-black text-base text-white"
           style={{ background: 'linear-gradient(135deg, #cc3c69, #e8608a)',
             boxShadow: '0 8px 32px rgba(204,60,105,0.55)' }}>
-          Résultats →
+          {t.results.detail.personalizedAdvice} →
         </motion.button>
       </div>
     </div>
@@ -1109,7 +1115,7 @@ async function buildResultsCanvas(scores) {
   c.font = `700 9px ${FONT}`
   c.letterSpacing = '0.12em'
   c.fillStyle = 'rgba(204,60,105,0.9)'
-  c.fillText('TOTAL', W / 2, y + 14)
+  c.fillText(t.results.card.total, W / 2, y + 14)
   c.letterSpacing = '0'
 
   c.font = `900 34px ${FONT}`
@@ -1191,6 +1197,7 @@ async function buildResultsCanvas(scores) {
 
 // ── Modal détail d'un scan historique ────────────────────────────────────────
 function ScanDetailModal({ scan, pseudo, onClose, currentScores = null }) {
+  const t = useT()
   const [slideIdx,  setSlideIdx]  = useState(0)
   const carouselRef               = useRef(null)
   const cardRef                   = useRef(null)
@@ -1231,7 +1238,7 @@ function ScanDetailModal({ scan, pseudo, onClose, currentScores = null }) {
     track('card_saved', { total: sc.total, ranking: sc.ranking })
     try {
       const blob = await captureCard()
-      await shareBlob(blob, 'Mon analyse Shemaxx', `Score total : ${sc.total}/100`)
+      await shareBlob(blob, t.results.shareTitle, t.results.shareMsg(sc.total))
     } catch (e) { console.error(e) }
     setSaving(false)
   }
@@ -1241,7 +1248,7 @@ function ScanDetailModal({ scan, pseudo, onClose, currentScores = null }) {
     track('card_shared', { total: sc.total, ranking: sc.ranking })
     try {
       const blob = await captureCard()
-      await shareBlob(blob, 'Mon analyse Shemaxx 🔥', `J'ai obtenu ${sc.total}/100 sur Shemaxx !`)
+      await shareBlob(blob, t.results.shareTitle2, t.results.shareMsg2(sc.total))
     } catch (e) { console.error(e) }
     setSharing(false)
   }
@@ -1284,7 +1291,7 @@ function ScanDetailModal({ scan, pseudo, onClose, currentScores = null }) {
         style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
         <div>
           <p className="text-[10px] font-semibold uppercase tracking-widest"
-            style={{ color: 'rgba(255,255,255,0.35)' }}>Analyse du</p>
+            style={{ color: 'rgba(255,255,255,0.35)' }}>{t.results.history.scanDate}</p>
           <p className="text-sm font-black text-white capitalize">{dateStr}</p>
         </div>
         <button onClick={onClose}
@@ -1335,7 +1342,7 @@ function ScanDetailModal({ scan, pseudo, onClose, currentScores = null }) {
                 ) : (
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
                 )}
-                {saving ? 'Enregistrement...' : 'Enregistrer'}
+                {saving ? t.results.detail.saving : t.results.detail.save}
               </button>
               <button
                 onClick={handleShare}
@@ -1347,7 +1354,7 @@ function ScanDetailModal({ scan, pseudo, onClose, currentScores = null }) {
                 ) : (
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
                 )}
-                {sharing ? 'Partage...' : 'Partager'}
+                {sharing ? t.results.detail.sharing : t.results.detail.share}
               </button>
             </div>
           </div>
@@ -1373,7 +1380,7 @@ function ScanDetailModal({ scan, pseudo, onClose, currentScores = null }) {
             style={{ flex: '0 0 calc(100% - 40px)', scrollSnapAlign: 'start', minWidth: 0,
               paddingTop: 16, paddingLeft: 4, paddingRight: 4, paddingBottom: 24 }}>
             <p className="text-[11px] font-bold uppercase tracking-widest mb-3 px-1"
-              style={{ color: 'rgba(255,255,255,0.3)' }}>Conseils personnalisés</p>
+              style={{ color: 'rgba(255,255,255,0.3)' }}>{t.results.detail.personalizedAdvice}</p>
             <div className="flex flex-col gap-3 px-1">
               {defauts.map((d, i) => (
                 <ConseilCard key={i} defaut={d} index={i} />
@@ -1403,6 +1410,7 @@ function ScanDetailModal({ scan, pseudo, onClose, currentScores = null }) {
 
 // ── Onglet Scan : carousel historique avec effet peek ────────────────────────
 function TabScan({ scores, pseudo, onRescan, onShowDetail }) {
+  const t = useT()
   const [scans,     setScans]     = useState([])
   const [activeIdx, setActiveIdx] = useState(0)
   const scrollRef                 = useRef(null)
@@ -1645,6 +1653,7 @@ function TabScan({ scores, pseudo, onRescan, onShowDetail }) {
 // ONGLET 2 — CONSEILS
 // ════════════════════════════════════════════════════════════════════════
 function TabConseils({ defauts }) {
+  const t = useT()
   return (
     <div className="px-4 pt-4 pb-6">
       <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
@@ -1819,6 +1828,7 @@ function FaceAvatar({ src, size = 52, rank = 0, glow = false }) {
 }
 
 function ExtrasGroupRanking({ onBack }) {
+  const t = useT()
   const [phase, setPhase]       = useState('upload') // upload | loading | result
   const [file, setFile]         = useState(null)
   const [preview, setPreview]   = useState(null)
@@ -1834,7 +1844,7 @@ function ExtrasGroupRanking({ onBack }) {
     try {
       const b64 = await toBase64(file)
       const raw = await callExtrasAI({ type: 'group_ranking', imageBase64: b64 })
-      if (!raw.girls?.length) throw new Error('Aucun visage détecté. Utilise une photo nette avec les visages bien visibles.')
+      if (!raw.girls?.length) throw new Error(t.results.extras.groupRanking.noFace)
       const expected = raw.total_faces ?? raw.girls.length
       console.log(`[Looksmaxxing] ${raw.girls.length}/${expected} visages détectés`)
 
@@ -1864,7 +1874,7 @@ function ExtrasGroupRanking({ onBack }) {
           style={{ background: 'rgba(255,255,255,0.07)' }}>
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round"><polyline points="15 18 9 12 15 6"/></svg>
         </button>
-        <h2 className="text-base font-black text-white">Qui est la plus hot ?</h2>
+        <h2 className="text-base font-black text-white">{t.results.extras.groupRanking.title}</h2>
       </div>
 
       <div className="flex-1 overflow-y-auto no-scrollbar px-4 pb-6">
@@ -1882,7 +1892,7 @@ function ExtrasGroupRanking({ onBack }) {
                     <svg width="38" height="38" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.2)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
                       <rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/>
                     </svg>
-                    <span className="text-sm font-bold" style={{ color: 'rgba(255,255,255,0.25)' }}>Importer une photo de groupe</span>
+                    <span className="text-sm font-bold" style={{ color: 'rgba(255,255,255,0.25)' }}>{t.results.extras.groupRanking.import}</span>
                   </div>
               }
             </button>
@@ -1904,7 +1914,7 @@ function ExtrasGroupRanking({ onBack }) {
                   whileTap={{ scale: 0.97 }} onClick={analyze}
                   className="w-full py-4 rounded-2xl font-black text-white text-sm"
                   style={{ background: 'linear-gradient(135deg,#cc3c69,#e8608a)', boxShadow: '0 6px 24px rgba(204,60,105,0.4)' }}>
-                  Commencer l'analyse
+                  {t.results.extras.groupRanking.analyze}
                 </motion.button>
                 <p className="text-center text-[10px]" style={{ color: 'rgba(255,255,255,0.2)' }}>
                   Paiement sécurisé — résultats immédiats
@@ -1920,8 +1930,8 @@ function ExtrasGroupRanking({ onBack }) {
             <motion.div animate={{ rotate: 360 }} transition={{ duration: 1.2, repeat: Infinity, ease: 'linear' }}
               className="w-12 h-12 rounded-full border-2 border-transparent"
               style={{ borderTopColor: '#ff4d88', borderRightColor: PINK_A(0.3) }} />
-            <p className="text-sm font-bold text-white">L'IA analyse les visages...</p>
-            <p className="text-xs" style={{ color: 'rgba(255,255,255,0.35)' }}>Détection et notation en cours</p>
+            <p className="text-sm font-bold text-white">{t.results.extras.groupRanking.analyzing}</p>
+            <p className="text-xs" style={{ color: 'rgba(255,255,255,0.35)' }}>{t.results.extras.groupRanking.analyzing2}</p>
           </div>
         )}
 
@@ -1939,7 +1949,7 @@ function ExtrasGroupRanking({ onBack }) {
               </div>
 
               <p className="text-[10px] font-black uppercase tracking-widest mb-3" style={{ color: 'rgba(255,255,255,0.3)' }}>
-                Classement Looksmaxxing — de la plus hot à la moins hot
+                {t.results.extras.groupRanking.ranking}
               </p>
 
               <div className="space-y-2.5">
@@ -2000,7 +2010,7 @@ function ExtrasGroupRanking({ onBack }) {
               <button onClick={reset}
                 className="w-full mt-5 py-3 rounded-2xl text-xs font-black"
                 style={{ background: 'rgba(255,255,255,0.05)', color: 'rgba(255,255,255,0.35)' }}>
-                Recommencer avec une autre photo
+                {t.results.extras.groupRanking.restart}
               </button>
             </motion.div>
           )
@@ -2063,6 +2073,7 @@ const STYLES = [
 ]
 
 function ExtrasStyleTransform({ onBack }) {
+  const t = useT()
   const [selectedStyle, setSelectedStyle] = useState(null)
   const [file, setFile]       = useState(null)
   const [preview, setPreview] = useState(null)
@@ -2098,7 +2109,7 @@ function ExtrasStyleTransform({ onBack }) {
           style={{ background: 'rgba(255,255,255,0.07)' }}>
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round"><polyline points="15 18 9 12 15 6"/></svg>
         </button>
-        <h2 className="text-base font-black text-white">Transformation de style</h2>
+        <h2 className="text-base font-black text-white">{t.results.extras.styleTransform.title}</h2>
       </div>
 
       <div className="flex-1 overflow-y-auto no-scrollbar px-4 pb-6">
@@ -2135,7 +2146,7 @@ function ExtrasStyleTransform({ onBack }) {
 
             {/* Style grid — avec aperçu du template */}
             <p className="text-xs font-black uppercase tracking-wider mb-2" style={{ color: 'rgba(255,255,255,0.35)' }}>
-              Choisis ton style
+              {t.results.extras.styleTransform.chooseStyle}
             </p>
             <div className="grid grid-cols-2 gap-3 mb-4">
               {STYLES.map(s => {
@@ -2205,9 +2216,9 @@ function ExtrasStyleTransform({ onBack }) {
                   <motion.div animate={{ rotate: 360 }} transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
                     className="w-4 h-4 rounded-full border-2 border-transparent"
                     style={{ borderTopColor: '#fff', borderRightColor: 'rgba(255,255,255,0.3)' }} />
-                  {loadStep || 'Intégration en cours...'}
+                  {loadStep || t.results.extras.styleTransform.generating}
                 </>
-              ) : 'Débloque ta transformation'}
+              ) : t.results.extras.styleTransform.generate}
             </motion.button>
           </>
         ) : (
@@ -2216,11 +2227,11 @@ function ExtrasStyleTransform({ onBack }) {
             <div className="grid grid-cols-2 gap-2">
               <div className="rounded-2xl overflow-hidden" style={{ border: '1px solid rgba(255,255,255,0.1)' }}>
                 <img src={preview} alt="avant" className="w-full aspect-square object-cover" />
-                <p className="text-center text-[10px] font-black py-1.5" style={{ color: 'rgba(255,255,255,0.4)' }}>AVANT</p>
+                <p className="text-center text-[10px] font-black py-1.5" style={{ color: 'rgba(255,255,255,0.4)' }}>{t.results.extras.styleTransform.before}</p>
               </div>
               <div className="rounded-2xl overflow-hidden" style={{ border: `1px solid ${PINK_A(0.4)}`, boxShadow: `0 0 20px ${PINK_A(0.2)}` }}>
                 <img src={result} alt="après" className="w-full aspect-square object-cover" />
-                <p className="text-center text-[10px] font-black py-1.5" style={{ color: '#ff4d88' }}>APRÈS</p>
+                <p className="text-center text-[10px] font-black py-1.5" style={{ color: '#ff4d88' }}>{t.results.extras.styleTransform.after}</p>
               </div>
             </div>
 
@@ -2250,6 +2261,7 @@ function ExtrasStyleTransform({ onBack }) {
 
 // ── Outil 3 : Transformation 10/10 ───────────────────────────────────────────
 function ExtrasTenOutOfTen({ onBack }) {
+  const t = useT()
   const [file, setFile]     = useState(null)
   const [preview, setPreview] = useState(null)
   const [loading, setLoading] = useState(false)
@@ -2279,7 +2291,7 @@ function ExtrasTenOutOfTen({ onBack }) {
           style={{ background: 'rgba(255,255,255,0.07)' }}>
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round"><polyline points="15 18 9 12 15 6"/></svg>
         </button>
-        <h2 className="text-base font-black text-white">Version 10/10</h2>
+        <h2 className="text-base font-black text-white">{t.results.extras.tenOutOfTen.title}</h2>
       </div>
 
       <div className="flex-1 overflow-y-auto no-scrollbar px-4 pb-6">
@@ -2327,9 +2339,9 @@ function ExtrasTenOutOfTen({ onBack }) {
                       <motion.div animate={{ rotate: 360 }} transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
                         className="w-4 h-4 rounded-full border-2 border-transparent"
                         style={{ borderTopColor: '#fff', borderRightColor: 'rgba(255,255,255,0.3)' }} />
-                      Amélioration en cours (30–60 sec)...
+                      {t.results.extras.tenOutOfTen.generating}
                     </>
-                  ) : 'Générer ma version 10/10'}
+                  ) : t.results.extras.tenOutOfTen.generate}
                 </motion.button>
               </>
             )}
@@ -2340,11 +2352,11 @@ function ExtrasTenOutOfTen({ onBack }) {
             {preview && (
               <div className="grid grid-cols-2 gap-3 w-full">
                 <div>
-                  <p className="text-[11px] font-black mb-1.5 text-center" style={{ color: 'rgba(255,255,255,0.3)' }}>AVANT</p>
+                  <p className="text-[11px] font-black mb-1.5 text-center" style={{ color: 'rgba(255,255,255,0.3)' }}>{t.results.extras.tenOutOfTen.before}</p>
                   <img src={preview} alt="avant" className="w-full rounded-2xl object-cover" style={{ aspectRatio: '1' }} />
                 </div>
                 <div>
-                  <p className="text-[11px] font-black mb-1.5 text-center" style={{ color: '#ff4d88' }}>APRÈS 🔥</p>
+                  <p className="text-[11px] font-black mb-1.5 text-center" style={{ color: '#ff4d88' }}>{t.results.extras.tenOutOfTen.after}</p>
                   <img src={result} alt="après" className="w-full rounded-2xl object-cover"
                     style={{ aspectRatio: '1', border: `2px solid ${PINK_A(0.5)}`, boxShadow: `0 0 32px ${PINK_A(0.3)}` }} />
                 </div>
@@ -2352,7 +2364,7 @@ function ExtrasTenOutOfTen({ onBack }) {
             )}
             <div className="w-full rounded-2xl p-3 text-center"
               style={{ background: PINK_A(0.1), border: `1px solid ${PINK_A(0.3)}` }}>
-              <p className="text-sm font-black text-white">Version 10/10 générée 🏆</p>
+              <p className="text-sm font-black text-white">{t.results.extras.tenOutOfTen.generated}</p>
               <p className="text-xs mt-0.5" style={{ color: 'rgba(255,255,255,0.4)' }}>
                 Symétrie parfaite • Proportions dorées • Éclat maximal
               </p>
@@ -2378,6 +2390,7 @@ function ExtrasTenOutOfTen({ onBack }) {
 
 // ── TabExtras principal ───────────────────────────────────────────────────────
 function TabExtras({ scores, pseudo, onClose, pendingPayment }) {
+  const t = useT()
   const [activeExtra, setActiveExtra] = useState(null)
   // paywall: id de l'extra en cours de paiement | null
   const [paywallFor,  setPaywallFor]  = useState(null)
@@ -2399,24 +2412,24 @@ function TabExtras({ scores, pseudo, onClose, pendingPayment }) {
   const TOOLS = [
     {
       id: 'group',
-      title: 'Qui est la plus hot ?',
-      desc: 'Envoie une photo de groupe — l\'IA note chaque fille selon les critères looksmaxxing (mâchoire, pommettes, tilt canthal…).',
+      title: t.results.extras.tools[0].title,
+      desc:  t.results.extras.tools[0].desc,
       color: '#f59e0b',
       gradient: 'linear-gradient(135deg,rgba(245,158,11,0.12),rgba(245,158,11,0.03))',
       border: 'rgba(245,158,11,0.2)',
     },
     {
       id: 'style',
-      title: 'Transformation de style',
-      desc: 'Athlète, Old Money, Plage, Goth, Streetwear... Vois-toi dans le style de ton choix.',
+      title: t.results.extras.tools[1].title,
+      desc:  t.results.extras.tools[1].desc,
       color: '#a855f7',
       gradient: 'linear-gradient(135deg,rgba(168,85,247,0.12),rgba(168,85,247,0.03))',
       border: 'rgba(168,85,247,0.2)',
     },
     {
       id: 'ten',
-      title: 'Version 10/10',
-      desc: 'L\'IA génère ta version idéalisée — symétrie parfaite, proportions dorées, looksmaxx total.',
+      title: t.results.extras.tools[2].title,
+      desc:  t.results.extras.tools[2].desc,
       color: '#cc3c69',
       gradient: 'linear-gradient(135deg,rgba(204,60,105,0.12),rgba(204,60,105,0.03))',
       border: 'rgba(204,60,105,0.2)',
@@ -2443,9 +2456,9 @@ function TabExtras({ scores, pseudo, onClose, pendingPayment }) {
   return (
     <div className="px-4 pt-4 pb-6">
       <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="mb-5">
-        <h2 className="text-xl font-black text-white mb-1">Extras IA</h2>
+        <h2 className="text-xl font-black text-white mb-1">{t.results.extras.title}</h2>
         <p className="text-sm" style={{ color: 'rgba(255,255,255,0.35)' }}>
-          3,99€ par utilisation — résultat unique généré par IA.
+          {t.results.extras.subtitle}
         </p>
       </motion.div>
 
@@ -2535,11 +2548,8 @@ function TabExtras({ scores, pseudo, onClose, pendingPayment }) {
 // ════════════════════════════════════════════════════════════════════════
 // COMPOSANT PRINCIPAL
 // ════════════════════════════════════════════════════════════════════════
-const TABS = [
-  { id: 'resultats',  label: 'Scan',       icon: '◎' },
-  { id: 'extras',     label: 'Extras',     icon: '⬡' },
-  { id: 'classement', label: 'Classement', icon: '◈' },
-]
+// TABS is defined inside the component to use translations
+// See Step11Results component for dynamic TABS
 
 // ════════════════════════════════════════════════════════════════════════
 // ONGLET 3 — CLASSEMENT
@@ -2570,6 +2580,7 @@ function checkNewConfirmations(myCode) {
 }
 
 function TabClassement({ scores, pseudo }) {
+  const t = useT()
   const myScore   = scores?.total ?? 71
   const myName    = pseudo || 'Moi'
   const initials  = myName.charAt(0).toUpperCase()
@@ -2860,7 +2871,7 @@ function SettingsPanel({ pseudo, age, onClose, onLogout }) {
           {/* Mon abonnement */}
           <div className="mb-3">
             <p className="text-xs font-black uppercase tracking-widest mb-3"
-              style={{ color: 'rgba(255,255,255,0.3)' }}>Abonnement</p>
+              style={{ color: 'rgba(255,255,255,0.3)' }}>{t.results.settings.subscription}</p>
             <button
               onClick={handleManageSubscription}
               disabled={portalLoading}
@@ -2893,7 +2904,7 @@ function SettingsPanel({ pseudo, age, onClose, onLogout }) {
               <p className="text-xs mt-2 text-center" style={{ color: '#f87171' }}>{portalErr}</p>
             )}
             <p className="text-xs mt-2 text-center" style={{ color: 'rgba(255,255,255,0.2)' }}>
-              Gérer ou annuler ton abonnement
+              {t.results.settings.manage}
             </p>
           </div>
 
@@ -2920,8 +2931,16 @@ function SettingsPanel({ pseudo, age, onClose, onLogout }) {
 
 export default function Step11Results({ faceScores = null, pseudo = '', age = null, onClose, onRescan, pendingPayment = 'none' }) {
   const { user, signOut, refreshScans } = useAuth()
+  const t = useT()
   const scores  = faceScores ?? DEFAULT_SCORES
   const defauts = (scores.defauts?.length > 0) ? scores.defauts : DEFAULT_SCORES.defauts
+
+  const TABS = [
+    { id: 'resultats',  label: t.results.tabs.results,  icon: '◎' },
+    { id: 'extras',     label: t.results.tabs.extras,   icon: '⬡' },
+    { id: 'classement', label: t.results.tabs.analysis, icon: '◈' },
+  ]
+
   // Si retour Stripe avec un paiement d'extra → ouvre l'onglet Extras directement
   const [activeTab,     setActiveTab]     = useState(
     pendingPayment?.startsWith('extra_') ? 'extras' : 'resultats'

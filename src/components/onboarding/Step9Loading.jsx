@@ -1,5 +1,6 @@
 import { useEffect, useState, useRef } from 'react'
 import { motion } from 'framer-motion'
+import { useT } from '../../contexts/LangContext'
 
 // ── Couleurs ─────────────────────────────────────────────────────────────────
 const PINK   = '#cc3c69'
@@ -9,42 +10,12 @@ const GREEN  = '#34d399'
 // ── Métriques avec keyframes réalistes ───────────────────────────────────────
 // Chaque keyframe : [ms depuis le début de cette métrique, valeur 0-100]
 // Durée totale ~45 secondes (entre 30s et 1 minute)
-const METRICS = [
-  {
-    label:   'Symétrie faciale',
-    icon:    '◈',
-    result:  94,
-    startAt: 1500,
-    kf: [[0,0],[1600,24],[3400,41],[5200,44],[8000,45],[10200,68],[12200,82],[14200,91],[15700,94],[17000,100]],
-  },
-  {
-    label:   'Proportions dorées',
-    icon:    '⬡',
-    result:  87,
-    startAt: 8000,
-    kf: [[0,0],[1400,17],[3000,32],[4700,35],[7200,36],[9000,59],[10900,75],[12800,84],[14400,100]],
-  },
-  {
-    label:   'Harmonie des traits',
-    icon:    '◎',
-    result:  91,
-    startAt: 15000,
-    kf: [[0,0],[1750,22],[3550,43],[5000,46],[7500,47],[9500,70],[11500,84],[13400,90],[15000,100]],
-  },
-  {
-    label:   'Structure osseuse',
-    icon:    '⬟',
-    result:  88,
-    startAt: 22000,
-    kf: [[0,0],[1500,19],[3200,36],[5000,38],[7200,39],[9000,62],[11000,78],[13000,86],[14500,100]],
-  },
-  {
-    label:   'Potentiel global',
-    icon:    '✦',
-    result:  96,
-    startAt: 29500,
-    kf: [[0,0],[1900,26],[3700,48],[5500,51],[8000,52],[10000,74],[12000,88],[14000,94],[15500,100]],
-  },
+const METRICS_BASE = [
+  { icon: '◈', result: 94, startAt: 1500,  kf: [[0,0],[1600,24],[3400,41],[5200,44],[8000,45],[10200,68],[12200,82],[14200,91],[15700,94],[17000,100]] },
+  { icon: '⬡', result: 87, startAt: 8000,  kf: [[0,0],[1400,17],[3000,32],[4700,35],[7200,36],[9000,59],[10900,75],[12800,84],[14400,100]] },
+  { icon: '◎', result: 91, startAt: 15000, kf: [[0,0],[1750,22],[3550,43],[5000,46],[7500,47],[9500,70],[11500,84],[13400,90],[15000,100]] },
+  { icon: '⬟', result: 88, startAt: 22000, kf: [[0,0],[1500,19],[3200,36],[5000,38],[7200,39],[9000,62],[11000,78],[13000,86],[14500,100]] },
+  { icon: '✦', result: 96, startAt: 29500, kf: [[0,0],[1900,26],[3700,48],[5500,51],[8000,52],[10000,74],[12000,88],[14000,94],[15500,100]] },
 ]
 
 // ── Interpolation keyframes ───────────────────────────────────────────────────
@@ -61,7 +32,9 @@ function interpolate(kf, t) {
 }
 
 export default function Step9Loading({ onNext }) {
-  const [progress,    setProgress]   = useState(METRICS.map(() => 0))
+  const t = useT()
+  const METRICS = METRICS_BASE.map((m, i) => ({ ...m, label: t.step9Loading.metrics[i] ?? m.label }))
+  const [progress,    setProgress]   = useState(METRICS_BASE.map(() => 0))
   const [avgScore,    setAvgScore]   = useState(0)
   const startRef = useRef(null)
 

@@ -1,4 +1,5 @@
 import { motion } from 'framer-motion'
+import { useT } from '../../contexts/LangContext'
 
 const PINK   = '#cc3c69'
 const PINK_A = (a) => `rgba(204,60,105,${a})`
@@ -12,6 +13,9 @@ const CIRCLE_STEPS = [
 ]
 
 export default function Step8Photos({ onNext }) {
+  const t = useT()
+  const titleLines    = t.step8Photos.title.split('\n')
+  const subtitleLines = t.step8Photos.subtitle.split('\n')
   return (
     <div className="flex flex-col min-h-full px-6 pt-8 pb-8">
 
@@ -23,7 +27,7 @@ export default function Step8Photos({ onNext }) {
         className="text-center mb-8"
       >
         <h1 className="text-4xl font-black text-white leading-tight tracking-tight">
-          Analysons<br />ton visage
+          {titleLines[0]}<br />{titleLines[1]}
         </h1>
         <p className="text-sm mt-3 leading-relaxed" style={{ color: 'rgba(255,255,255,0.45)' }}>
           Notre IA va scanner ton visage en temps réel.<br />
@@ -88,15 +92,7 @@ export default function Step8Photos({ onNext }) {
 
       {/* ── Instructions ── */}
       <div className="flex flex-col gap-3 mb-8">
-        {[
-          { step: '1', title: 'Positionne ton visage', desc: 'Centre ton visage dans le cadre de la caméra' },
-          {
-            step: '2',
-            title: 'Mouvements pendant le scan',
-            desc: 'Regarde droit devant toi, puis tourne la tête à gauche, puis à droite. Ensuite, fais un cercle complet avec la tête (lentement, sans sortir du cadre).',
-          },
-          { step: '3', title: 'Reste dans le cadre', desc: 'Si ton visage sort du cadre, l\'analyse se met en pause' },
-        ].map((item, i) => (
+        {t.step8Photos.instructions.map((instr, i) => ({ step: String(i + 1), ...instr })).map((item, i) => (
           <motion.div
             key={item.step}
             initial={{ opacity: 0, x: -16 }}
@@ -133,7 +129,7 @@ export default function Step8Photos({ onNext }) {
         className="text-xs text-center leading-relaxed mb-6 px-2"
         style={{ color: 'rgba(255,255,255,0.25)' }}
       >
-        🔒 Tes données ne sont jamais stockées ni partagées
+        {t.step8Photos.privacy}
       </motion.p>
 
       {/* ── CTA ── */}
@@ -151,7 +147,7 @@ export default function Step8Photos({ onNext }) {
           boxShadow: `0 0 30px ${PINK_A(0.4)}`,
         }}
       >
-        Commencer l'analyse
+        {t.step8Photos.cta}
       </motion.button>
     </div>
   )

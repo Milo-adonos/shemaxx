@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { X } from 'lucide-react'
 import { track } from '../../lib/posthog.js'
+import { useT } from '../../contexts/LangContext'
 import Step1 from './Step1Qualification'
 import Step2 from './Step2Age'
 import Step3 from './Step3Zones'
@@ -23,6 +24,7 @@ const TOTAL = 14
 const IMMERSIVE_STEPS = [8, 9, 10, 12, 13, 14]
 
 export default function Onboarding({ onClose, initialUser, initialSubscribed, initialScans, initialProfile, pendingScores, pendingPayment = 'none' }) {
+  const t = useT()
   // Bloque le scroll du body pendant que l'app est ouverte
   useEffect(() => {
     document.body.classList.add('app-open')
@@ -162,7 +164,7 @@ export default function Onboarding({ onClose, initialUser, initialSubscribed, in
           <button
             onClick={onClose}
             className="p-1.5 rounded-full text-white/30 hover:text-white/70 transition-colors"
-            aria-label="Fermer"
+            aria-label={t.onboarding.close}
           >
             <X size={18} />
           </button>

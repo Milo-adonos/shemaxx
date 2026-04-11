@@ -1,19 +1,16 @@
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import StepLayout from './StepLayout'
+import { useT } from '../../contexts/LangContext'
 
-const zones = [
-  { id: 'jaw',    label: 'Ligne de mâchoire', emoji: '💎' },
-  { id: 'cheeks', label: 'Pommettes',          emoji: '✨' },
-  { id: 'eyes',   label: 'Yeux',               emoji: '👁️' },
-  { id: 'nose',   label: 'Nez',                emoji: '👃' },
-  { id: 'all',    label: 'Tout améliorer',      emoji: '👑' },
-  { id: 'other',  label: 'Autre',               emoji: '✍️' },
-]
+const ZONE_IDS    = ['jaw', 'cheeks', 'eyes', 'nose', 'all', 'other']
+const ZONE_EMOJIS = ['💎', '✨', '👁️', '👃', '👑', '✍️']
 
 export default function Step3Zones({ value, onNext }) {
   const [selected, setSelected] = useState(value?.selected || [])
   const [otherText, setOtherText] = useState(value?.otherText || '')
+  const t = useT()
+  const zones = t.step3.zones.map((z, i) => ({ id: ZONE_IDS[i], emoji: ZONE_EMOJIS[i], label: z.label }))
 
   const toggle = (id) => {
     if (id === 'all') {
@@ -34,9 +31,9 @@ export default function Step3Zones({ value, onNext }) {
 
   return (
     <StepLayout
-      title="Quelles zones veux-tu améliorer ?"
-      subtitle="Tu peux sélectionner plusieurs options"
-      cta="Continuer"
+      title={t.step3.title}
+      subtitle={t.step3.subtitle}
+      cta={t.step3.cta}
       ctaDisabled={!canContinue}
       onCta={() => onNext({ selected, otherText: isSelected('other') ? otherText : '' })}
     >
@@ -88,7 +85,7 @@ export default function Step3Zones({ value, onNext }) {
                     autoFocus
                     value={otherText}
                     onChange={(e) => setOtherText(e.target.value)}
-                    placeholder="Décris ce que tu souhaites améliorer..."
+                    placeholder={t.step3.otherPlaceholder}
                     rows={3}
                     className="w-full mt-2 px-4 py-3 rounded-xl text-sm text-white placeholder-white/30 resize-none outline-none transition-all duration-200"
                     style={{
