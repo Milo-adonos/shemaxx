@@ -60,12 +60,33 @@ export default function Onboarding({ onClose, initialUser, initialSubscribed, in
     14: '14_resultats_debloques',
   }
 
-  // Tracker chaque changement d'étape
+  // URLs dédiées pour chaque étape (tracking taap.it + PostHog)
+  const STEP_PATHS = {
+    1:  '/scan/qualification',
+    2:  '/scan/age',
+    3:  '/scan/zones',
+    4:  '/scan/objectif',
+    5:  '/scan/progression',
+    6:  '/scan/pseudo',
+    7:  '/scan/instructions',
+    8:  '/scan/capture',
+    9:  '/scan/analyse',
+    10: '/scan/chargement',
+    11: '/scan/potentiel',
+    12: '/scan/apercu',
+    13: '/scan/offre',
+    14: '/scan/resultats',
+  }
+
+  // Tracker chaque changement d'étape + mettre à jour l'URL
   useEffect(() => {
+    const path = STEP_PATHS[step] ?? `/scan/step-${step}`
+    window.history.pushState({ step }, '', path)
     track('funnel_step_viewed', {
       step_number: step,
       step_name:   STEP_NAMES[step] ?? `step_${step}`,
       rescan_mode: rescanMode,
+      url:         path,
     })
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [step])

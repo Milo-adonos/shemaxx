@@ -198,7 +198,7 @@ function AppInner() {
       <AnimatePresence>
         {onboardingOpen && (
           <Onboarding
-            onClose={() => { setOnboardingOpen(false); setPendingPayment('none') }}
+            onClose={() => { setOnboardingOpen(false); setPendingPayment('none'); window.history.pushState({}, '', '/') }}
             initialUser={user}
             initialSubscribed={subscribed}
             initialScans={scans}
