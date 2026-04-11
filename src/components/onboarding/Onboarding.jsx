@@ -44,20 +44,20 @@ export default function Onboarding({ onClose, initialUser, initialSubscribed, in
 
   // Noms des étapes pour PostHog
   const STEP_NAMES = {
-    1:  'qualification',
-    2:  'age',
-    3:  'zones_preoccupations',
-    4:  'apercu_resultats',
-    5:  'graphique_potentiel',
-    6:  'pseudo',
-    7:  'intro_photo',
-    8:  'capture_photo',
-    9:  'analyse_ia',
-    10: 'chargement',
-    11: 'potentiel_revele',
-    12: 'teaser_resultats',
-    13: 'paywall',
-    14: 'resultats_debloques',
+    1:  '01_qualification_objectif',
+    2:  '02_saisie_age',
+    3:  '03_zones_concernees',
+    4:  '04_type_de_resultats',
+    5:  '05_graphique_progression',
+    6:  '06_saisie_pseudo',
+    7:  '07_instructions_photo',
+    8:  '08_capture_photo',
+    9:  '09_analyse_ia_en_cours',
+    10: '10_chargement_scores',
+    11: '11_score_potentiel',
+    12: '12_teaser_resultats_floutes',
+    13: '13_paywall',
+    14: '14_resultats_debloques',
   }
 
   // Tracker chaque changement d'étape
