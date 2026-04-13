@@ -16,7 +16,7 @@ import Step9AnalyzingIA from './Step9AnalyzingIA'
 import Step9 from './Step9Loading'
 import Step9Reveal, { DEFAULT_DEFAUTS } from './Step9Reveal'
 import Step10 from './Step10Paywall'
-import Step11 from './Step11Results'
+import Step11, { SettingsPanel } from './Step11Results'
 
 const TOTAL = 14
 
@@ -41,6 +41,7 @@ export default function Onboarding({ onClose, initialUser, initialSubscribed, in
   const [direction, setDirection] = useState(1)
   const [faceidKey, setFaceidKey] = useState(0)
   const [rescanMode, setRescanMode] = useState(false)
+  const [showSettings, setShowSettings] = useState(false)
 
   // Noms des étapes pour PostHog
   const STEP_NAMES = {
@@ -149,7 +150,7 @@ export default function Onboarding({ onClose, initialUser, initialSubscribed, in
     <Step5      key={11} faceScores={data.faceScores} onNext={() => next()} />,
     <Step9Reveal key={12} pseudo={data.pseudo} faceScores={data.faceScores} zones={data.zones} onNext={() => next()} />,
     <Step10     key={13} pseudo={data.pseudo} faceScores={data.faceScores} onNext={() => { setRescanMode(false); next() }} onClose={onClose} />,
-    <Step11     key={14} pseudo={data.pseudo} faceScores={data.faceScores} age={data.age} onClose={onClose} onRescan={handleRescan} pendingPayment={pendingPayment} />,
+    <Step11     key={14} pseudo={data.pseudo} faceScores={data.faceScores} age={data.age} onClose={onClose} onRescan={handleRescan} pendingPayment={pendingPayment} onOpenSettings={() => setShowSettings(true)} />,
   ]
 
   const immersive = IMMERSIVE_STEPS.includes(step)
@@ -219,6 +220,18 @@ export default function Onboarding({ onClose, initialUser, initialSubscribed, in
           </motion.div>
         </AnimatePresence>
       </div>
+
+      {/* ── Panneau Paramètres — rendu ici pour éviter les transforms framer-motion ── */}
+      <AnimatePresence>
+        {showSettings && (
+          <SettingsPanel
+            pseudo={data.pseudo}
+            age={data.age}
+            onClose={() => setShowSettings(false)}
+            onLogout={() => { setShowSettings(false); onClose?.() }}
+          />
+        )}
+      </AnimatePresence>
     </motion.div>
   )
 }

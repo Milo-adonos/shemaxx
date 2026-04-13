@@ -1,5 +1,4 @@
 import { useState, useEffect, useRef } from 'react'
-import { createPortal } from 'react-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import HolographicFaceTraits from './HolographicFaceTraits'
 import { useAuth } from '../../contexts/AuthContext'
@@ -2767,7 +2766,7 @@ function TabClassement({ scores, pseudo }) {
 }
 
 // ── Panneau Paramètres ────────────────────────────────────────────────────────
-function SettingsPanel({ pseudo, age, onClose, onLogout }) {
+export function SettingsPanel({ pseudo, age, onClose, onLogout }) {
   const [prenom, setPrenom]       = useState(pseudo || '')
   const [nom,    setNom]          = useState('')
   const [ageVal, setAgeVal]       = useState(age ? String(age) : '')
@@ -2930,7 +2929,7 @@ function SettingsPanel({ pseudo, age, onClose, onLogout }) {
   )
 }
 
-export default function Step11Results({ faceScores = null, pseudo = '', age = null, onClose, onRescan, pendingPayment = 'none' }) {
+export default function Step11Results({ faceScores = null, pseudo = '', age = null, onClose, onRescan, pendingPayment = 'none', onOpenSettings }) {
   const { user, signOut, refreshScans } = useAuth()
   const t = useT()
   const scores  = faceScores ?? DEFAULT_SCORES
@@ -2947,7 +2946,7 @@ export default function Step11Results({ faceScores = null, pseudo = '', age = nu
     pendingPayment?.startsWith('extra_') ? 'extras' : 'resultats'
   )
   const [prevTab,       setPrevTab]       = useState(null)
-  const [showSettings,  setShowSettings]  = useState(false)
+
   const [detailScan,    setDetailScan]    = useState(null)
 
   // Analytics : résultats débloqués
@@ -3049,7 +3048,7 @@ export default function Step11Results({ faceScores = null, pseudo = '', age = nu
 
         {/* Bouton Paramètres */}
         <button
-          onClick={() => setShowSettings(true)}
+          onClick={() => onOpenSettings?.()}
           className="w-9 h-9 rounded-full flex items-center justify-center"
           style={{ background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.1)' }}>
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.6)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -3059,20 +3058,7 @@ export default function Step11Results({ faceScores = null, pseudo = '', age = nu
         </button>
       </div>
 
-      {/* ── Panneau paramètres (portal → échappe aux transforms framer-motion) ── */}
-      {createPortal(
-        <AnimatePresence>
-          {showSettings && (
-            <SettingsPanel
-              pseudo={pseudo}
-              age={age}
-              onClose={() => setShowSettings(false)}
-              onLogout={handleLogout}
-            />
-          )}
-        </AnimatePresence>,
-        document.getElementById('modal-root')
-      )}
+      {/* ── Panneau paramètres géré depuis Onboarding.jsx ── */}
 
       {/* ── Zone de contenu scrollable ── */}
       <div className="relative z-10 flex-1 overflow-hidden">
