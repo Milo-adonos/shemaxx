@@ -2816,8 +2816,8 @@ export function SettingsPanel({ pseudo, age, onClose, onLogout }) {
       onClick={onClose}
     >
       <motion.div
-        initial={{ y: '100%' }} animate={{ y: 0 }} exit={{ y: '100%' }}
-        transition={{ type: 'spring', stiffness: 260, damping: 28 }}
+        initial={{ opacity: 0, y: 40 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 40 }}
+        transition={{ type: 'spring', stiffness: 300, damping: 30 }}
         className="rounded-t-[28px] flex flex-col gap-0 overflow-hidden"
         style={{ background: '#111116', borderTop: '1px solid rgba(255,255,255,0.08)', maxHeight: '88vh' }}
         onClick={e => e.stopPropagation()}
