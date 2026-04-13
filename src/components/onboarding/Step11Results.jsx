@@ -2812,7 +2812,7 @@ function SettingsPanel({ pseudo, age, onClose, onLogout }) {
   return (
     <motion.div
       initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-      className="fixed inset-0 z-50 flex flex-col justify-end"
+      className="fixed inset-0 z-[300] flex flex-col justify-end"
       style={{ background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(12px)' }}
       onClick={onClose}
     >
