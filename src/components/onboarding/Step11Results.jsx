@@ -2767,6 +2767,13 @@ function TabClassement({ scores, pseudo }) {
 
 // ── Panneau Paramètres ────────────────────────────────────────────────────────
 export function SettingsPanel({ pseudo, age, onClose, onLogout }) {
+  // #region agent log
+  useEffect(() => {
+    const el = document.querySelector('[data-settings-panel]')
+    fetch('http://127.0.0.1:7419/ingest/086e8179-6398-46f3-94bd-f6fbc805e7e6',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'156471'},body:JSON.stringify({sessionId:'156471',location:'SettingsPanel:mount',message:'SettingsPanel mounted',data:{pseudo,age,domFound:!!el,bodyPosition:getComputedStyle(document.body).position,bodyOverflow:getComputedStyle(document.body).overflow},timestamp:Date.now(),hypothesisId:'H-B H-C H-E'})}).catch(()=>{})
+    return () => fetch('http://127.0.0.1:7419/ingest/086e8179-6398-46f3-94bd-f6fbc805e7e6',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'156471'},body:JSON.stringify({sessionId:'156471',location:'SettingsPanel:unmount',message:'SettingsPanel UNMOUNTED',data:{},timestamp:Date.now(),hypothesisId:'H-B'})}).catch(()=>{})
+  }, [])
+  // #endregion
   const [prenom, setPrenom]       = useState(pseudo || '')
   const [nom,    setNom]          = useState('')
   const [ageVal, setAgeVal]       = useState(age ? String(age) : '')
@@ -2809,12 +2816,20 @@ export function SettingsPanel({ pseudo, age, onClose, onLogout }) {
     letterSpacing: '0.12em', color: 'rgba(255,255,255,0.35)', marginBottom: 6, display: 'block' }
 
   return (
-    <div
-      className="fixed inset-0 flex flex-col justify-end"
-      style={{ background: 'rgba(0,0,0,0.85)', zIndex: 9999 }}
+    <motion.div
+      initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+      className="fixed inset-0 z-[300] flex flex-col justify-end"
+      style={{ background: 'rgba(0,0,0,0.85)' }}
       onClick={onClose}
+      onAnimationStart={() => {
+        // #region agent log
+        fetch('http://127.0.0.1:7419/ingest/086e8179-6398-46f3-94bd-f6fbc805e7e6',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'156471'},body:JSON.stringify({sessionId:'156471',location:'SettingsPanel:overlay-anim-start',message:'Overlay animation started',data:{},timestamp:Date.now(),hypothesisId:'H-C H-D'})}).catch(()=>{})
+        // #endregion
+      }}
     >
-      <div
+      <motion.div
+        initial={{ opacity: 0, y: 40 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 40 }}
+        transition={{ type: 'spring', stiffness: 300, damping: 30 }}
         className="rounded-t-[28px] flex flex-col gap-0 overflow-hidden"
         style={{ background: '#111116', borderTop: '1px solid rgba(255,255,255,0.08)', maxHeight: '88vh' }}
         onClick={e => e.stopPropagation()}
@@ -2921,8 +2936,8 @@ export function SettingsPanel({ pseudo, age, onClose, onLogout }) {
             Déconnexion
           </button>
         </div>
-      </div>
-    </div>
+      </motion.div>
+    </motion.div>
   )
 }
 
@@ -3046,8 +3061,10 @@ export default function Step11Results({ faceScores = null, pseudo = '', age = nu
         {/* Bouton Paramètres */}
         <button
           onClick={() => {
+            // #region agent log
+            fetch('http://127.0.0.1:7419/ingest/086e8179-6398-46f3-94bd-f6fbc805e7e6',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'156471'},body:JSON.stringify({sessionId:'156471',location:'Step11Results.jsx:gear-click',message:'Gear button clicked',data:{onOpenSettingsType:typeof onOpenSettings,hasCallback:!!onOpenSettings},timestamp:Date.now(),hypothesisId:'H-A'})}).catch(()=>{});
+            // #endregion
             onOpenSettings?.()
-            window.dispatchEvent(new CustomEvent('shemaxx:open-settings', { detail: { pseudo, age } }))
           }}
           className="w-9 h-9 rounded-full flex items-center justify-center"
           style={{ background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.1)' }}>
