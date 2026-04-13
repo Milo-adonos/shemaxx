@@ -2766,166 +2766,104 @@ function TabClassement({ scores, pseudo }) {
 }
 
 // ── Panneau Paramètres ────────────────────────────────────────────────────────
-export function SettingsPanel({ pseudo, age, email, onClose, onLogout }) {
-  const [prenom, setPrenom]       = useState(pseudo || '')
-  const [nom,    setNom]          = useState('')
-  const [ageVal, setAgeVal]       = useState(age ? String(age) : '')
+// ── Page Paramètres (plein écran, glisse depuis la droite) ───────────────────
+function SettingsPage({ pseudo, age, email, onClose, onLogout }) {
+  const t = useT()
+  const [prenom,        setPrenom]        = useState(pseudo || '')
+  const [ageVal,        setAgeVal]        = useState(age ? String(age) : '')
   const [portalLoading, setPortalLoading] = useState(false)
   const [portalErr,     setPortalErr]     = useState(null)
 
-  const handleManageSubscription = async () => {
-    setPortalLoading(true)
-    setPortalErr(null)
+  const handlePortal = async () => {
+    setPortalLoading(true); setPortalErr(null)
     try {
       const { supabase } = await import('../../lib/supabase')
       const { data: { session } } = await supabase.auth.getSession()
       if (!session?.access_token) throw new Error('Session introuvable')
-
       const { data, error } = await supabase.functions.invoke('create-portal', {
         headers: { Authorization: `Bearer ${session.access_token}` },
         body: { returnUrl: window.location.origin },
       })
-      if (error) {
-        let msg = error.message || 'Erreur'
-        try { const b = await error.context?.json?.(); if (b?.error) msg = b.error } catch {}
-        throw new Error(msg)
-      }
+      if (error) throw new Error(error.message || 'Erreur')
       if (!data?.url) throw new Error('URL portail manquante')
       window.location.href = data.url
-    } catch (err) {
-      setPortalErr(err.message || 'Erreur')
-      setPortalLoading(false)
-    }
+    } catch (err) { setPortalErr(err.message || 'Erreur'); setPortalLoading(false) }
   }
 
-  const inputStyle = {
-    width: '100%', padding: '12px 14px',
-    background: 'rgba(255,255,255,0.05)',
-    border: '1px solid rgba(255,255,255,0.1)',
-    borderRadius: 14, color: '#fff', fontSize: 14,
-    outline: 'none',
-  }
-  const labelStyle = { fontSize: 11, fontWeight: 700, textTransform: 'uppercase',
-    letterSpacing: '0.12em', color: 'rgba(255,255,255,0.35)', marginBottom: 6, display: 'block' }
+  const field = { width: '100%', padding: '12px 14px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 12, color: '#fff', fontSize: 14, outline: 'none' }
+  const label = { fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'rgba(255,255,255,0.35)', marginBottom: 6, display: 'block' }
 
   return (
-    <div
-      className="absolute inset-0 z-50 flex flex-col justify-end"
-      style={{ background: 'rgba(0,0,0,0.85)' }}
-      onClick={onClose}
+    <motion.div
+      initial={{ x: '100%' }} animate={{ x: 0 }} exit={{ x: '100%' }}
+      transition={{ type: 'tween', duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
+      className="absolute inset-0 z-50 flex flex-col"
+      style={{ background: '#050508' }}
     >
-      <motion.div
-        initial={{ opacity: 0, y: 40 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 40 }}
-        transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-        className="rounded-t-[28px] flex flex-col gap-0 no-scrollbar"
-        style={{ background: '#111116', borderTop: '1px solid rgba(255,255,255,0.08)', maxHeight: '88vh', overflowY: 'auto' }}
-        onClick={e => e.stopPropagation()}
-      >
-        {/* Handle */}
-        <div className="flex justify-center pt-3 pb-1 shrink-0">
-          <div className="w-10 h-1 rounded-full" style={{ background: 'rgba(255,255,255,0.15)' }} />
+      {/* Header */}
+      <div className="shrink-0 flex items-center gap-3 px-5 pt-12 pb-4"
+        style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+        <button onClick={onClose}
+          className="w-9 h-9 rounded-full flex items-center justify-center shrink-0"
+          style={{ background: 'rgba(255,255,255,0.07)' }}>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.7)" strokeWidth="2.5" strokeLinecap="round">
+            <path d="M15 18l-6-6 6-6"/>
+          </svg>
+        </button>
+        <p className="text-base font-black text-white">Paramètres</p>
+      </div>
+
+      {/* Contenu scrollable */}
+      <div className="flex-1 overflow-y-auto no-scrollbar px-5 py-6 space-y-6">
+
+        {/* Infos */}
+        <div>
+          <p style={{ ...label }}>Prénom</p>
+          <input value={prenom} onChange={e => setPrenom(e.target.value)} placeholder="Ton prénom" style={field} />
         </div>
-
-        <div className="px-5 pb-8">
-          {/* Titre */}
-          <div className="flex items-center justify-between mb-6 mt-2">
-            <p className="text-lg font-black text-white">Paramètres</p>
-            <button onClick={onClose}
-              className="w-8 h-8 rounded-full flex items-center justify-center"
-              style={{ background: 'rgba(255,255,255,0.07)' }}>
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.5)" strokeWidth="2.5" strokeLinecap="round">
-                <path d="M18 6L6 18M6 6l12 12"/>
-              </svg>
-            </button>
+        <div>
+          <p style={{ ...label }}>Âge</p>
+          <input value={ageVal} onChange={e => setAgeVal(e.target.value)} type="number" min="13" max="99" placeholder="Ton âge" style={field} />
+        </div>
+        {email && (
+          <div>
+            <p style={{ ...label }}>Adresse e-mail</p>
+            <div style={{ ...field, color: 'rgba(255,255,255,0.4)', cursor: 'default' }}>{email}</div>
           </div>
+        )}
 
-          {/* Champs */}
-          <div className="space-y-4">
-            <div>
-              <label style={labelStyle}>Prénom</label>
-              <input
-                value={prenom} onChange={e => setPrenom(e.target.value)}
-                placeholder="Ton prénom" style={inputStyle}
-              />
+        <div style={{ height: 1, background: 'rgba(255,255,255,0.07)' }} />
+
+        {/* Abonnement */}
+        <div>
+          <p style={{ ...label }}>{t.results.settings.subscription}</p>
+          <button onClick={handlePortal} disabled={portalLoading}
+            className="w-full py-3.5 rounded-2xl text-sm font-bold flex items-center justify-between px-4"
+            style={{ background: 'rgba(204,60,105,0.08)', border: '1px solid rgba(204,60,105,0.25)', color: '#ff4d88', opacity: portalLoading ? 0.6 : 1 }}>
+            <div className="flex items-center gap-2.5">
+              {portalLoading
+                ? <svg className="animate-spin" width="15" height="15" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="rgba(255,77,136,0.3)" strokeWidth="3"/><path d="M12 2a10 10 0 0 1 10 10" stroke="#ff4d88" strokeWidth="3" strokeLinecap="round"/></svg>
+                : <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+              }
+              <span>{portalLoading ? 'Chargement…' : 'Gérer mon abonnement'}</span>
             </div>
-            <div>
-              <label style={labelStyle}>Âge</label>
-              <input
-                value={ageVal} onChange={e => setAgeVal(e.target.value)}
-                placeholder="Ton âge" type="number" min="13" max="99" style={inputStyle}
-              />
-            </div>
-            {email && (
-              <div>
-                <label style={labelStyle}>Adresse e-mail</label>
-                <div style={{ ...inputStyle, color: 'rgba(255,255,255,0.4)', cursor: 'default' }}>
-                  {email}
-                </div>
-              </div>
-            )}
-          </div>
-
-          {/* Séparateur */}
-          <div className="my-6 h-px" style={{ background: 'rgba(255,255,255,0.07)' }} />
-
-          {/* Mon abonnement */}
-          <div className="mb-3">
-            <p className="text-xs font-black uppercase tracking-widest mb-3"
-              style={{ color: 'rgba(255,255,255,0.3)' }}>{t.results.settings.subscription}</p>
-            <button
-              onClick={handleManageSubscription}
-              disabled={portalLoading}
-              className="w-full py-3.5 rounded-2xl font-bold text-sm flex items-center justify-between px-4 transition-opacity"
-              style={{
-                background: 'rgba(204,60,105,0.08)',
-                border: '1px solid rgba(204,60,105,0.25)',
-                color: '#ff4d88',
-                opacity: portalLoading ? 0.6 : 1,
-              }}>
-              <div className="flex items-center gap-2.5">
-                {portalLoading ? (
-                  <svg className="animate-spin" width="15" height="15" viewBox="0 0 24 24" fill="none">
-                    <circle cx="12" cy="12" r="10" stroke="rgba(255,77,136,0.3)" strokeWidth="3"/>
-                    <path d="M12 2a10 10 0 0 1 10 10" stroke="#ff4d88" strokeWidth="3" strokeLinecap="round"/>
-                  </svg>
-                ) : (
-                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <rect x="1" y="4" width="22" height="16" rx="2"/>
-                    <line x1="1" y1="10" x2="23" y2="10"/>
-                  </svg>
-                )}
-                <span>{portalLoading ? 'Chargement…' : 'Gérer mon abonnement'}</span>
-              </div>
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
-                <path d="M9 18l6-6-6-6"/>
-              </svg>
-            </button>
-            {portalErr && (
-              <p className="text-xs mt-2 text-center" style={{ color: '#f87171' }}>{portalErr}</p>
-            )}
-            <p className="text-xs mt-2 text-center" style={{ color: 'rgba(255,255,255,0.2)' }}>
-              {t.results.settings.manage}
-            </p>
-          </div>
-
-          {/* Séparateur */}
-          <div className="mb-6 h-px" style={{ background: 'rgba(255,255,255,0.07)' }} />
-
-          {/* Déconnexion */}
-          <button
-            onClick={onLogout}
-            className="w-full py-3.5 rounded-2xl font-black text-sm flex items-center justify-center gap-2"
-            style={{ background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.25)', color: '#f87171' }}>
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
-              <polyline points="16 17 21 12 16 7"/>
-              <line x1="21" y1="12" x2="9" y2="12"/>
-            </svg>
-            Déconnexion
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><path d="M9 18l6-6-6-6"/></svg>
           </button>
+          {portalErr && <p className="text-xs mt-2 text-center" style={{ color: '#f87171' }}>{portalErr}</p>}
+          <p className="text-xs mt-2 text-center" style={{ color: 'rgba(255,255,255,0.2)' }}>{t.results.settings.manage}</p>
         </div>
-      </motion.div>
-    </div>
+
+        <div style={{ height: 1, background: 'rgba(255,255,255,0.07)' }} />
+
+        {/* Déconnexion */}
+        <button onClick={onLogout}
+          className="w-full py-3.5 rounded-2xl text-sm font-black flex items-center justify-center gap-2"
+          style={{ background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.25)', color: '#f87171' }}>
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+          Se déconnecter
+        </button>
+      </div>
+    </motion.div>
   )
 }
 
@@ -3108,10 +3046,10 @@ export default function Step11Results({ faceScores = null, pseudo = '', age = nu
         </div>
       </div>
 
-      {/* ── Panneau Paramètres — absolute dans le même conteneur, pas de fixed ── */}
+      {/* ── Page Paramètres ── */}
       <AnimatePresence>
         {showSettings && (
-          <SettingsPanel
+          <SettingsPage
             pseudo={pseudo}
             age={age}
             email={user?.email}
