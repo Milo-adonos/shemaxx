@@ -16,7 +16,7 @@ import Step9AnalyzingIA from './Step9AnalyzingIA'
 import Step9 from './Step9Loading'
 import Step9Reveal, { DEFAULT_DEFAUTS } from './Step9Reveal'
 import Step10 from './Step10Paywall'
-import Step11, { SettingsPanel } from './Step11Results'
+import Step11 from './Step11Results'
 
 const TOTAL = 14
 
@@ -41,16 +41,6 @@ export default function Onboarding({ onClose, initialUser, initialSubscribed, in
   const [direction, setDirection] = useState(1)
   const [faceidKey, setFaceidKey] = useState(0)
   const [rescanMode, setRescanMode] = useState(false)
-  const [showSettings, setShowSettings] = useState(false)
-
-  // #region agent log
-  useEffect(() => {
-    if (showSettings) {
-      fetch('http://127.0.0.1:7419/ingest/086e8179-6398-46f3-94bd-f6fbc805e7e6',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'156471'},body:JSON.stringify({sessionId:'156471',location:'Onboarding.jsx:settings-effect',message:'showSettings became true - SettingsPanel will render',data:{pseudo:data.pseudo,age:data.age,step},timestamp:Date.now(),hypothesisId:'H-B'})}).catch(()=>{})
-    }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [showSettings])
-  // #endregion
 
   // Noms des étapes pour PostHog
   const STEP_NAMES = {
@@ -159,7 +149,7 @@ export default function Onboarding({ onClose, initialUser, initialSubscribed, in
     <Step5      key={11} faceScores={data.faceScores} onNext={() => next()} />,
     <Step9Reveal key={12} pseudo={data.pseudo} faceScores={data.faceScores} zones={data.zones} onNext={() => next()} />,
     <Step10     key={13} pseudo={data.pseudo} faceScores={data.faceScores} onNext={() => { setRescanMode(false); next() }} onClose={onClose} />,
-    <Step11     key={14} pseudo={data.pseudo} faceScores={data.faceScores} age={data.age} onClose={onClose} onRescan={handleRescan} pendingPayment={pendingPayment} onOpenSettings={() => setShowSettings(true)} />,
+    <Step11     key={14} pseudo={data.pseudo} faceScores={data.faceScores} age={data.age} onClose={onClose} onRescan={handleRescan} pendingPayment={pendingPayment} />,
   ]
 
   const immersive = IMMERSIVE_STEPS.includes(step)
@@ -230,17 +220,6 @@ export default function Onboarding({ onClose, initialUser, initialSubscribed, in
         </AnimatePresence>
       </div>
 
-      {/* ── Panneau Paramètres — rendu ici pour éviter les transforms framer-motion ── */}
-      <AnimatePresence>
-        {showSettings && (
-          <SettingsPanel
-            pseudo={data.pseudo}
-            age={data.age}
-            onClose={() => setShowSettings(false)}
-            onLogout={() => { setShowSettings(false); onClose?.() }}
-          />
-        )}
-      </AnimatePresence>
     </motion.div>
   )
 }

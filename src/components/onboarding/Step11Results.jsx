@@ -2766,14 +2766,7 @@ function TabClassement({ scores, pseudo }) {
 }
 
 // ── Panneau Paramètres ────────────────────────────────────────────────────────
-export function SettingsPanel({ pseudo, age, onClose, onLogout }) {
-  // #region agent log
-  useEffect(() => {
-    const el = document.querySelector('[data-settings-panel]')
-    fetch('http://127.0.0.1:7419/ingest/086e8179-6398-46f3-94bd-f6fbc805e7e6',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'156471'},body:JSON.stringify({sessionId:'156471',location:'SettingsPanel:mount',message:'SettingsPanel mounted',data:{pseudo,age,domFound:!!el,bodyPosition:getComputedStyle(document.body).position,bodyOverflow:getComputedStyle(document.body).overflow},timestamp:Date.now(),hypothesisId:'H-B H-C H-E'})}).catch(()=>{})
-    return () => fetch('http://127.0.0.1:7419/ingest/086e8179-6398-46f3-94bd-f6fbc805e7e6',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'156471'},body:JSON.stringify({sessionId:'156471',location:'SettingsPanel:unmount',message:'SettingsPanel UNMOUNTED',data:{},timestamp:Date.now(),hypothesisId:'H-B'})}).catch(()=>{})
-  }, [])
-  // #endregion
+export function SettingsPanel({ pseudo, age, email, onClose, onLogout }) {
   const [prenom, setPrenom]       = useState(pseudo || '')
   const [nom,    setNom]          = useState('')
   const [ageVal, setAgeVal]       = useState(age ? String(age) : '')
@@ -2816,30 +2809,24 @@ export function SettingsPanel({ pseudo, age, onClose, onLogout }) {
     letterSpacing: '0.12em', color: 'rgba(255,255,255,0.35)', marginBottom: 6, display: 'block' }
 
   return (
-    <motion.div
-      initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-      className="fixed inset-0 z-[300] flex flex-col justify-end"
+    <div
+      className="absolute inset-0 z-50 flex flex-col justify-end"
       style={{ background: 'rgba(0,0,0,0.85)' }}
       onClick={onClose}
-      onAnimationStart={() => {
-        // #region agent log
-        fetch('http://127.0.0.1:7419/ingest/086e8179-6398-46f3-94bd-f6fbc805e7e6',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'156471'},body:JSON.stringify({sessionId:'156471',location:'SettingsPanel:overlay-anim-start',message:'Overlay animation started',data:{},timestamp:Date.now(),hypothesisId:'H-C H-D'})}).catch(()=>{})
-        // #endregion
-      }}
     >
       <motion.div
         initial={{ opacity: 0, y: 40 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 40 }}
         transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-        className="rounded-t-[28px] flex flex-col gap-0 overflow-hidden"
-        style={{ background: '#111116', borderTop: '1px solid rgba(255,255,255,0.08)', maxHeight: '88vh' }}
+        className="rounded-t-[28px] flex flex-col gap-0 no-scrollbar"
+        style={{ background: '#111116', borderTop: '1px solid rgba(255,255,255,0.08)', maxHeight: '88vh', overflowY: 'auto' }}
         onClick={e => e.stopPropagation()}
       >
         {/* Handle */}
-        <div className="flex justify-center pt-3 pb-1">
+        <div className="flex justify-center pt-3 pb-1 shrink-0">
           <div className="w-10 h-1 rounded-full" style={{ background: 'rgba(255,255,255,0.15)' }} />
         </div>
 
-        <div className="px-5 pb-8 overflow-y-auto no-scrollbar">
+        <div className="px-5 pb-8">
           {/* Titre */}
           <div className="flex items-center justify-between mb-6 mt-2">
             <p className="text-lg font-black text-white">Paramètres</p>
@@ -2862,19 +2849,20 @@ export function SettingsPanel({ pseudo, age, onClose, onLogout }) {
               />
             </div>
             <div>
-              <label style={labelStyle}>Nom</label>
-              <input
-                value={nom} onChange={e => setNom(e.target.value)}
-                placeholder="Ton nom" style={inputStyle}
-              />
-            </div>
-            <div>
               <label style={labelStyle}>Âge</label>
               <input
                 value={ageVal} onChange={e => setAgeVal(e.target.value)}
                 placeholder="Ton âge" type="number" min="13" max="99" style={inputStyle}
               />
             </div>
+            {email && (
+              <div>
+                <label style={labelStyle}>Adresse e-mail</label>
+                <div style={{ ...inputStyle, color: 'rgba(255,255,255,0.4)', cursor: 'default' }}>
+                  {email}
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Séparateur */}
@@ -2906,7 +2894,7 @@ export function SettingsPanel({ pseudo, age, onClose, onLogout }) {
                     <line x1="1" y1="10" x2="23" y2="10"/>
                   </svg>
                 )}
-                <span>{portalLoading ? 'Chargement…' : 'Mon abonnement'}</span>
+                <span>{portalLoading ? 'Chargement…' : 'Gérer mon abonnement'}</span>
               </div>
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
                 <path d="M9 18l6-6-6-6"/>
@@ -2937,11 +2925,11 @@ export function SettingsPanel({ pseudo, age, onClose, onLogout }) {
           </button>
         </div>
       </motion.div>
-    </motion.div>
+    </div>
   )
 }
 
-export default function Step11Results({ faceScores = null, pseudo = '', age = null, onClose, onRescan, pendingPayment = 'none', onOpenSettings }) {
+export default function Step11Results({ faceScores = null, pseudo = '', age = null, onClose, onRescan, pendingPayment = 'none' }) {
   const { user, signOut, refreshScans } = useAuth()
   const t = useT()
   const scores  = faceScores ?? DEFAULT_SCORES
@@ -2958,7 +2946,7 @@ export default function Step11Results({ faceScores = null, pseudo = '', age = nu
     pendingPayment?.startsWith('extra_') ? 'extras' : 'resultats'
   )
   const [prevTab,       setPrevTab]       = useState(null)
-
+  const [showSettings,  setShowSettings]  = useState(false)
   const [detailScan,    setDetailScan]    = useState(null)
 
   // Analytics : résultats débloqués
@@ -3015,28 +3003,22 @@ export default function Step11Results({ faceScores = null, pseudo = '', age = nu
     setActiveTab(id)
   }
 
-  const handleLogout = async () => {
-    const keys = [
-      'shemaxx_scan_history',
-      'shemaxx_scan_deleted',
-      'shemaxx_invites',
-      'shemaxx_ref_code',
-      'shemaxx_confirmed_refs',
-    ]
-    keys.forEach(k => { try { localStorage.removeItem(k) } catch { /* ignore */ } })
-    try { sessionStorage.removeItem('shemaxx_session_fp') } catch { /* ignore */ }
-    if (user) await signOut().catch(() => { /* ignore */ })
-    onClose?.()
-  }
-
   const slideVariants = {
     enter:  (d) => ({ opacity: 0, x: d > 0 ? 32 : -32 }),
     center: { opacity: 1, x: 0 },
     exit:   (d) => ({ opacity: 0, x: d > 0 ? -32 : 32 }),
   }
 
+  const handleLogout = async () => {
+    const keys = ['shemaxx_scan_history','shemaxx_scan_deleted','shemaxx_invites','shemaxx_ref_code','shemaxx_confirmed_refs']
+    keys.forEach(k => { try { localStorage.removeItem(k) } catch { /* ignore */ } })
+    try { sessionStorage.removeItem('shemaxx_session_fp') } catch { /* ignore */ }
+    if (user) await signOut().catch(() => { /* ignore */ })
+    onClose?.()
+  }
+
   return (
-    <div className="flex flex-col h-full" style={{ background: '#050508', overflow: 'hidden' }}>
+    <div className="flex flex-col h-full relative" style={{ background: '#050508', overflow: 'hidden' }}>
 
       {/* ── Fond ambiant ── */}
       <div className="fixed inset-0 pointer-events-none" style={{ zIndex: 0 }}>
@@ -3060,12 +3042,7 @@ export default function Step11Results({ faceScores = null, pseudo = '', age = nu
 
         {/* Bouton Paramètres */}
         <button
-          onClick={() => {
-            // #region agent log
-            fetch('http://127.0.0.1:7419/ingest/086e8179-6398-46f3-94bd-f6fbc805e7e6',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'156471'},body:JSON.stringify({sessionId:'156471',location:'Step11Results.jsx:gear-click',message:'Gear button clicked',data:{onOpenSettingsType:typeof onOpenSettings,hasCallback:!!onOpenSettings},timestamp:Date.now(),hypothesisId:'H-A'})}).catch(()=>{});
-            // #endregion
-            onOpenSettings?.()
-          }}
+          onClick={() => setShowSettings(true)}
           className="w-9 h-9 rounded-full flex items-center justify-center"
           style={{ background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.1)' }}>
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.6)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -3130,6 +3107,19 @@ export default function Step11Results({ faceScores = null, pseudo = '', age = nu
           })}
         </div>
       </div>
+
+      {/* ── Panneau Paramètres — absolute dans le même conteneur, pas de fixed ── */}
+      <AnimatePresence>
+        {showSettings && (
+          <SettingsPanel
+            pseudo={pseudo}
+            age={age}
+            email={user?.email}
+            onClose={() => setShowSettings(false)}
+            onLogout={handleLogout}
+          />
+        )}
+      </AnimatePresence>
     </div>
   )
 }
