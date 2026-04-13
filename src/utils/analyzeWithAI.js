@@ -31,25 +31,31 @@ const clamp = (v, min, max) => Math.min(max, Math.max(min, Math.round(Number(v) 
 // Erreurs de qualité image — typées pour l'affichage dans Step9AnalyzingIA
 const IMAGE_QUALITY_ERRORS = {
   bad_lighting: {
-    title: 'Éclairage insuffisant',
-    detail: 'L\'IA ne peut pas voir tes traits clairement. Place-toi face à une source de lumière (fenêtre ou lampe devant toi), évite la lumière dans le dos.',
+    fr: { title: 'Éclairage insuffisant', detail: 'L\'IA ne peut pas voir tes traits clairement. Place-toi face à une source de lumière (fenêtre ou lampe devant toi), évite la lumière dans le dos.' },
+    en: { title: 'Insufficient lighting',  detail: 'The AI can\'t see your features clearly. Face a light source (window or lamp in front of you), avoid backlighting.' },
     emoji: '💡',
   },
   blurry: {
-    title: 'Image trop floue',
-    detail: 'L\'image est trop floue pour analyser ton visage. Nettoie l\'objectif de ta caméra et reste bien immobile pendant le scan.',
+    fr: { title: 'Image trop floue',    detail: 'L\'image est trop floue pour analyser ton visage. Nettoie l\'objectif de ta caméra et reste bien immobile pendant le scan.' },
+    en: { title: 'Image too blurry',    detail: 'The image is too blurry to analyze your face. Clean your camera lens and hold still during the scan.' },
     emoji: '📷',
   },
   bad_angle: {
-    title: 'Angle incorrect',
-    detail: 'Ton visage est trop de côté ou trop incliné. Regarde droit dans la caméra, tête bien droite, visage centré dans le cercle.',
+    fr: { title: 'Angle incorrect',     detail: 'Ton visage est trop de côté ou trop incliné. Regarde droit dans la caméra, tête bien droite, visage centré dans le cercle.' },
+    en: { title: 'Incorrect angle',     detail: 'Your face is too sideways or tilted. Look straight into the camera, head straight, face centered in the circle.' },
     emoji: '↔️',
   },
   no_face: {
-    title: 'Visage non détecté',
-    detail: 'Aucun visage clairement visible dans l\'image. Assure-toi que ton visage est bien éclairé et centré dans le cadre.',
+    fr: { title: 'Visage non détecté',  detail: 'Aucun visage clairement visible dans l\'image. Assure-toi que ton visage est bien éclairé et centré dans le cadre.' },
+    en: { title: 'No face detected',    detail: 'No clearly visible face in the image. Make sure your face is well lit and centered in the frame.' },
     emoji: '👤',
   },
+}
+
+function getQualityError(key) {
+  const lang = detectLang()
+  const entry = IMAGE_QUALITY_ERRORS[key]
+  return { ...entry[lang], emoji: entry.emoji }
 }
 
 /**
@@ -57,7 +63,7 @@ const IMAGE_QUALITY_ERRORS = {
  */
 function formatScores(raw) {
   if (raw.imageQuality === 'no_face') {
-    const qErr = IMAGE_QUALITY_ERRORS['no_face']
+    const qErr = getQualityError('no_face')
     const err = new Error(qErr.detail)
     err.isImageQuality = true
     err.qualityTitle   = qErr.title

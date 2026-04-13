@@ -53,7 +53,7 @@ Deno.serve(async (req) => {
       metadata:             { supabase_user_id: user.id, payment_type: type ?? 'analysis' },
       payment_intent_data:  { statement_descriptor: 'SHEMAXX' },
       automatic_tax:        { enabled: false },
-      locale:               'fr',
+      locale:               'auto',
     })
 
     return new Response(JSON.stringify({ url: session.url }), {

@@ -55,7 +55,7 @@ Deno.serve(async (req) => {
         card: { request_three_d_secure: 'automatic' },
       },
       automatic_tax:        { enabled: false },
-      locale:               'fr',
+      locale:               'auto',
     })
 
     return new Response(JSON.stringify({ url: session.url }), {

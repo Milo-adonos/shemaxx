@@ -6,8 +6,58 @@ const corsHeaders = {
 function buildPrompt(age: number | null, english = false): string {
   let ageContext = ''
   if (age) {
-    if (age <= 18) {
-      ageContext = `
+    if (english) {
+      if (age <= 18) {
+        ageContext = `
+AGE CONTEXT (${age} years old - teenager):
+ONLY natural, non-invasive techniques. No medical or cosmetic procedures.
+Top priority: strict mewing 24/7 (facial bones are still malleable - fast results possible),
+daily gua sha to drain and sculpt, targeted facial exercises, Falim gum chewing 1h/day for jawline,
+derma roller 0.25mm 1x/week for skin, light active skincare (niacinamide 10%, SPF 50 mandatory, retinol 0.025% max),
+posture exercises and chin tuck for profile, hydration and anti-inflammatory diet.
+This is the age where natural bone changes are still possible - strongly emphasize mewing.`
+      } else if (age <= 25) {
+        ageContext = `
+AGE CONTEXT (${age} years old - young adult):
+Maximum optimization with natural techniques and active skincare. No makeup in advice.
+Mewing + Mastic de Chios or Falim chewing 1-2h/day to naturally sculpt the jawline,
+stainless steel or jade gua sha on jaw/cheekbones/neck daily,
+targeted facial exercises (jawline exercises, cheekbone lift, eye lift), derma roller 0.5mm 1x/week,
+retinol 0.025-0.05% progressive at night, vitamin C serum 15% in the morning, AHA/BHA 2x/week,
+facial lymphatic drainage in the morning, chin tuck posture 3x/day, hydration 2L+ water per day.`
+      } else if (age <= 35) {
+        ageContext = `
+AGE CONTEXT (${age} years old - adult):
+Intensive natural techniques + targeted active skincare. No makeup in advice.
+Mewing still effective to maintain structure, daily gua sha drainage,
+retinol 0.1% night + AHA (The Ordinary Glycolic 7%) 2x/week + vitamin C 15% morning,
+derma roller 0.5mm-1mm 1x/week to stimulate collagen, topical peptides (Matrixyl, Argireline),
+red LED therapy 630nm 3x/week (Omnilux Contour Face) to naturally boost collagen,
+targeted facial exercises, daily lymphatic drainage, anti-inflammatory diet (omega-3, collagen),
+reduce salt and alcohol to depuff the face.`
+      } else if (age <= 50) {
+        ageContext = `
+AGE CONTEXT (${age} years old - mature adult):
+Natural restoration techniques and intensive active skincare. No makeup in advice.
+Daily gua sha and lymphatic massage to redefine the contour and drain, mewing for facial posture,
+retinol 0.05-0.1% progressively at night + peptides (Matrixyl 3000, GHK-Cu),
+red LED therapy 630nm 3x/week to stimulate collagen, derma roller 0.5mm 1x/week,
+chin tuck + targeted facial exercises, collagen and antioxidant-rich diet,
+intense hydration (topical hyaluronic acid + 2L+ water/day), SPF50+ mandatory every morning.`
+      } else {
+        ageContext = `
+AGE CONTEXT (${age} years old - maturity):
+Gentle restoration techniques and supportive care. No makeup in advice.
+Daily gua sha and lymphatic drainage for contouring, light pressure and gentle movements,
+low-dose retinol (0.025%) at night + GHK-Cu peptides (NIOD Copper Peptides) + topical hyaluronic acid,
+red LED therapy 630nm 3x/week (Omnilux Contour Face) to naturally stimulate collagen,
+gentle facial exercises, face roller every morning to activate circulation, SPF50+ every morning,
+anti-inflammatory diet, reduce salt/sugar/alcohol, maximum hydration.
+Be encouraging, value every possible improvement.`
+      }
+    } else {
+      if (age <= 18) {
+        ageContext = `
 CONTEXTE AGE (${age} ans - adolescente) :
 UNIQUEMENT techniques naturelles et non invasives. Zero procedure medicale ou esthetique.
 Priorite absolue : mewing strict 24h/24 (les os du visage sont encore malleables - resultats rapides possibles),
@@ -15,8 +65,8 @@ gua sha quotidien pour drainer et sculpter, exercices faciaux cibles, chewing Fa
 derma roller 0.25mm 1x/semaine pour la peau, soins actifs legers (niacinamide 10%, SPF 50 obligatoire, retinol 0.025% max),
 exercices de posture et chin tuck pour le profil, hydratation et alimentation anti-inflammatoire.
 C'est l'age ou les changements osseux naturels sont encore possibles - insiste fortement sur le mewing.`
-    } else if (age <= 25) {
-      ageContext = `
+      } else if (age <= 25) {
+        ageContext = `
 CONTEXTE AGE (${age} ans - jeune adulte) :
 Optimisation maximale avec techniques naturelles et soins actifs. Zero maquillage dans les conseils.
 Mewing + chewing Mastic de Chios ou Falim 1-2h/jour pour sculpter la machoire naturellement,
@@ -24,8 +74,8 @@ gua sha en acier inoxydable ou jade sur machoire/pommettes/cou quotidiennement,
 exercices faciaux cibles (jawline exercises, cheekbone lift, eye lift), derma roller 0.5mm 1x/semaine,
 retinol 0.025-0.05% progressif le soir, vitamine C serum 15% le matin, AHA/BHA 2x/semaine,
 drainage lymphatique facial le matin, posture chin tuck 3x/jour, hydratation 2L+ eau par jour.`
-    } else if (age <= 35) {
-      ageContext = `
+      } else if (age <= 35) {
+        ageContext = `
 CONTEXTE AGE (${age} ans - adulte) :
 Techniques naturelles intensives + soins actifs cibles. Zero maquillage dans les conseils.
 Mewing toujours efficace pour maintenir la structure, gua sha drainage quotidien,
@@ -34,8 +84,8 @@ derma roller 0.5mm-1mm 1x/semaine pour stimuler le collagene, peptides topiques 
 LED therapie rouge 630nm 3x/semaine (Omnilux Contour Face) pour booster le collagene naturellement,
 exercices faciaux cibles, drainage lymphatique quotidien, alimentation anti-inflammatoire (omega-3, collagene),
 reduction du sel et de l'alcool pour degonfler le visage.`
-    } else if (age <= 50) {
-      ageContext = `
+      } else if (age <= 50) {
+        ageContext = `
 CONTEXTE AGE (${age} ans - adulte mature) :
 Techniques de restauration naturelle et soins actifs intensifs. Zero maquillage dans les conseils.
 Gua sha et massage lymphatique quotidiens pour redefiner le contour et drainer, mewing pour la posture faciale,
@@ -43,8 +93,8 @@ retinol 0.05-0.1% progressivement le soir + peptides (Matrixyl 3000, GHK-Cu),
 LED therapie rouge 630nm 3x/semaine pour stimuler le collagene, derma roller 0.5mm 1x/semaine,
 chin tuck + exercices faciaux cibles, alimentation riche en collagene et antioxydants,
 hydratation intense (acide hyaluronique topique + 2L+ eau/jour), SPF50+ obligatoire chaque matin.`
-    } else {
-      ageContext = `
+      } else {
+        ageContext = `
 CONTEXTE AGE (${age} ans - maturite) :
 Techniques douces de restauration et soins de soutien. Zero maquillage dans les conseils.
 Gua sha quotidien et drainage lymphatique pour le contour, pression legere et mouvements doux,
@@ -53,6 +103,7 @@ LED therapie rouge 630nm 3x/semaine (Omnilux Contour Face) pour stimuler le coll
 exercices faciaux doux, face roller chaque matin pour activer la circulation, SPF50+ chaque matin,
 alimentation anti-inflammatoire, reduction sel/sucre/alcool, hydratation maximale.
 Sois encourageante, valorise chaque amelioration possible.`
+      }
     }
   }
 
