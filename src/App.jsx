@@ -62,6 +62,16 @@ function AppInner() {
     track('landing_page_viewed')
   }, [])
 
+  // ── Écoute l'event global pour ouvrir les paramètres ──
+  useEffect(() => {
+    const handler = (e) => {
+      setSettingsData(e.detail || { pseudo: '', age: null })
+      setSettingsOpen(true)
+    }
+    window.addEventListener('shemaxx:open-settings', handler)
+    return () => window.removeEventListener('shemaxx:open-settings', handler)
+  }, [])
+
   // ── Analytics : identification utilisateur connecté ──
   useEffect(() => {
     if (!loading) {

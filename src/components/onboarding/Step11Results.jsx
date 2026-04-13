@@ -2809,15 +2809,12 @@ export function SettingsPanel({ pseudo, age, onClose, onLogout }) {
     letterSpacing: '0.12em', color: 'rgba(255,255,255,0.35)', marginBottom: 6, display: 'block' }
 
   return (
-    <motion.div
-      initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-      className="fixed inset-0 z-[300] flex flex-col justify-end"
-      style={{ background: 'rgba(0,0,0,0.85)' }}
+    <div
+      className="fixed inset-0 flex flex-col justify-end"
+      style={{ background: 'rgba(0,0,0,0.85)', zIndex: 9999 }}
       onClick={onClose}
     >
-      <motion.div
-        initial={{ opacity: 0, y: 40 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 40 }}
-        transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+      <div
         className="rounded-t-[28px] flex flex-col gap-0 overflow-hidden"
         style={{ background: '#111116', borderTop: '1px solid rgba(255,255,255,0.08)', maxHeight: '88vh' }}
         onClick={e => e.stopPropagation()}
@@ -2924,8 +2921,8 @@ export function SettingsPanel({ pseudo, age, onClose, onLogout }) {
             Déconnexion
           </button>
         </div>
-      </motion.div>
-    </motion.div>
+      </div>
+    </div>
   )
 }
 
@@ -3048,7 +3045,10 @@ export default function Step11Results({ faceScores = null, pseudo = '', age = nu
 
         {/* Bouton Paramètres */}
         <button
-          onClick={() => onOpenSettings?.()}
+          onClick={() => {
+            onOpenSettings?.()
+            window.dispatchEvent(new CustomEvent('shemaxx:open-settings', { detail: { pseudo, age } }))
+          }}
           className="w-9 h-9 rounded-full flex items-center justify-center"
           style={{ background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.1)' }}>
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.6)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
