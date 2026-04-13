@@ -43,6 +43,15 @@ export default function Onboarding({ onClose, initialUser, initialSubscribed, in
   const [rescanMode, setRescanMode] = useState(false)
   const [showSettings, setShowSettings] = useState(false)
 
+  // #region agent log
+  useEffect(() => {
+    if (showSettings) {
+      fetch('http://127.0.0.1:7419/ingest/086e8179-6398-46f3-94bd-f6fbc805e7e6',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'156471'},body:JSON.stringify({sessionId:'156471',location:'Onboarding.jsx:settings-effect',message:'showSettings became true - SettingsPanel will render',data:{pseudo:data.pseudo,age:data.age,step},timestamp:Date.now(),hypothesisId:'H-B'})}).catch(()=>{})
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [showSettings])
+  // #endregion
+
   // Noms des étapes pour PostHog
   const STEP_NAMES = {
     1:  '01_qualification_objectif',
@@ -222,9 +231,6 @@ export default function Onboarding({ onClose, initialUser, initialSubscribed, in
       </div>
 
       {/* ── Panneau Paramètres — rendu ici pour éviter les transforms framer-motion ── */}
-      {/* #region agent log */}
-      {showSettings && fetch('http://127.0.0.1:7419/ingest/086e8179-6398-46f3-94bd-f6fbc805e7e6',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'156471'},body:JSON.stringify({sessionId:'156471',location:'Onboarding.jsx:settings-render',message:'showSettings is true - SettingsPanel about to render',data:{pseudo:data.pseudo,age:data.age,step},timestamp:Date.now(),hypothesisId:'H-B'})}).catch(()=>{})}
-      {/* #endregion */}
       <AnimatePresence>
         {showSettings && (
           <SettingsPanel
