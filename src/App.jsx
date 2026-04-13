@@ -160,7 +160,7 @@ function AppInner() {
   if (loading) return null
 
   return (
-    <div className="bg-[#090909] text-white min-h-screen overflow-x-hidden">
+      <div className="bg-[#090909] text-white min-h-screen">
       <Navbar onCta={handleConnexion} onSignOut={signOut} user={user} />
 
       {/* Banner d'invitation */}

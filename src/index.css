@@ -27,7 +27,7 @@
   /* Bloque le scroll du body quand l'app est ouverte */
   body.app-open {
     overflow: hidden;
-    position: fixed;
+    height: 100%;
     width: 100%;
   }
 
