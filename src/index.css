@@ -31,6 +31,17 @@
     width: 100%;
   }
 
+  /* Conteneur dédié aux modals/portals — toujours au-dessus de tout */
+  #modal-root {
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    pointer-events: none;
+  }
+  #modal-root > * {
+    pointer-events: auto;
+  }
+
   ::selection {
     background-color: #cc3c69;
     color: #fff;
