@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
+import { createPortal } from 'react-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import HolographicFaceTraits from './HolographicFaceTraits'
 import { useAuth } from '../../contexts/AuthContext'
@@ -3058,17 +3059,20 @@ export default function Step11Results({ faceScores = null, pseudo = '', age = nu
         </button>
       </div>
 
-      {/* ── Panneau paramètres ── */}
-      <AnimatePresence>
-        {showSettings && (
-          <SettingsPanel
-            pseudo={pseudo}
-            age={age}
-            onClose={() => setShowSettings(false)}
-            onLogout={handleLogout}
-          />
-        )}
-      </AnimatePresence>
+      {/* ── Panneau paramètres (portal → échappe aux transforms framer-motion) ── */}
+      {createPortal(
+        <AnimatePresence>
+          {showSettings && (
+            <SettingsPanel
+              pseudo={pseudo}
+              age={age}
+              onClose={() => setShowSettings(false)}
+              onLogout={handleLogout}
+            />
+          )}
+        </AnimatePresence>,
+        document.body
+      )}
 
       {/* ── Zone de contenu scrollable ── */}
       <div className="relative z-10 flex-1 overflow-hidden">
