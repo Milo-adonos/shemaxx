@@ -10,6 +10,7 @@ import SocialProof from './components/SocialProof'
 import FinalCTA from './components/FinalCTA'
 import Footer from './components/Footer'
 import Onboarding from './components/onboarding/Onboarding'
+import { SettingsPanel } from './components/onboarding/Step11Results'
 import AuthModal from './components/AuthModal'
 import { AuthProvider, useAuth } from './contexts/AuthContext'
 import { LangProvider, useT } from './contexts/LangContext'
@@ -53,6 +54,8 @@ function AppInner() {
   const [pendingScores,    setPendingScores]    = useState(null)
   // 'none' | 'subscription' | 'rescan' | 'extra_style' | 'extra_10' | 'extra_ranking' | 'extra_advice'
   const [pendingPayment,   setPendingPayment]   = useState('none')
+  const [settingsOpen,     setSettingsOpen]     = useState(false)
+  const [settingsData,     setSettingsData]     = useState({ pseudo: '', age: null })
 
   // ── Analytics : landing page view ──
   useEffect(() => {
@@ -198,6 +201,7 @@ function AppInner() {
       <AnimatePresence>
         {onboardingOpen && (
           <Onboarding
+            onOpenSettings={(data) => { setSettingsData(data); setSettingsOpen(true) }}
             onClose={() => { setOnboardingOpen(false); setPendingPayment('none'); window.history.pushState({}, '', '/') }}
             initialUser={user}
             initialSubscribed={subscribed}
@@ -216,6 +220,24 @@ function AppInner() {
             mode={authMode}
             onSuccess={handleAuthSuccess}
             onClose={() => setAuthModalOpen(false)}
+          />
+        )}
+      </AnimatePresence>
+
+      {/* Panneau Paramètres — rendu au niveau App pour éviter tout conflit CSS/transform */}
+      <AnimatePresence>
+        {settingsOpen && (
+          <SettingsPanel
+            pseudo={settingsData.pseudo}
+            age={settingsData.age}
+            onClose={() => setSettingsOpen(false)}
+            onLogout={async () => {
+              setSettingsOpen(false)
+              setOnboardingOpen(false)
+              setPendingPayment('none')
+              window.history.pushState({}, '', '/')
+              await signOut().catch(() => {})
+            }}
           />
         )}
       </AnimatePresence>
