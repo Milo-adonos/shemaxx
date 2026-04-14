@@ -39,15 +39,13 @@ Deno.serve(async (req) => {
       if (authError || !user) return json({ error: 'Token invalide' }, 401)
       userEmail = user.email ?? null
       userId    = user.id
-    } else if (guest_email) {
-      // Mode invité — email seulement, pas encore de compte Supabase
-      userEmail = guest_email
     } else {
-      return json({ error: 'Email ou session requis' }, 401)
+      // Mode invité — l'email est optionnel, Stripe le collecte pendant le paiement
+      userEmail = guest_email ?? null
     }
 
     const session = await stripe.checkout.sessions.create({
-      customer_email:       userEmail ?? undefined,
+      ...(userEmail ? { customer_email: userEmail } : {}),
       mode:                 'subscription',
       payment_method_types: ['card'],
       line_items:           [{ price: priceId, quantity: 1 }],
