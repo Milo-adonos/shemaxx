@@ -201,11 +201,11 @@ const en = {
   // Step8Photos
   step8Photos: {
     title: 'Let\'s analyze\nyour face',
-    subtitle: 'Our AI will scan your face in real time.\nYou\'ll first follow head positions, then a circular movement.',
+    subtitle: 'Our AI will scan your face in real time.\nFollow the instructions below.',
     instructions: [
-      { title: 'Position your face',        desc: 'Center your face in the camera frame' },
-      { title: 'Movements during the scan', desc: 'Look straight ahead, then turn your head left, then right. Next, make a full circle with your head (slowly, without leaving the frame).' },
-      { title: 'Stay in frame',             desc: 'If your face leaves the frame, the analysis will pause' },
+      { title: 'Take your selfie',         desc: 'Tap the button or upload a photo. Good lighting, face centered.' },
+      { title: 'Make a circle with your head', desc: 'Slowly rotate your head in a full circle so the AI captures all angles.' },
+      { title: 'Stay in frame',            desc: 'If your face leaves the frame, the analysis will pause.' },
     ],
     privacy: '🔒 Your data is never stored or shared',
     cta: 'Start the analysis',

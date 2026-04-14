@@ -11,6 +11,7 @@ import FinalCTA from './components/FinalCTA'
 import Footer from './components/Footer'
 import Onboarding from './components/onboarding/Onboarding'
 import AuthModal from './components/AuthModal'
+import CreateAccountModal from './components/CreateAccountModal'
 import { AuthProvider, useAuth } from './contexts/AuthContext'
 import { LangProvider, useT } from './contexts/LangContext'
 
@@ -53,6 +54,8 @@ function AppInner() {
   const [pendingScores,    setPendingScores]    = useState(null)
   // 'none' | 'subscription' | 'rescan' | 'extra_style' | 'extra_10' | 'extra_ranking' | 'extra_advice'
   const [pendingPayment,   setPendingPayment]   = useState('none')
+  const [showCreateAccount, setShowCreateAccount] = useState(false)
+  const [guestEmailForAccount, setGuestEmailForAccount] = useState('')
 
   // ── Analytics : landing page view ──
   useEffect(() => {
@@ -115,12 +118,18 @@ function AppInner() {
   }, [])
 
   // Ouvre l'app dès que le paiement est détecté et que le chargement est terminé.
-  // Pour un abonnement (subscription), on n'attend pas forcément user car justPaid bypasse le check.
-  // Pour les autres types de paiement, on attend user.
   useEffect(() => {
     if (pendingPayment === 'none' || loading) return
     if (pendingPayment === 'subscription') {
-      setOnboardingOpen(true)
+      if (user) {
+        // Utilisateur déjà connecté → ouvre l'app directement
+        setOnboardingOpen(true)
+      } else {
+        // Utilisateur invité → lui proposer de créer son compte
+        const guestEmail = (() => { try { return localStorage.getItem('shemaxx_guest_email') || '' } catch { return '' } })()
+        setGuestEmailForAccount(guestEmail)
+        setShowCreateAccount(true)
+      }
     } else if (user) {
       setOnboardingOpen(true)
     }
@@ -216,6 +225,21 @@ function AppInner() {
             mode={authMode}
             onSuccess={handleAuthSuccess}
             onClose={() => setAuthModalOpen(false)}
+          />
+        )}
+      </AnimatePresence>
+
+      {/* Création de compte après paiement invité */}
+      <AnimatePresence>
+        {showCreateAccount && (
+          <CreateAccountModal
+            prefillEmail={guestEmailForAccount}
+            onSuccess={() => {
+              setShowCreateAccount(false)
+              setPendingPayment('subscription')
+              setOnboardingOpen(true)
+            }}
+            onClose={() => setShowCreateAccount(false)}
           />
         )}
       </AnimatePresence>

@@ -3,135 +3,171 @@ import { motion } from 'framer-motion'
 import StepLayout from './StepLayout'
 import { useT } from '../../contexts/LangContext'
 
-const GRID_LINES = [100, 75, 50, 25, 0]
+const PINK   = '#cc3e6a'
+const PINK_A = (a) => `rgba(204,62,106,${a})`
 
 export default function Step5Potential({ onNext, faceScores = null }) {
+  const t = useT()
   const [ready, setReady] = useState(false)
   const [animate, setAnimate] = useState(false)
-  const t = useT()
 
-  const currentPct = 24
-  const gainPct    = 76
+  // Score actuel depuis l'IA (ou valeur par défaut)
+  const currentScore  = faceScores?.total ?? 68
+  // Potentiel = +20 à +25 points, plafonné à 95
+  const gain          = Math.min(22, 95 - currentScore)
+  const potentialScore = Math.min(95, currentScore + gain)
+
+  // Hauteur de la jauge totale en px
+  const GAUGE_H = 260
+  const currentFrac  = currentScore  / 100
+  const potentialFrac = potentialScore / 100
 
   useEffect(() => {
-    const t1 = setTimeout(() => setAnimate(true), 300)
-    const t2 = setTimeout(() => setReady(true), 3200)
+    const t1 = setTimeout(() => setAnimate(true), 400)
+    const t2 = setTimeout(() => setReady(true), 2800)
     return () => { clearTimeout(t1); clearTimeout(t2) }
   }, [])
 
   return (
     <StepLayout
       title="Nous voyons ton potentiel"
-      subtitle="Avec les bons conseils, tu peux atteindre ton plein potentiel."
-      cta={ready ? t.step5.cta : null}
+      subtitle="Avec les bons conseils, tu peux révéler ce qui est déjà en toi."
+      cta={ready ? (t.step5?.cta ?? 'Voir mon analyse complète →') : null}
       onCta={onNext}
     >
-      <div className="mt-4 rounded-2xl overflow-hidden border border-white/8" style={{ background: '#0d0d0d' }}>
+      {/* ── Jauge verticale ── */}
+      <div className="mt-6 flex flex-col items-center gap-6">
+        <div className="flex items-end gap-8 justify-center">
 
-        <div className="px-5 pt-5 pb-4 border-b border-white/6">
-          <p className="text-xs uppercase tracking-widest font-semibold mb-1" style={{ color: 'rgba(255,255,255,0.25)' }}>
-            Analyse de potentiel
-          </p>
-          <p className="text-base font-black text-white">
-            Tu peux atteindre{' '}
-            <span style={{ color: '#cc3c69' }}>100%</span>
-            {' '}avec Shemaxx
-          </p>
-        </div>
+          {/* Labels + jauge */}
+          <div className="flex flex-col items-center gap-2">
 
-        <div className="px-5 pt-5 pb-6">
-          <div className="flex gap-4">
-            <div className="flex flex-col justify-between pb-1 shrink-0" style={{ height: 220 }}>
-              {GRID_LINES.map(v => (
-                <span
-                  key={v}
-                  className="tabular-nums text-right leading-none font-black"
-                  style={{
-                    fontSize: v === 100 ? 13 : 10,
-                    color: v === 100 ? '#ffffff' : 'rgba(255,255,255,0.7)',
-                    textShadow: v === 100 ? '0 0 10px rgba(255,255,255,0.6)' : 'none',
-                  }}
-                >
-                  {v}%
-                </span>
-              ))}
+            {/* Label potentiel */}
+            <motion.div
+              initial={{ opacity: 0, y: -8 }}
+              animate={animate ? { opacity: 1, y: 0 } : {}}
+              transition={{ delay: 0.6, duration: 0.4 }}
+              className="flex flex-col items-center gap-1"
+            >
+              <span className="text-[11px] font-bold uppercase tracking-widest"
+                style={{ color: PINK }}>Ton score potentiel</span>
+              <span className="text-3xl font-black" style={{ color: PINK, textShadow: `0 0 20px ${PINK_A(0.5)}` }}>
+                {potentialScore}
+              </span>
+            </motion.div>
+
+            {/* La jauge */}
+            <div
+              className="relative rounded-2xl overflow-hidden"
+              style={{ width: 80, height: GAUGE_H, background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)' }}
+            >
+              {/* Partie actuelle (grise, du bas) */}
+              <motion.div
+                className="absolute bottom-0 left-0 right-0 flex items-center justify-center"
+                initial={{ height: 0 }}
+                animate={animate ? { height: `${currentFrac * 100}%` } : { height: 0 }}
+                transition={{ duration: 0.9, delay: 0.3, ease: [0.22, 1, 0.36, 1] }}
+                style={{ background: 'rgba(255,255,255,0.13)', borderTop: '1px solid rgba(255,255,255,0.12)' }}
+              >
+                <motion.span
+                  initial={{ opacity: 0 }} animate={animate ? { opacity: 1 } : {}}
+                  transition={{ delay: 1 }}
+                  className="text-sm font-black tabular-nums"
+                  style={{ color: 'rgba(255,255,255,0.5)' }}>
+                  {currentScore}
+                </motion.span>
+              </motion.div>
+
+              {/* Partie potentiel (rose, du haut) */}
+              <motion.div
+                className="absolute top-0 left-0 right-0 flex items-center justify-center"
+                initial={{ height: 0 }}
+                animate={animate ? { height: `${(1 - currentFrac) * 100}%` } : { height: 0 }}
+                transition={{ duration: 1.1, delay: 0.5, ease: [0.22, 1, 0.36, 1] }}
+                style={{ background: `linear-gradient(180deg, ${PINK}, rgba(204,62,106,0.6))`, boxShadow: `0 0 24px ${PINK_A(0.4)}` }}
+              >
+                <motion.span
+                  initial={{ opacity: 0, scale: 0.8 }} animate={animate ? { opacity: 1, scale: 1 } : {}}
+                  transition={{ delay: 1.3, type: 'spring' }}
+                  className="text-2xl font-black text-white tabular-nums">
+                  {potentialScore}
+                </motion.span>
+              </motion.div>
+
+              {/* Flèche animée montante */}
+              <motion.div
+                className="absolute left-0 right-0 flex justify-center pointer-events-none"
+                initial={{ bottom: `${currentFrac * 100}%`, opacity: 0 }}
+                animate={animate ? { bottom: `${(1 - currentFrac) * 100 - 2}%`, opacity: [0, 1, 1, 0] } : {}}
+                transition={{ delay: 1, duration: 1.2, ease: 'easeOut' }}
+              >
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+                  <path d="M12 19V5M5 12l7-7 7 7" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+              </motion.div>
             </div>
 
-            <div className="flex-1 relative" style={{ height: 220 }}>
-              {GRID_LINES.map((v, i) => (
-                <div
-                  key={v}
-                  className="absolute left-0 right-0"
-                  style={{ top: `${i * 25}%`, height: 1, background: 'rgba(255,255,255,0.06)' }}
-                />
-              ))}
-
-              <div className="absolute inset-0 flex items-end justify-center gap-6 pb-0.5">
-                <div className="flex flex-col items-center gap-2 flex-1 max-w-[100px] h-full justify-end">
-                  <div className="w-full relative flex flex-col justify-end rounded-xl overflow-hidden"
-                    style={{ height: '100%', background: 'rgba(255,255,255,0.04)' }}>
-                    <div className="absolute inset-0 rounded-xl pointer-events-none"
-                      style={{ background: 'radial-gradient(ellipse at 50% 100%, rgba(204,60,105,0.2), transparent 70%)' }} />
-                    <motion.div
-                      initial={{ height: 0 }}
-                      animate={animate ? { height: `${currentPct}%` } : { height: 0 }}
-                      transition={{ duration: 0.7, delay: 0.2, ease: [0.22, 1, 0.36, 1] }}
-                      className="w-full absolute bottom-0 flex items-center justify-center"
-                      style={{ background: 'rgba(255,255,255,0.15)', borderTop: '1px solid rgba(255,255,255,0.1)' }}
-                    >
-                      <motion.span
-                        initial={{ opacity: 0 }}
-                        animate={animate ? { opacity: 1 } : { opacity: 0 }}
-                        transition={{ delay: 0.7 }}
-                        className="text-base font-black"
-                        style={{ color: 'rgba(255,255,255,0.4)' }}
-                      >
-                        {currentPct}%
-                      </motion.span>
-                    </motion.div>
-                    <motion.div
-                      initial={{ height: 0 }}
-                      animate={animate ? { height: `${gainPct}%` } : { height: 0 }}
-                      transition={{ duration: 1.1, delay: 0.5, ease: [0.22, 1, 0.36, 1] }}
-                      className="w-full absolute top-0 flex items-center justify-center"
-                      style={{ background: 'linear-gradient(180deg, #e0557f, #cc3c69)', boxShadow: '0 0 20px rgba(204,60,105,0.4)' }}
-                    >
-                      <motion.span
-                        initial={{ opacity: 0, scale: 0.8 }}
-                        animate={animate ? { opacity: 1, scale: 1 } : { opacity: 0 }}
-                        transition={{ delay: 1.2, type: 'spring' }}
-                        className="text-2xl font-black text-white"
-                      >
-                        {gainPct}%
-                      </motion.span>
-                    </motion.div>
-                  </div>
-                </div>
-              </div>
-            </div>
+            {/* Label score actuel */}
+            <motion.div
+              initial={{ opacity: 0, y: 8 }}
+              animate={animate ? { opacity: 1, y: 0 } : {}}
+              transition={{ delay: 0.5, duration: 0.4 }}
+              className="flex flex-col items-center gap-1"
+            >
+              <span className="text-2xl font-black tabular-nums" style={{ color: 'rgba(255,255,255,0.55)' }}>
+                {currentScore}
+              </span>
+              <span className="text-[11px] font-bold uppercase tracking-widest"
+                style={{ color: 'rgba(255,255,255,0.35)' }}>Ton score actuel</span>
+            </motion.div>
           </div>
 
-          <div className="flex items-center justify-center gap-6 mt-5 pt-4 border-t border-white/6">
-            <div className="flex items-center gap-2">
-              <div className="w-3 h-3 rounded-full" style={{ background: 'rgba(255,255,255,0.2)' }} />
-              <span className="text-[11px] font-medium" style={{ color: 'rgba(255,255,255,0.4)' }}>Sans accompagnement</span>
+          {/* Texte à droite */}
+          <motion.div
+            initial={{ opacity: 0, x: 16 }}
+            animate={animate ? { opacity: 1, x: 0 } : {}}
+            transition={{ delay: 0.9, duration: 0.5 }}
+            className="flex flex-col gap-3 max-w-[160px]"
+          >
+            <div className="rounded-2xl px-3 py-3"
+              style={{ background: PINK_A(0.08), border: `1px solid ${PINK_A(0.2)}` }}>
+              <p className="text-[11px] font-black uppercase tracking-wider mb-1" style={{ color: PINK }}>
+                +{gain} points
+              </p>
+              <p className="text-xs leading-relaxed" style={{ color: 'rgba(255,255,255,0.55)' }}>
+                de progression potentielle identifiée
+              </p>
             </div>
-            <div className="flex items-center gap-2">
-              <div className="w-3 h-3 rounded-full" style={{ background: '#cc3c69', boxShadow: '0 0 6px rgba(204,60,105,0.7)' }} />
-              <span className="text-[11px] font-bold" style={{ color: 'rgba(255,255,255,0.7)' }}>{t.step6.withShemaxx}</span>
+
+            <div className="rounded-2xl px-3 py-3"
+              style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)' }}>
+              <p className="text-xs leading-relaxed" style={{ color: 'rgba(255,255,255,0.45)' }}>
+                D'après ton analyse faciale, tu as un fort potentiel d'amélioration.
+              </p>
             </div>
-          </div>
+          </motion.div>
         </div>
+
+        {/* Texte sous la jauge */}
+        <motion.p
+          initial={{ opacity: 0 }}
+          animate={animate ? { opacity: 1 } : {}}
+          transition={{ delay: 1.4, duration: 0.5 }}
+          className="text-xs text-center leading-relaxed px-4"
+          style={{ color: 'rgba(255,255,255,0.35)' }}
+        >
+          Ton plan personnalisé va te montrer exactement comment y arriver.
+        </motion.p>
       </div>
 
       {!ready && (
         <motion.p
           animate={{ opacity: [0.3, 0.8, 0.3] }}
           transition={{ duration: 1.6, repeat: Infinity }}
-          className="text-xs text-center mt-5"
+          className="text-xs text-center mt-6"
           style={{ color: 'rgba(255,255,255,0.25)' }}
         >
-          {t.step9Loading.analyzing}...
+          Calcul de ton potentiel...
         </motion.p>
       )}
     </StepLayout>

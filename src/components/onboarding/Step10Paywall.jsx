@@ -2,7 +2,6 @@ import { useState, useRef, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import HolographicFaceTraits from './HolographicFaceTraits'
 import { DEFAULT_DEFAUTS } from './Step9Reveal'
-import AuthModal from '../AuthModal'
 import { useAuth } from '../../contexts/AuthContext'
 import { supabase } from '../../lib/supabase'
 import { track } from '../../lib/posthog.js'
@@ -87,7 +86,7 @@ export default function Step10Paywall({ pseudo, faceScores = {}, onNext, onClose
 
   const [slideIdx,    setSlideIdx]    = useState(0)
   const [dir,         setDir]         = useState(1)
-  const [showAuth,    setShowAuth]    = useState(false)
+  const [guestEmail,  setGuestEmail]  = useState('')
   const [checkoutErr, setCheckoutErr] = useState(null)
   const [checkoutLoading, setCheckoutLoading] = useState(false)
   const touchStartX = useRef(null)
@@ -125,29 +124,39 @@ export default function Step10Paywall({ pseudo, faceScores = {}, onNext, onClose
     exit:   (d) => ({ opacity: 0, x: d > 0 ? -48 :  48 }),
   }
 
-  // Redirige vers Stripe dès que le compte est créé
-  const startCheckout = async () => {
+  // Redirige vers Stripe (mode connecté ou invité)
+  const startCheckout = async (overrideEmail = '') => {
     setCheckoutLoading(true)
     setCheckoutErr(null)
-    track('checkout_started', {
-      total:   faceScores?.total,
-      ranking: faceScores?.ranking,
-    })
+    track('checkout_started', { total: faceScores?.total, ranking: faceScores?.ranking })
     try {
-      const { data: { session } } = await supabase.auth.getSession()
-      if (!session?.access_token) throw new Error('Session introuvable — reconnecte-toi.')
-
       const priceId = import.meta.env.VITE_STRIPE_PRICE_ID
       const origin  = window.location.origin
+      const { data: { session } } = await supabase.auth.getSession()
 
-      const { data, error } = await supabase.functions.invoke('create-checkout', {
-        headers: { Authorization: `Bearer ${session.access_token}` },
-        body: {
-          priceId,
-          successUrl: `${origin}/?payment=success`,
-          cancelUrl:  `${origin}/`,
-        },
-      })
+      let data, error
+      if (session?.access_token) {
+        // Utilisateur déjà connecté
+        ;({ data, error } = await supabase.functions.invoke('create-checkout', {
+          headers: { Authorization: `Bearer ${session.access_token}` },
+          body: { priceId, successUrl: `${origin}/?payment=success`, cancelUrl: `${origin}/` },
+        }))
+      } else {
+        // Mode invité — appel direct sans auth
+        const email = overrideEmail || guestEmail
+        if (!email) { setCheckoutErr('Entre ton adresse e-mail pour continuer.'); setCheckoutLoading(false); return }
+        try { localStorage.setItem('shemaxx_guest_email', email) } catch { /* ignore */ }
+        const resp = await fetch(
+          `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/create-checkout`,
+          {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'apikey': import.meta.env.VITE_SUPABASE_ANON_KEY },
+            body: JSON.stringify({ priceId, successUrl: `${origin}/?payment=success`, cancelUrl: `${origin}/`, guest_email: email }),
+          }
+        )
+        const json = await resp.json()
+        data = json; error = resp.ok ? null : { message: json.error }
+      }
 
       if (error) {
         let errMsg = error.message || 'Erreur checkout'
@@ -188,17 +197,8 @@ export default function Step10Paywall({ pseudo, faceScores = {}, onNext, onClose
     }
   }
 
-  // Clic sur "Obtiens tes résultats" : auth si besoin, puis Stripe
+  // Clic sur "Obtiens tes résultats" → Stripe directement
   const handleCta = () => {
-    if (user) {
-      startCheckout()
-    } else {
-      setShowAuth(true)
-    }
-  }
-
-  const handleAuthSuccess = () => {
-    setShowAuth(false)
     startCheckout()
   }
 
@@ -490,10 +490,28 @@ export default function Step10Paywall({ pseudo, faceScores = {}, onNext, onClose
       {/* ── Footer ── */}
       <div className="relative z-10 px-5 pb-8 pt-4 space-y-3">
 
-        {/* Note de frais */}
         <p className="text-center text-xs" style={{ color: 'rgba(255,255,255,0.3)' }}>
           {t.paywall.unlockSub}
         </p>
+
+        {/* Formulaire email invité (si pas encore connecté) */}
+        {!user && !checkoutLoading && (
+          <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
+            className="rounded-2xl overflow-hidden"
+            style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.09)' }}>
+            <input
+              type="email"
+              placeholder="Ton adresse e-mail"
+              value={guestEmail}
+              onChange={e => setGuestEmail(e.target.value)}
+              className="w-full px-4 py-3 text-sm bg-transparent text-white placeholder-white/30 outline-none"
+              style={{ borderBottom: '1px solid rgba(255,255,255,0.07)' }}
+            />
+            <p className="text-[10px] text-center py-1.5" style={{ color: 'rgba(255,255,255,0.2)' }}>
+              🔒 Tu créeras ton mot de passe après le paiement
+            </p>
+          </motion.div>
+        )}
 
         {/* Erreur checkout */}
         {checkoutErr && (
@@ -535,39 +553,19 @@ export default function Step10Paywall({ pseudo, faceScores = {}, onNext, onClose
           </span>
         </motion.button>
 
-        {/* Prix */}
         <p className="text-center font-black text-white text-sm">3,99 € {t.paywall.priceLabel}</p>
 
-        {/* Liens légaux */}
         <div className="flex items-center justify-center gap-4">
-          <button className="text-xs" style={{ color: 'rgba(255,255,255,0.3)' }}>
-            {t.footer.terms}
-          </button>
-          <button className="text-xs" style={{ color: 'rgba(255,255,255,0.3)' }}>
-            {t.footer.privacy}
-          </button>
+          <button className="text-xs" style={{ color: 'rgba(255,255,255,0.3)' }}>{t.footer.terms}</button>
+          <button className="text-xs" style={{ color: 'rgba(255,255,255,0.3)' }}>{t.footer.privacy}</button>
         </div>
 
-        {/* Skip */}
         <button onClick={onClose}
           className="w-full text-center text-xs py-1 transition-opacity hover:opacity-60"
           style={{ color: 'rgba(255,255,255,0.18)' }}>
           Peut-être plus tard
         </button>
       </div>
-
-      {/* Auth modal */}
-      <AnimatePresence>
-        {showAuth && (
-          <AuthModal
-            mode="signup"
-            title={t.paywall.signupTitle}
-            subtitle={t.paywall.signupSubtitle}
-            onSuccess={handleAuthSuccess}
-            onClose={() => setShowAuth(false)}
-          />
-        )}
-      </AnimatePresence>
     </div>
   )
 }

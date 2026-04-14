@@ -201,11 +201,11 @@ const fr = {
   // Step8Photos
   step8Photos: {
     title: 'Analysons\nton visage',
-    subtitle: 'Notre IA va scanner ton visage en temps réel.\nTu suivras d\'abord des positions de tête, puis un mouvement circulaire.',
+    subtitle: 'Notre IA va scanner ton visage en temps réel.\nSuivez les instructions ci-dessous.',
     instructions: [
-      { title: 'Positionne ton visage',      desc: 'Centre ton visage dans le cadre de la caméra' },
-      { title: 'Mouvements pendant le scan', desc: 'Regarde droit devant toi, puis tourne la tête à gauche, puis à droite. Ensuite, fais un cercle complet avec la tête (lentement, sans sortir du cadre).' },
-      { title: 'Reste dans le cadre',        desc: 'Si ton visage sort du cadre, l\'analyse se met en pause' },
+      { title: 'Prends ton selfie', desc: 'Appuie sur le bouton ou télécharge une photo. Bonne lumière, visage centré.' },
+      { title: 'Fais un cercle avec ta tête', desc: 'Lentement, fais tourner ta tête en cercle complet pour que l\'IA capture tous les angles.' },
+      { title: 'Reste dans le cadre', desc: 'Si ton visage sort du cadre, l\'analyse se met en pause.' },
     ],
     privacy: '🔒 Tes données ne sont jamais stockées ni partagées',
     cta: 'Commencer l\'analyse',

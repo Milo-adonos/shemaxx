@@ -199,10 +199,11 @@ export default function Step9Reveal({ onNext, pseudo = '', faceScores = null, zo
           </p>
         </motion.div>
 
-        {/* ── Cartes défauts (5 premiers visibles) ── */}
+        {/* ── Cartes défauts (5 premiers visibles — 2 débloqués gratuits) ── */}
         <div className="space-y-3 mb-4">
           {visibleDefauts.map((defaut, i) => {
-            const style = getZoneStyle(defaut.zone)
+            const style   = getZoneStyle(defaut.zone)
+            const isUnlocked = i < 2   // 2 premiers conseils gratuits
             return (
               <motion.div key={i}
                 initial={{ opacity: 0, y: 16, scale: 0.97 }}
@@ -210,14 +211,28 @@ export default function Step9Reveal({ onNext, pseudo = '', faceScores = null, zo
                 transition={{ delay: 0.2 + i * 0.09, type: 'spring', stiffness: 160, damping: 20 }}
                 className="relative overflow-hidden rounded-2xl"
                 style={{
-                  background: 'linear-gradient(135deg, rgba(255,255,255,0.04) 0%, rgba(255,255,255,0.02) 100%)',
-                  border: '1px solid rgba(255,255,255,0.07)',
+                  background: isUnlocked
+                    ? 'linear-gradient(135deg, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0.03) 100%)'
+                    : 'linear-gradient(135deg, rgba(255,255,255,0.04) 0%, rgba(255,255,255,0.02) 100%)',
+                  border: isUnlocked
+                    ? `1px solid ${style.color}33`
+                    : '1px solid rgba(255,255,255,0.07)',
                   backdropFilter: 'blur(12px)',
                 }}>
 
+                {/* Badge "GRATUIT" sur les 2 premiers */}
+                {isUnlocked && (
+                  <div className="absolute top-2 right-3 z-10">
+                    <span className="text-[9px] font-black px-2 py-0.5 rounded-full"
+                      style={{ background: 'rgba(52,211,153,0.15)', color: '#34d399', border: '1px solid rgba(52,211,153,0.3)' }}>
+                      GRATUIT
+                    </span>
+                  </div>
+                )}
+
                 {/* Glow latéral gauche coloré */}
                 <div className="absolute left-0 top-0 bottom-0 w-1 rounded-l-2xl"
-                  style={{ background: style.color, opacity: 0.7 }} />
+                  style={{ background: style.color, opacity: isUnlocked ? 1 : 0.7 }} />
 
                 <div className="pl-4 pr-4 pt-3.5 pb-3">
 
@@ -239,43 +254,41 @@ export default function Step9Reveal({ onNext, pseudo = '', faceScores = null, zo
                     {defaut.probleme}
                   </p>
 
-                  {/* Ligne 3 : conseil partiellement visible */}
-                  <div className="rounded-xl px-3 pt-2.5 pb-2 relative overflow-hidden"
-                    style={{ background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.05)' }}>
-
-                    {/* Texte du conseil — début visible, fin floutée */}
-                    <p className="text-[11px] leading-relaxed"
-                      style={{ color: 'rgba(255,255,255,0.75)', userSelect: 'none', pointerEvents: 'none' }}>
-                      {defaut.conseil.slice(0, 72)}{defaut.conseil.length > 72 ? '…' : ''}
-                    </p>
-
-                    {/* Lignes fantômes simulant la suite */}
-                    <div className="mt-1.5 space-y-1.5" style={{ userSelect: 'none', pointerEvents: 'none' }}>
-                      <div className="h-2 rounded-full" style={{ width: '90%', background: 'rgba(255,255,255,0.07)', filter: 'blur(1.5px)' }} />
-                      <div className="h-2 rounded-full" style={{ width: '65%', background: 'rgba(255,255,255,0.05)', filter: 'blur(1.5px)' }} />
+                  {/* Ligne 3 : conseil complet (débloqué) ou partiel (verrouillé) */}
+                  {isUnlocked ? (
+                    <div className="rounded-xl px-3 pt-2.5 pb-3"
+                      style={{ background: 'rgba(0,0,0,0.3)', border: `1px solid ${style.color}22` }}>
+                      <p className="text-[11px] leading-relaxed"
+                        style={{ color: 'rgba(255,255,255,0.75)' }}>
+                        {defaut.conseil}
+                      </p>
                     </div>
-
-                    {/* Fondu vertical vers le bas */}
-                    <div className="absolute bottom-0 left-0 right-0 h-10 pointer-events-none"
-                      style={{ background: 'linear-gradient(to bottom, transparent, rgba(0,0,0,0.85))' }} />
-
-                    {/* Badge PRO + cadenas */}
-                    <div className="absolute bottom-2 right-3 flex items-center gap-1.5">
-                      <svg width="10" height="10" viewBox="0 0 24 24" fill="none"
-                        stroke={PINK_A(0.7)} strokeWidth="2.5" strokeLinecap="round">
-                        <rect x="3" y="11" width="18" height="11" rx="2"/>
-                        <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
-                      </svg>
-                      <span className="text-[9px] font-black px-2 py-0.5 rounded-full"
-                        style={{
-                          background: `linear-gradient(135deg, ${PINK}, #e8608a)`,
-                          color: '#fff',
-                          boxShadow: `0 0 8px ${PINK_A(0.4)}`,
-                        }}>
-                        PRO
-                      </span>
+                  ) : (
+                    <div className="rounded-xl px-3 pt-2.5 pb-2 relative overflow-hidden"
+                      style={{ background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.05)' }}>
+                      <p className="text-[11px] leading-relaxed"
+                        style={{ color: 'rgba(255,255,255,0.75)', userSelect: 'none', pointerEvents: 'none' }}>
+                        {defaut.conseil.slice(0, 72)}{defaut.conseil.length > 72 ? '…' : ''}
+                      </p>
+                      <div className="mt-1.5 space-y-1.5" style={{ userSelect: 'none', pointerEvents: 'none' }}>
+                        <div className="h-2 rounded-full" style={{ width: '90%', background: 'rgba(255,255,255,0.07)', filter: 'blur(1.5px)' }} />
+                        <div className="h-2 rounded-full" style={{ width: '65%', background: 'rgba(255,255,255,0.05)', filter: 'blur(1.5px)' }} />
+                      </div>
+                      <div className="absolute bottom-0 left-0 right-0 h-10 pointer-events-none"
+                        style={{ background: 'linear-gradient(to bottom, transparent, rgba(0,0,0,0.85))' }} />
+                      <div className="absolute bottom-2 right-3 flex items-center gap-1.5">
+                        <svg width="10" height="10" viewBox="0 0 24 24" fill="none"
+                          stroke={PINK_A(0.7)} strokeWidth="2.5" strokeLinecap="round">
+                          <rect x="3" y="11" width="18" height="11" rx="2"/>
+                          <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                        </svg>
+                        <span className="text-[9px] font-black px-2 py-0.5 rounded-full"
+                          style={{ background: `linear-gradient(135deg, ${PINK}, #e8608a)`, color: '#fff', boxShadow: `0 0 8px ${PINK_A(0.4)}` }}>
+                          PRO
+                        </span>
+                      </div>
                     </div>
-                  </div>
+                  )}
                 </div>
               </motion.div>
             )

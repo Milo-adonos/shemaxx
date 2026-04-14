@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { motion } from 'framer-motion'
 import { analyzeWithAI } from '../../utils/analyzeWithAI'
 import { track } from '../../lib/posthog.js'
 import { useT } from '../../contexts/LangContext'
@@ -18,7 +18,6 @@ export default function Step9AnalyzingIA({ onNext, onRescan, analysisData = null
   onNextRef.current   = onNext
   const [error, setError]       = useState(null)
   const [retryKey, setRetryKey] = useState(0)
-  const [showPopup, setShowPopup] = useState(true)
 
   useEffect(() => {
     let cancelled = false
@@ -171,46 +170,6 @@ export default function Step9AnalyzingIA({ onNext, onRescan, analysisData = null
   return (
     <div className="flex flex-col min-h-full items-center justify-center gap-8 px-8 text-center"
       style={{ background: '#000', position: 'relative' }}>
-
-      {/* ── Popup info durée ── */}
-      <AnimatePresence>
-        {showPopup && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="absolute inset-0 flex items-center justify-center z-50 px-6"
-            style={{ background: 'rgba(0,0,0,0.82)', backdropFilter: 'blur(6px)' }}>
-            <motion.div
-              initial={{ scale: 0.88, opacity: 0, y: 16 }}
-              animate={{ scale: 1, opacity: 1, y: 0 }}
-              exit={{ scale: 0.92, opacity: 0, y: 8 }}
-              transition={{ type: 'spring', stiffness: 260, damping: 22 }}
-              className="w-full max-w-xs rounded-3xl px-6 py-7 flex flex-col items-center gap-5"
-              style={{ background: 'linear-gradient(160deg, #16121a, #110e16)', border: '1px solid rgba(205,55,103,0.3)', boxShadow: '0 0 40px rgba(205,55,103,0.15)' }}>
-              {/* Icône */}
-              <div className="w-14 h-14 rounded-2xl flex items-center justify-center text-3xl"
-                style={{ background: 'rgba(205,55,103,0.12)', border: '1px solid rgba(205,55,103,0.25)' }}>
-                ⏳
-              </div>
-              {/* Texte */}
-              <div className="text-center">
-                <p className="text-white font-black text-lg mb-2">{t.step9Analyzing.popup.title}</p>
-                <p className="text-[14px] leading-relaxed" style={{ color: 'rgba(255,255,255,0.55)' }}>
-                  {t.step9Analyzing.popup.desc1}<span className="font-bold" style={{ color: '#ff4d88' }}>{t.step9Analyzing.popup.duration}</span>{t.step9Analyzing.popup.desc2}
-                </p>
-              </div>
-              {/* Bouton OK */}
-              <button
-                onClick={() => setShowPopup(false)}
-                className="w-full py-3.5 rounded-2xl font-black text-base text-white"
-                style={{ background: 'linear-gradient(135deg, #cc3c69, #e8608a)', boxShadow: '0 0 24px rgba(204,60,105,0.4)' }}>
-                {t.step9Analyzing.popup.ok}
-              </button>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
 
       <div className="flex items-center justify-center gap-2 mb-1">
         <motion.div className="w-1.5 h-1.5 rounded-full" style={{ background: PINK }}
