@@ -23,8 +23,8 @@ const CALIB_FRAMES   = 30      // frames de calibration avant de tracker
 const NOSE           = 1       // index landmark bout du nez
 const PAUSE_GRACE    = 1400    // ms avant de considérer le visage vraiment perdu (plus tolérant)
 
-// ── Phases de positionnement (avant le scan circulaire) ──────────────────────
-const HOLD_FRAMES = 70   // frames consécutives à maintenir (~2.3s à 30fps)
+// ── Phase de positionnement (avant le scan circulaire) ───────────────────────
+const HOLD_FRAMES = 50   // frames consécutives à maintenir (~1.7s à 30fps)
 const POSITION_STEPS = [
   {
     key: 'front',
@@ -32,20 +32,6 @@ const POSITION_STEPS = [
     hint: 'Centre ton visage dans le cadre',
     icon: '👁',
     check: (nx) => nx > 0.43 && nx < 0.57,
-  },
-  {
-    key: 'left',
-    label: 'Tourne la tête à gauche',
-    hint: 'Tourne lentement vers ta gauche',
-    icon: '←',
-    check: (nx) => nx > 0.60,
-  },
-  {
-    key: 'right',
-    label: 'Tourne la tête à droite',
-    hint: 'Tourne lentement vers ta droite',
-    icon: '→',
-    check: (nx) => nx < 0.40,
   },
 ]
 
