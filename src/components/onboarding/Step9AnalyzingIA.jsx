@@ -9,7 +9,7 @@ const PINK_A = (a) => `rgba(204,60,105,${a})`
 
 
 
-const MIN_DISPLAY_MS = 30000  // 30 secondes minimum
+const MIN_DISPLAY_MS = 10000  // 10 secondes minimum
 
 export default function Step9AnalyzingIA({ onNext, onRescan, analysisData = null, age = null }) {
   const t    = useT()

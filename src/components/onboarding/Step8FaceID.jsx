@@ -93,6 +93,7 @@ export default function Step8FaceID({ onNext, onRetry, age = null }) {
   const lastActivePosPhase = useRef('front')  // phase de position active avant pause
   const frontPhotoRef      = useRef(null)     // photo capturée manuellement
   const frontLandmarksRef  = useRef(null)     // landmarks MediaPipe au moment de la photo
+  const scanTimerRef       = useRef(null)     // timer 20s auto-complétion du scan
 
   const setPhaseSync = (p) => { phaseRef.current = p; setPhase(p) }
 
@@ -281,6 +282,7 @@ export default function Step8FaceID({ onNext, onRetry, age = null }) {
       cancelAnimationFrame(rafRef.current)
       cancelAnimationFrame(drawRafRef.current)
       faceMeshRef.current?.close?.()
+      if (scanTimerRef.current) { clearTimeout(scanTimerRef.current); scanTimerRef.current = null }
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [camInitTrigger])
@@ -353,6 +355,28 @@ export default function Step8FaceID({ onNext, onRetry, age = null }) {
           if (calibCount.current >= CALIB_FRAMES) {
             setPhaseSync('scanning')
             lastActivePosPhase.current = 'scanning'
+            // Auto-complétion du scan après 20s si pas encore terminé
+            if (!scanTimerRef.current) {
+              scanTimerRef.current = setTimeout(() => {
+                if (doneRef.current) return
+                doneRef.current = true
+                setPhaseSync('done')
+                const landmarksSnapshot =
+                  landmarksRef.current && landmarksRef.current.length >= 468
+                    ? landmarksRef.current.map((p) => ({ x: p.x, y: p.y, z: p.z ?? 0 }))
+                    : null
+                let imageDataUrl = null
+                try { imageDataUrl = captureVideoFrame(videoRef.current) } catch { /* ignore */ }
+                streamRef.current?.getTracks().forEach(t => t.stop())
+                setTimeout(() => {
+                  onNext({
+                    photoUrl:       frontPhotoRef.current,
+                    photoLandmarks: frontLandmarksRef.current,
+                    analysisData:   { imageDataUrl, landmarksSnapshot },
+                  })
+                }, 2000)
+              }, 20000)
+            }
           }
           return
         }
@@ -504,6 +528,7 @@ export default function Step8FaceID({ onNext, onRetry, age = null }) {
 
               if (visited >= SECTORS_NEEDED) {
                 doneRef.current = true
+                if (scanTimerRef.current) { clearTimeout(scanTimerRef.current); scanTimerRef.current = null }
                 setPhaseSync('done')
 
                 // Copie des landmarks au moment du succès (avant arrêt caméra / perte de détection)
