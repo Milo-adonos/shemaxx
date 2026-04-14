@@ -355,7 +355,7 @@ export default function Step8FaceID({ onNext, onRetry, age = null }) {
           if (calibCount.current >= CALIB_FRAMES) {
             setPhaseSync('scanning')
             lastActivePosPhase.current = 'scanning'
-            // Auto-complétion du scan après 20s si pas encore terminé
+            // Auto-complétion du scan après 10s si pas encore terminé
             if (!scanTimerRef.current) {
               scanTimerRef.current = setTimeout(() => {
                 if (doneRef.current) return
@@ -375,7 +375,7 @@ export default function Step8FaceID({ onNext, onRetry, age = null }) {
                     analysisData:   { imageDataUrl, landmarksSnapshot },
                   })
                 }, 2000)
-              }, 20000)
+              }, 10000)
             }
           }
           return
