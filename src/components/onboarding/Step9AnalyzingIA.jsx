@@ -9,8 +9,7 @@ const PINK_A = (a) => `rgba(204,60,105,${a})`
 
 
 
-const MIN_DISPLAY_MS = 5000   // afficher l'écran au moins 5s
-const MAX_DISPLAY_MS = 20000  // forcer la suite après 20s max
+const MIN_DISPLAY_MS = 5000  // afficher l'écran au moins 5s
 
 export default function Step9AnalyzingIA({ onNext, onRescan, analysisData = null, age = null }) {
   const t    = useT()
@@ -22,22 +21,7 @@ export default function Step9AnalyzingIA({ onNext, onRescan, analysisData = null
 
   useEffect(() => {
     let cancelled = false
-    let resolved  = false
     const startTime = Date.now()
-
-    const advance = (scores) => {
-      if (resolved || cancelled) return
-      resolved = true
-      const elapsed    = Date.now() - startTime
-      const remaining  = Math.max(0, MIN_DISPLAY_MS - elapsed)
-      setTimeout(() => { if (!cancelled) onNextRef.current(scores ?? null) }, remaining)
-    }
-
-    // Timeout dur : avance avec null (scores par défaut dans Step11Results) après 20s
-    const hardTimer = setTimeout(() => {
-      track('ai_analysis_timeout_forced', { elapsed_ms: Date.now() - startTime })
-      advance(null)
-    }, MAX_DISPLAY_MS)
 
     const run = async () => {
       setError(null)
@@ -58,10 +42,10 @@ export default function Step9AnalyzingIA({ onNext, onRescan, analysisData = null
           image_quality: 'ok',
         })
 
-        clearTimeout(hardTimer)
-        advance(scores)
+        const elapsed   = Date.now() - startTime
+        const remaining = Math.max(0, MIN_DISPLAY_MS - elapsed)
+        setTimeout(() => { if (!cancelled) onNextRef.current(scores) }, remaining)
       } catch (err) {
-        clearTimeout(hardTimer)
         if (cancelled) return
         console.error('Analyse IA échouée :', err)
 
@@ -94,7 +78,7 @@ export default function Step9AnalyzingIA({ onNext, onRescan, analysisData = null
     }
 
     run()
-    return () => { cancelled = true; clearTimeout(hardTimer) }
+    return () => { cancelled = true }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [retryKey])
 
