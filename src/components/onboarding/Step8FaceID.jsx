@@ -23,17 +23,8 @@ const CALIB_FRAMES   = 30      // frames de calibration avant de tracker
 const NOSE           = 1       // index landmark bout du nez
 const PAUSE_GRACE    = 1400    // ms avant de considérer le visage vraiment perdu (plus tolérant)
 
-// ── Phase de positionnement (avant le scan circulaire) ───────────────────────
-const HOLD_FRAMES = 50   // frames consécutives à maintenir (~1.7s à 30fps)
-const POSITION_STEPS = [
-  {
-    key: 'front',
-    label: 'Regarde droit devant',
-    hint: 'Centre ton visage dans le cadre',
-    icon: '👁',
-    check: (nx) => nx > 0.43 && nx < 0.57,
-  },
-]
+// Pas d'étapes de positionnement — on passe directement au scan circulaire
+const POSITION_STEPS = []
 
 // ── Messages liés aux secteurs visités ───────────────────────────────────────
 const SCAN_MESSAGES = [
@@ -360,8 +351,8 @@ export default function Step8FaceID({ onNext, onRetry, age = null }) {
             }
           }
           if (calibCount.current >= CALIB_FRAMES) {
-            setPhaseSync('front')
-            lastActivePosPhase.current = 'front'
+            setPhaseSync('scanning')
+            lastActivePosPhase.current = 'scanning'
           }
           return
         }
@@ -543,7 +534,7 @@ export default function Step8FaceID({ onNext, onRetry, age = null }) {
 
       } else {
         // Visage perdu : attend la grâce avant de mettre en pause
-        const pausablePhases = ['scanning', 'calibrating', 'front', 'left', 'right']
+        const pausablePhases = ['scanning', 'calibrating']
         if (
           pausablePhases.includes(phaseRef.current) &&
           lastFaceTime.current &&
