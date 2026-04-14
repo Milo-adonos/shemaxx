@@ -86,7 +86,6 @@ export default function Step10Paywall({ pseudo, faceScores = {}, onNext, onClose
 
   const [slideIdx,    setSlideIdx]    = useState(0)
   const [dir,         setDir]         = useState(1)
-  const [guestEmail,  setGuestEmail]  = useState('')
   const [checkoutErr, setCheckoutErr] = useState(null)
   const [checkoutLoading, setCheckoutLoading] = useState(false)
   const touchStartX = useRef(null)
@@ -125,7 +124,7 @@ export default function Step10Paywall({ pseudo, faceScores = {}, onNext, onClose
   }
 
   // Redirige vers Stripe (mode connecté ou invité)
-  const startCheckout = async (overrideEmail = '') => {
+  const startCheckout = async () => {
     setCheckoutLoading(true)
     setCheckoutErr(null)
     track('checkout_started', { total: faceScores?.total, ranking: faceScores?.ranking })
@@ -142,16 +141,13 @@ export default function Step10Paywall({ pseudo, faceScores = {}, onNext, onClose
           body: { priceId, successUrl: `${origin}/?payment=success`, cancelUrl: `${origin}/` },
         }))
       } else {
-        // Mode invité — appel direct sans auth
-        const email = overrideEmail || guestEmail
-        if (!email) { setCheckoutErr('Entre ton adresse e-mail pour continuer.'); setCheckoutLoading(false); return }
-        try { localStorage.setItem('shemaxx_guest_email', email) } catch { /* ignore */ }
+        // Mode invité — Stripe collecte lui-même l'email pendant le paiement
         const resp = await fetch(
           `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/create-checkout`,
           {
             method: 'POST',
             headers: { 'Content-Type': 'application/json', 'apikey': import.meta.env.VITE_SUPABASE_ANON_KEY },
-            body: JSON.stringify({ priceId, successUrl: `${origin}/?payment=success`, cancelUrl: `${origin}/`, guest_email: email }),
+            body: JSON.stringify({ priceId, successUrl: `${origin}/?payment=success`, cancelUrl: `${origin}/` }),
           }
         )
         const json = await resp.json()
@@ -493,25 +489,6 @@ export default function Step10Paywall({ pseudo, faceScores = {}, onNext, onClose
         <p className="text-center text-xs" style={{ color: 'rgba(255,255,255,0.3)' }}>
           {t.paywall.unlockSub}
         </p>
-
-        {/* Formulaire email invité (si pas encore connecté) */}
-        {!user && !checkoutLoading && (
-          <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
-            className="rounded-2xl overflow-hidden"
-            style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.09)' }}>
-            <input
-              type="email"
-              placeholder="Ton adresse e-mail"
-              value={guestEmail}
-              onChange={e => setGuestEmail(e.target.value)}
-              className="w-full px-4 py-3 text-sm bg-transparent text-white placeholder-white/30 outline-none"
-              style={{ borderBottom: '1px solid rgba(255,255,255,0.07)' }}
-            />
-            <p className="text-[10px] text-center py-1.5" style={{ color: 'rgba(255,255,255,0.2)' }}>
-              🔒 Tu créeras ton mot de passe après le paiement
-            </p>
-          </motion.div>
-        )}
 
         {/* Erreur checkout */}
         {checkoutErr && (
