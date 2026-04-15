@@ -169,7 +169,6 @@ function ProductChip({ product }) {
   return (
     <a href={url} target="_blank" rel="noopener noreferrer"
       onClick={e => e.stopPropagation()}
-      style={{ textDecoration: 'none' }}
       className="flex items-center gap-3 rounded-2xl px-3 py-2.5 transition-all active:scale-[0.98]"
       style={{
         background: `linear-gradient(135deg, ${product.color}12, ${product.color}06)`,
