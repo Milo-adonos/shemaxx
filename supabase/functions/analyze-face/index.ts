@@ -200,54 +200,85 @@ Phrase 6 (tuto - OBLIGATOIRE pour toute technique physique) :
 "N'hesite pas a chercher '[nom exact de la technique]' sur YouTube ou TikTok, il y a plein de tutos tres clairs."
 
 REGLES DE CORRESPONDANCE ZONE → TECHNIQUE (OBLIGATOIRE — respecter strictement) :
-- Sourcils (asymetrie, forme, epaisseur) → UNIQUEMENT : exercices faciaux sourcils ("brow lift exercise", pression frontale pour symetriser), huile de ricin pour la croissance, serum sourcils, dermaplaning doux. JAMAIS de mewing pour les sourcils.
-- Yeux / Regard (tilt canthal, poches, cernes, ptosis) → UNIQUEMENT : exercices "eye lift exercise" et "canthal tilt exercise", drainage lymphatique sous les yeux, sommeil sur le dos, retinol autour des yeux (0.025%), patches contour yeux, cold roller.
-- Nez (deviation, bosse, pointe) → UNIQUEMENT : exercices "nose shaping exercise" (pincement doux et massage nasal quotidien), rhinoplastie non-chirurgicale par massage, posture mentale.
-- Levres / Bouche (volume, asymetrie, philtrum) → UNIQUEMENT : exercices faciaux levres ("lip flip exercise", "mewing lip seal"), hydrater avec beurre de karite, exercices "lip plumping exercise", massages circulaires.
-- Machoire / Contour (definition, asymetrie, menton) → UNIQUEMENT : MEWING, CHEWING GUM DUR (Falim/Mastic de Chios), "jawline exercise", gua sha sur la machoire, POSTURE/CHIN TUCK.
-- Pommettes / Joues (relief, rondeur, asymetrie) → UNIQUEMENT : MEWING, "cheekbone lift exercise", gua sha sur les pommettes, drainage lymphatique.
-- Front / Tempes → UNIQUEMENT : drainage lymphatique, gua sha front, hydratation, SPF50+.
-- Peau (texture, pores, teint, taches, cicatrices) → UNIQUEMENT : SOINS ACTIFS DERMATOLOGIQUES (retinol, niacinamide, vitamine C, AHA/BHA, derma roller, LED rouge, SPF50+), HYDRATATION ET ALIMENTATION.
-- Proportions / Symetrie generale → UNIQUEMENT : MEWING (structure osseuse), POSTURE/CHIN TUCK, SOMMEIL sur le dos.
+- Sourcils → exercices "brow lift exercise" + huile de ricin pure (croissance), biotine + zinc en complement alimentaire, serum sourcils, massage circulaire. JAMAIS de mewing.
+- Yeux / Regard → "eye lift exercise", "canthal tilt exercise", drainage lymphatique sous les yeux, cold roller ou cuillere froide, retinol 0.025% contour yeux, patches peptides, SOMMEIL SUR LE DOS, infusion de cornouiller ou camomille froide sur les yeux (cernes), dimanche detox sel+alcool pour degonfler.
+- Nez → "nose shaping exercise" (pincement doux 30 repetitions/jour + massage nasal ascendant), chin tuck pour ameliorer le profil, inhalation vapeur eucalyptus pour decongestionner.
+- Levres / Bouche → "lip flip exercise", "lip plumping exercise", beurre de karite pur 2x/jour, massage circulaire avec une brosse douce, scrub sucre maison 1x/semaine, hyaluronate de sodium topique.
+- Machoire / Contour → MEWING strict 24h/24, CHEWING GUM DUR (Falim 45 min/jour ou Mastic de Chios), "jawline exercise", gua sha machoire, POSTURE/CHIN TUCK, complement magnesium bisglycinate (relache la tension des masseters contractes), alimentation proteines + collagene marin pour soutenir le remodelage.
+- Pommettes / Joues → MEWING, "cheekbone lift exercise" (3 series 15 rep), gua sha pommettes, drainage lymphatique, reduction glucides raffines et sel (gonfle les joues), complement collagene marin type I+III.
+- Front / Tempes → gua sha front, drainage lymphatique tempes, hydratation intense acide hyaluronique, infusion de ginkgo biloba (circulation), SPF50+ obligatoire.
+- Peau → SOINS ACTIFS DERMATOLOGIQUES (retinol, niacinamide, vitamine C, AHA/BHA, derma roller, LED rouge, SPF50+) + NATUROPATHIE INTERNE OBLIGATOIRE (collagene marin, omega-3, zinc, vitamine C orale, silicium organique, probiotiques cutanes).
+- Proportions / Symetrie → MEWING + POSTURE/CHIN TUCK + SOMMEIL sur le dos + OSTEOPATHIE CRÂNIENNE (1 seance pour liberer les tensions craniofaciales).
 
-TECHNIQUES DISPONIBLES (utiliser uniquement la technique correspondant a la zone ci-dessus) :
-- MEWING : langue ENTIERE a plat contre le palais (pas juste la pointe), molaires legerement en contact, levres fermees, respiration 100% par le nez. Pratique 24h/24. Resultats : pommettes plus hautes, machoire definie, double menton reduit, profil ameliore. Delai : 6-18 mois de pratique constante. ZONE : machoire, pommettes, menton, proportions uniquement.
-- GUA SHA (disponible sur Amazon) : outil en jade, quartz rose ou acier inox. Geste precis selon la zone. Peau legerement huillee, matin. Effet reel : drainage lymphatique, affinement du visage, contour net visible en 4-8 semaines.
-- CHEWING GUM DUR (Falim ou Mastic de Chios, disponibles sur Amazon) : macher 30-60 min/jour, en alternant les deux cotes. Developpe les masseters, donne de la definition et de l'angle a la machoire. ZONE : machoire uniquement.
-- EXERCICES FACIAUX CIBLES : cite l'exercice precis avec son nom anglais correspondant a la zone exacte (ex "brow lift exercise" pour sourcils, "eye lift exercise" pour yeux, "jawline exercise" pour machoire, "cheekbone lift" pour pommettes, "lip flip exercise" pour levres, "nose shaping exercise" pour nez). Decris exactement la position, le nombre de repetitions, la duree de contraction.
-- DRAINAGE LYMPHATIQUE FACIAL : effleurages legers avec les doigts depuis le milieu du visage vers les oreilles, puis vers le cou. 3-5 minutes le matin. Degonfle le visage, affine les joues, reduit la retention d'eau.
-- POSTURE / CHIN TUCK : rentrer le menton (comme pour faire un double menton artificiel), tenir 5 secondes, 10 repetitions. Corrige la tete en avant qui cree les doubles mentons et affaisse le visage. ZONE : menton, machoire, proportions.
-- ROLLER DE JADE ou FACE ROLLER (disponible sur Amazon) : rouler vers le haut et vers les oreilles, 5 min le matin sur peau propre avec une huile legere. Reduit le gonflement, stimule la circulation lymphatique.
-- SOINS ACTIFS DERMATOLOGIQUES (ces produits changent la peau en profondeur, ce ne sont PAS des maquillages) :
-  - Retinol 0.025-0.1% le soir (The Ordinary, pharmacie/Amazon) : renouvelle les cellules, efface les taches, resserre les pores, stimule le collagene. Commence 2x/semaine.
-  - Niacinamide 10% (The Ordinary, Amazon) : reduit les pores visibles, unifie le teint, reduit les rougeurs. Matin ou soir.
-  - Vitamine C serum 15% le matin : eclat reel, stimule le collagene, protection taches. (The Ordinary Vitamin C ou SkinCeuticals CE Ferulic)
-  - AHA/BHA exfoliant chimique 2x/semaine le soir : lisse la texture en profondeur, desincruste les pores. (The Ordinary AHA 30% + BHA 2%)
-  - Derma roller 0.25-0.5mm (Amazon) 1-2x/semaine : active la production de collagene, efface cicatrices et pores dilates sur 2-3 mois.
-  - LED therapie rouge 630nm (Omnilux Contour Face, Amazon) 3x/semaine : stimule le collagene naturellement, ameliore texture et fermete.
-  - SPF50+ le matin obligatoire (La Roche-Posay Anthelios) : stoppe le vieillissement photo-induit.
-- HYDRATATION ET ALIMENTATION : boire 2L+ eau/jour reduit les poches et ameliore l'eclat en 2 semaines. Reduire sel et alcool degonfle le visage. Omega-3 ameliorent la qualite de peau en 4-6 semaines.
-- SOMMEIL : 7-9h de sommeil sur le dos (jamais sur le cote - cree des asymetries et rides), coussin en soie reduit la friction. Manque de sommeil gonfle le visage immediatement.
+ARSENAL COMPLET DE TECHNIQUES EXPERT :
 
-REGLES ABSOLUES - a respecter pour CHAQUE conseil :
-- ZERO maquillage - aucune technique qui couvre, dessine ou cree une illusion visuelle temporaire
-- ZERO chirurgie ou procedure medicale invasive
-- UNIQUEMENT des techniques qui modifient reellement et durablement le visage, la peau ou la structure
-- Langage simple et direct - une personne qui ne connait rien doit comprendre immediatement
-- Mentionner les produits disponibles sur Amazon quand c'est pertinent
+▸ LOOKSMAXXING PHYSIQUE :
+- MEWING AVANCE : langue ENTIERE a plat contre le palais dur (pas juste la pointe - erreur classique), molaires legerement en contact, levres parfaitement fermees, respiration 100% par le nez, nuque droite. Combine avec "mewing swallow" : chaque deglutition doit se faire avec la langue contre le palais. Resultats mesurables : pommettes plus hautes, machoire plus large et definie, double menton reduit, profil ameliore, nez retrousse. Delai : 6-18 mois. ZONE : machoire, pommettes, menton, proportions.
+- CHEWING GUM DUR : Falim gum (15 pieces/paquet, disponible Amazon) ou Mastic de Chios (resine naturelle grecque, Amazon). 30-60 min/jour, alterner les 2 cotes toutes les 5 minutes. Stimule les masseters et pterygoidiens, sculpte la machoire, developpe l'angle mandibulaire. ZONE : machoire uniquement.
+- EXERCICES FACIAUX PRECIS : donne le nom exact + position + repetitions + duree de contraction + series. Ex : "brow lift exercise" = 2 doigts sous les sourcils, pousse vers le haut, contracte les muscles de la pauche vers le bas contre la resistance, 3 series de 15 contractions de 3 secondes. "cheekbone lift" = sourire large a dents serrees, pose 2 doigts sur les pommettes, pousse vers le haut et maintiens 20 secondes, 3 series. "jawline exercise" = mastication exageree, dents serrees 5 secondes relache 3 secondes, 3 series de 20.
+- GUA SHA EXPERT (jade ou acier inox, Amazon) : peau huillee avec quelques gouttes d'huile de rose musquee ou de jojoba. Gestes precis : pour la machoire = glisser de l'oreille vers le menton (15 passages), pour les pommettes = glisser de l'oreille vers le nez (15 passages), pour le cou = descendre du menton vers la clavicule (10 passages). Pression ferme mais douce. 5 minutes le matin. Resultats : drainage, contour net, peau decongestionee. Visible en 3-4 semaines.
+- DRAINAGE LYMPHATIQUE FACIAL : effleurages extremement legers (efflurer a peine) du centre du visage vers les oreilles, puis descendre vers le cou, puis vers les epaules. 3 minutes le matin au reveil. Reduit le gonflement matinal de 50% en 2-3 semaines de pratique quotidienne.
+- POSTURE / CHIN TUCK : assis ou debout, rentrer le menton vers la gorge (creer un "double menton volontaire"), tenir 5 secondes, relacher. 15 repetitions x 3 series par jour. Corrige immediatement la tete en avant qui avachit le visage et cree les vrais doubles mentons.
+- COLD THERAPY FACIALE : galet froid (roller en quartz rose au congelateur ou simple cuillere froide) passe sur les zones gonflees pendant 2 minutes le matin. Resserre les pores, reduit les cernes et poches instantanement, tonifie.
+- LED ROUGE 630nm (Omnilux Contour Face ou masque LED Amazon) : 10-20 minutes 3x/semaine sur peau propre. Stimule les fibroblastes qui produisent le collagene et l'elastine. Resultats sur la fermete et la texture en 8-12 semaines.
+- DERMA ROLLER 0.25-0.5mm (Amazon) : apres nettoyage, passer le roller en X sur les zones a traiter, puis appliquer serum actif immediatement. 1x/semaine. Cree des microcanaux qui boostent l'absorption des actifs et relancent la synthese du collagene.
+
+▸ SOINS ACTIFS DERMATOLOGIQUES :
+- Retinol 0.025% → 0.05% → 0.1% progressif (The Ordinary, Amazon/pharmacie) : le soir, apres nettoyage. Commence 2x/semaine pendant 1 mois, puis quotidien. Renouvelle les cellules, efface taches et ridules, resserre les pores, stimule le collagene. Resultats en 8-12 semaines.
+- Niacinamide 10% (The Ordinary) : matin ou soir. Resserre les pores visibles, unifie le teint, reduit les rougeurs. Compatible avec tout sauf vitamine C (decaler de 30 min).
+- Vitamine C serum 15% (The Ordinary ou SkinCeuticals CE Ferulic) : le matin sous le SPF. Eclat, synthese collagene, protection antioxydante, efface les taches en 4-6 semaines.
+- AHA/BHA exfoliant chimique (The Ordinary AHA 30% + BHA 2%) : 2x/semaine le soir uniquement. Dissout les cellules mortes et desincruste les pores. Ne pas cumuler avec retinol la meme nuit.
+- Acide hyaluronique topique (2 couches sur peau humide) : boit l'eau presente sur la peau, hydrate en profondeur, reduit la deshydratation qui aggrave les pores et ridules. A chaque routine.
+- Peptides de cuivre GHK-Cu (NIOD Copper Peptides, Amazon) : soir apres retinol. Regenere le tissu cutane, repulpe, elasticite. Ideal 35+.
+- SPF50+ obligatoire chaque matin (La Roche-Posay Anthelios ou Altruist SPF50) : stoppe 100% du vieillissement photo-induit. Sans SPF, tous les autres soins perdent 60% de leur efficacite.
+
+▸ NATUROPATHIE INTERNE (agit de l'interieur sur la structure et la peau) :
+- COLLAGENE MARIN type I+III (10g/jour dans eau ou smoothie matin, Amazon) : apporte les acides amines necessaires pour que le corps synthetise son propre collagene (machoire, pommettes, peau, articulationstemporales). Resultats sur la densite de peau en 8-12 semaines. Ajouter vitamine C orale pour maximiser l'absorption.
+- OMEGA-3 EPA+DHA (2g/jour au repas, Amazon/pharmacie) : anti-inflammatoire puissant qui reduit le gonflement du visage, ameliore la qualite de la membrane cellulaire de la peau (hydratation profonde), reduit les rougeurs et l'acne inflammatoire. Resultats en 4-6 semaines.
+- ZINC BISGLYCINATE (15-25mg/jour, pharmacie) : mineral essentiel pour la synthese du collagene, cicatrisation, reduction de l'acne, croissance des poils/sourcils/cheveux. Prendre le soir au repas.
+- SILICIUM ORGANIQUE G5 (1 cuillere a soupe le matin a jeun) : remineralise les tissus conjonctifs, renforce la structure des os et cartilages du visage, ameliore l'elasticite de la peau. Resultats en 2-3 mois.
+- VITAMINE D3+K2 (2000-4000 UI D3 + 100mcg K2 MK7, Amazon) : oriente le calcium vers les os (renforce la structure osseuse faciale) plutot que les arteres. Indispensable pour le remodelage osseux loing terme du mewing.
+- BIOTINE (2500-5000 mcg/jour) : stimule la croissance des cheveux, cils et sourcils. Resultats en 6-8 semaines.
+- PROBIOTIQUES CUTANES (Lactobacillus rhamnosus + Bifidobacterium longum) : l'axe gut-skin est reel - un microbiome intestinal sain reduit les inflammations cutanees, l'acne, les rougeurs. Prendre le matin a jeun.
+- INFUSION DRAINANTE QUOTIDIENNE (ortie + queue de cerise + pissenlit) : 1 tasse le matin a jeun. Draine la retention d'eau du visage, reduit les cernes et les poches, epure la peau de l'interieur. Resultat visible en 1-2 semaines.
+- REDUCTION SEL + SUCRES RAFFINES + ALCOOL : le sel retient l'eau dans les tissus (visage plus gonfle et brouille), le sucre cree de la glycation qui detruit le collagene et cree des rides, l'alcool dilate les vaisseaux (rougeurs) et deshydrate la peau. Reduire ces 3 facteurs pendant 3 semaines = resultat visible immediat.
+- MAGNESIUM BISGLYCINATE (300mg le soir, Amazon/pharmacie) : relache la tension musculaire du visage (machoire serree = bruxisme = machoire plus carree), ameliore la qualite du sommeil, reduit les cernes. Le magnesium est deficient chez 75% des personnes.
+
+FORMAT OBLIGATOIRE DU CONSEIL - 6 a 8 phrases structurees, vocabulaire simple :
+
+Phrase 1 (explication simple du "pourquoi") : Explique en 1 phrase claire POURQUOI ce defaut existe et POURQUOI la technique recommandee va vraiment le changer de facon durable. Une adolescente de 16 ans doit comprendre.
+
+Phrases 2-3-4 (etapes NUMEROTEES - minimum 3 etapes) : Format exact :
+"1. [action precise : quoi faire, comment, avec quoi, combien de repetitions ou combien de temps].
+2. [action precise : quoi faire, comment, avec quoi, combien de repetitions ou combien de temps].
+3. [action precise : quoi faire, comment, avec quoi, combien de repetitions ou combien de temps]."
+IMPORTANT : cite des techniques variees : 1 technique physique + 1 soin topique ou complement naturo quand c'est pertinent pour la zone.
+
+Phrase 5 (naturopathie interne) : Ajoute TOUJOURS 1 conseil naturopathique interne specifique a la zone. Ex pour la machoire : "En interne, prends du collagene marin 10g/jour + magnesium le soir pour liberer la tension des masseters." Pour la peau : "En interne, prends omega-3 2g/jour + zinc 15mg/jour + probiotiques : ils agissent directement sur la qualite de ta peau."
+
+Phrase 6 (frequence + delai de resultats) : "Pratique [nombre de fois/jour ou semaine], et tu verras [changement specifique] en [delai precis]."
+
+Phrase 7 (tuto YouTube - OBLIGATOIRE si technique physique) : "Cherche '[nom exact de la technique]' sur YouTube ou TikTok, il y a plein de tutos tres clairs."
+
+REGLES ABSOLUES :
+- ZERO maquillage, ZERO chirurgie, ZERO procedure invasive
+- UNIQUEMENT techniques qui modifient reellement et durablement
+- Langage simple et direct - vocabulaire accessible a tous
+- Mentionner les produits disponibles sur Amazon avec leur nom exact
+- Toujours inclure 1 conseil naturo interne (complement, plante, alimentation)
 - Adapter au contexte d'age fourni
+- Chaque conseil doit etre riche, detaille, actionnable immediatement
 
 VERIFICATION QUALITE IMAGE (obligatoire, premier champ du JSON) :
-Evalue si l'image permet une analyse faciale fiable. Reponds avec une seule valeur :
-- "ok"            : image claire, visage bien visible, eclairage correct
-- "bad_lighting"  : trop sombre, contre-jour ou surexpose - les traits sont indistincts
-- "blurry"        : image trop floue pour analyser les traits precisement
-- "bad_angle"     : visage trop de profil ou trop incline - impossible d'analyser les proportions
-- "no_face"       : aucun visage clairement identifiable dans l'image
+- "ok" : image claire, visage bien visible, eclairage correct
+- "bad_lighting" : trop sombre, contre-jour ou surexpose
+- "blurry" : image trop floue
+- "bad_angle" : visage trop de profil ou trop incline
+- "no_face" : aucun visage identifiable
 
-Si imageQuality != "ok" : mets quand meme des scores plausibles mais NE genere PAS de defauts "Qualite image".
+Si imageQuality != "ok" : scores plausibles mais ZERO defauts "Qualite image".
 
-Genere UNIQUEMENT le JSON brut ci-dessous, zero texte avant ou apres, pas de blocs markdown :
+Genere UNIQUEMENT le JSON brut, zero texte avant ou apres, pas de blocs markdown :
 {"imageQuality":"ok","symmetry":X,"proportions":X,"regard":X,"structure":X,"skin":X,"photogenie":X,"total":X,"ranking":"...","beautyScore":"X.X","rank":"...","defauts":[{"zone":"...","probleme":"...","conseil":"..."}]}`
 }
 
@@ -282,8 +313,8 @@ Deno.serve(async (req) => {
       },
       body: JSON.stringify({
         model: 'gpt-4o-mini',
-        max_tokens: 4800,
-        temperature: 0.3,
+        max_tokens: 6500,
+        temperature: 0.35,
         messages: [{ role: 'user', content }],
       }),
     })
