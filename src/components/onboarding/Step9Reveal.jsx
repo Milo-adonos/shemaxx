@@ -6,19 +6,19 @@ const PINK_A = (a) => `rgba(204,60,105,${a})`
 
 // ── Défauts de démonstration par défaut ────────────────────────────────────
 export const DEFAULT_DEFAUTS = [
-  { zone: 'Sourcils',  probleme: 'Légère asymétrie — le gauche est plus haut que le droit',     conseil: 'Le mewing strict 24h/24 repositionne progressivement les os du visage. 1. Place toute la langue à plat contre le palais supérieur. 2. Garde les molaires légèrement en contact et les lèvres fermées. 3. Respire uniquement par le nez. Pratique constante sur 6 à 12 mois. Cherche "mewing tutorial" sur YouTube pour voir exactement la bonne position.' },
-  { zone: 'Mâchoire',  probleme: 'Manque de définition latérale — contour peu marqué',           conseil: 'Le gua sha quotidien draine les fluides qui "gonflent" le visage et révèle l\'angle naturel de la mâchoire. 1. Applique une huile légère sur la peau propre. 2. Glisse le gua sha depuis l\'oreille vers le menton, pression ferme, 10 passages de chaque côté. 3. Mâche du Falim gum 30 à 45 min/jour pour développer les masséters. Résultats visibles en 4 à 8 semaines. Cherche "gua sha jawline" sur YouTube.' },
-  { zone: 'Peau',      probleme: 'Irrégularités de texture visibles et éclat atténué',           conseil: 'Le rétinol renouvelle les cellules en profondeur et resserre les pores progressivement. 1. Commence avec le rétinol 0,025% (The Ordinary) 2 soirs/semaine. 2. Ajoute un sérum vitamine C 15% le matin pour l\'éclat et la protection. 3. SPF 50+ obligatoire chaque matin. Résultats visibles à partir de 6 semaines, peau lissée à 3 mois. Cherche "retinol routine débutant" sur YouTube.' },
-  { zone: 'Regard',    probleme: 'Tilt canthal légèrement négatif — coins des yeux bas',         conseil: 'L\'exercice "eye lift" renforce les muscles orbitaux et remonte progressivement le coin des yeux. 1. Place les index sous les sourcils, pouces sur les pommettes. 2. Essaie de fermer les yeux contre la résistance de tes doigts, 10 secondes. 3. Répète 10 fois, 2 fois par jour. Le sommeil sur le dos (jamais sur le côté) évite les asymétries dues à la pression. Résultats en 3 à 6 mois. Cherche "fox eye exercise" sur YouTube.' },
-  { zone: 'Nez',       probleme: 'Légère déviation du pont nasal — asymétrie perceptible',       conseil: 'Des exercices de posture nasale et de respiration renforcent les muscles et améliorent l\'alignement facial global. 1. Pratique la respiration nasale 100% du temps (ferme la bouche). 2. Fais l\'exercice "nose pinching" : pince doucement le nez, résiste à l\'air, 5 secondes, 10 répétitions. 3. Combine avec le mewing pour un effet structurant maximal. Cherche "nose exercise face yoga" sur YouTube pour les techniques visuelles.' },
+  { zone: 'Eyebrows', probleme: 'Slight asymmetry — left brow sits higher than the right', conseil: 'The "brow lift exercise" strengthens orbital muscles and progressively evens out asymmetry. 1. Place two fingers under your eyebrows and push gently upward. 2. Try to lower your brows against the resistance of your fingers, hold 3 seconds. 3. Apply pure castor oil on your brows every evening to encourage symmetric growth. Do 3 sets of 10 reps morning and evening. Results visible in 4–8 weeks. Search "brow lift exercise" on YouTube to see the exact technique.' },
+  { zone: 'Jawline',  probleme: 'Lack of lateral definition — soft contour',               conseil: 'Daily gua sha drains fluids that "puff up" the face and reveals the natural jaw angle. 1. Apply a light oil on clean skin. 2. Slide the gua sha from the ear toward the chin, firm pressure, 10 strokes each side. 3. Chew Falim gum 30–45 min/day to develop the masseters. Results visible in 4–8 weeks. Search "gua sha jawline" on YouTube.' },
+  { zone: 'Skin',     probleme: 'Visible texture irregularities and dull complexion',       conseil: 'Retinol renews cells deeply and progressively tightens pores. 1. Start with retinol 0.025% (The Ordinary) 2 evenings/week. 2. Add a vitamin C serum 15% in the morning for glow and protection. 3. SPF 50+ mandatory every morning. Visible results from 6 weeks, smooth skin at 3 months. Search "retinol beginner routine" on YouTube.' },
+  { zone: 'Eyes',     probleme: 'Slightly negative canthal tilt — lower eye corners',       conseil: 'The "eye lift exercise" strengthens orbital muscles and progressively lifts the outer corners. 1. Place index fingers under your eyebrows, thumbs on cheekbones. 2. Try to close your eyes against the resistance of your fingers, 10 seconds. 3. Repeat 10 times, twice a day. Sleeping on your back (never on your side) prevents pressure asymmetry. Results in 3–6 months. Search "fox eye exercise" on YouTube.' },
+  { zone: 'Nose',     probleme: 'Slight nasal bridge deviation — noticeable asymmetry',     conseil: 'Nasal posture and breathing exercises strengthen muscles and improve overall facial alignment. 1. Practice nasal breathing 100% of the time (keep your mouth closed). 2. Do the "nose pinching" exercise: gently pinch the nose, resist the air, 5 seconds, 10 reps. 3. Combine with mewing for maximum structural effect. Search "nose exercise face yoga" on YouTube for visual techniques.' },
 ]
 
-// ── Mappage zones sélectionnées ↔ mots-clés dans les zones de défauts ─────
+// ── Zone keyword mapping ─────────────────────────────────────────────────
 const ZONE_KEYWORDS = {
-  jaw:    ['mâchoire', 'structure', 'visage', 'joue', 'mandibule', 'mentonnier', 'menton'],
-  cheeks: ['pommette', 'joue', 'pommettes', 'joues'],
-  eyes:   ['yeux', 'œil', 'regard', 'sourcil', 'cil', 'oeil', 'canthal', 'paupière'],
-  nose:   ['nez', 'nasal', 'nasale', 'narine'],
+  jaw:    ['jaw', 'jawline', 'chin', 'structure', 'contour', 'mandible', 'menton', 'mâchoire'],
+  cheeks: ['cheek', 'cheekbone', 'pommette', 'joue'],
+  eyes:   ['eye', 'eyes', 'gaze', 'eyebrow', 'brow', 'lash', 'canthal', 'regard', 'sourcil', 'yeux'],
+  nose:   ['nose', 'nasal', 'nostril', 'nez'],
 }
 
 /**
@@ -64,21 +64,39 @@ function filterDefauts(defauts, zones) {
 
 // ── Icônes par zone ──────────────────────────────────────────────────────
 const ZONE_ICONS = {
+  // English
+  nose:        { icon: '👃', color: '#e8608a' },
+  nasal:       { icon: '👃', color: '#e8608a' },
+  eyebrow:     { icon: '〰️', color: '#b57cff' },
+  brow:        { icon: '〰️', color: '#b57cff' },
+  eye:         { icon: '👁️', color: '#5cc8ff' },
+  eyes:        { icon: '👁️', color: '#5cc8ff' },
+  gaze:        { icon: '👁️', color: '#5cc8ff' },
+  cheek:       { icon: '◉',  color: '#f472b6' },
+  cheekbone:   { icon: '◈',  color: '#a78bfa' },
+  jaw:         { icon: '⬟',  color: '#fb923c' },
+  jawline:     { icon: '⬟',  color: '#fb923c' },
+  structure:   { icon: '⬟',  color: '#fb923c' },
+  skin:        { icon: '✦',  color: '#34d399' },
+  forehead:    { icon: '▱',  color: '#60a5fa' },
+  lip:         { icon: '◡',  color: '#f87171' },
+  lips:        { icon: '◡',  color: '#f87171' },
+  chin:        { icon: '◇',  color: '#fbbf24' },
+  symmetry:    { icon: '⟺', color: '#cc3c69' },
+  proportion:  { icon: '⬡',  color: '#818cf8' },
+  // French fallback
   nez:        { icon: '👃', color: '#e8608a' },
-  nasal:      { icon: '👃', color: '#e8608a' },
   sourcil:    { icon: '〰️', color: '#b57cff' },
   yeux:       { icon: '👁️', color: '#5cc8ff' },
   regard:     { icon: '👁️', color: '#5cc8ff' },
   joue:       { icon: '◉',  color: '#f472b6' },
   mâchoire:   { icon: '⬟',  color: '#fb923c' },
-  structure:  { icon: '⬟',  color: '#fb923c' },
   pommette:   { icon: '◈',  color: '#a78bfa' },
   peau:       { icon: '✦',  color: '#34d399' },
   front:      { icon: '▱',  color: '#60a5fa' },
   lèvres:     { icon: '◡',  color: '#f87171' },
   menton:     { icon: '◇',  color: '#fbbf24' },
   symétrie:   { icon: '⟺', color: '#cc3c69' },
-  proportion: { icon: '⬡',  color: '#818cf8' },
 }
 
 function getZoneStyle(zone) {
@@ -124,8 +142,8 @@ export default function Step9Reveal({ onNext, pseudo = '', faceScores = null, zo
   // Texte de contexte selon les zones choisies
   const hasOther    = zones?.selected?.includes('other') && zones?.otherText?.trim()
   const zonesLabels = {
-    jaw:    'ta mâchoire', cheeks: 'tes pommettes',
-    eyes:   'tes yeux',   nose:   'ton nez', all: 'tout ton visage',
+    jaw:    'your jawline', cheeks: 'your cheekbones',
+    eyes:   'your eyes',   nose:   'your nose', all: 'your whole face',
   }
   const selectedLabels = (zones?.selected || [])
     .filter(z => z !== 'all' && z !== 'other')
@@ -133,10 +151,10 @@ export default function Step9Reveal({ onNext, pseudo = '', faceScores = null, zo
     .filter(Boolean)
 
   const contextHint = hasOther
-    ? `concernant ${zones.otherText}`
+    ? `about ${zones.otherText}`
     : selectedLabels.length > 0
-    ? `sur ${selectedLabels.slice(0, 2).join(' et ')}`
-    : 'sur ton visage'
+    ? `on ${selectedLabels.slice(0, 2).join(' and ')}`
+    : 'on your face'
 
   return (
     <div className="flex flex-col items-center"

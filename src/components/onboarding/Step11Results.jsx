@@ -10,21 +10,21 @@ const PINK   = '#cc3c69'
 const PINK_A = (a) => `rgba(204,60,105,${a})`
 
 const METRICS = [
-  { label: 'Symétrie',           icon: '◈', key: 'symmetry'    },
-  { label: 'Proportions',        icon: '⬡', key: 'proportions' },
-  { label: 'Impact du regard',   icon: '◎', key: 'regard'      },
-  { label: 'Structure du visage',icon: '⬟', key: 'structure'   },
-  { label: 'Qualité de peau',    icon: '✦', key: 'skin'        },
-  { label: 'Photogénie',         icon: '◇', key: 'photogenie'  },
+  { label: 'Symmetry',      icon: '◈', key: 'symmetry'    },
+  { label: 'Proportions',   icon: '⬡', key: 'proportions' },
+  { label: 'Eye impact',    icon: '◎', key: 'regard'      },
+  { label: 'Face structure',icon: '⬟', key: 'structure'   },
+  { label: 'Skin quality',  icon: '✦', key: 'skin'        },
+  { label: 'Photogeny',     icon: '◇', key: 'photogenie'  },
 ]
 
 const DEFAULT_SCORES = {
   symmetry: 72, proportions: 68, regard: 75, structure: 70, skin: 65, photogenie: 78,
   total: 71, ranking: 'Top 50 %', beautyScore: '7.1',
   defauts: [
-    { zone: 'Sourcils', probleme: 'Légère asymétrie — le gauche est plus haut', conseil: 'Pratique l\'exercice "brow lift exercise" chaque matin : pose deux doigts sous tes sourcils, appuie légèrement vers le haut puis essaie d\'abaisser tes sourcils contre la résistance. 3 séries de 10 contractions de 3 secondes. Applique de l\'huile de ricin sur les sourcils chaque soir pour favoriser une croissance symétrique. Résultats visibles en 4–8 semaines. Cherche "brow lift exercise" sur YouTube pour voir la technique exacte.' },
-    { zone: 'Mâchoire', probleme: 'Manque de définition latérale — contour peu marqué', conseil: 'Le mewing strict repositionne progressivement la structure osseuse du visage. Place toute la langue à plat contre le palais supérieur, molaires légèrement en contact, lèvres fermées, respiration uniquement par le nez — pratique constante 24h/24. Ajoute 30 min de chewing gum dur (Falim ou Mastic de Chios, disponibles sur Amazon) par jour en alternant les deux côtés pour développer les masseters. Résultats sur la définition de mâchoire visibles en 6–18 mois. Cherche "mewing tutorial" sur YouTube ou TikTok.' },
-    { zone: 'Peau',     probleme: 'Irrégularités de texture et éclat atténué', conseil: 'La niacinamide 10% (The Ordinary, disponible sur Amazon) réduit les pores visibles, unifie le teint et réduit les irrégularités en profondeur — applique matin et soir. Ajoute un exfoliant AHA/BHA (The Ordinary AHA 30% + BHA 2%) 2×/semaine le soir pour lisser la texture. Un SPF50+ chaque matin est obligatoire pour stopper la dégradation photo-induite. Résultats visibles en 3 semaines. Cherche "niacinamide routine" sur YouTube.' },
+    { zone: 'Eyebrows', probleme: 'Slight asymmetry — left brow higher than right', conseil: 'Do the "brow lift exercise" every morning: place two fingers under your eyebrows, push gently upward, then try to lower your brows against the resistance. 3 sets of 10 contractions of 3 seconds. Apply pure castor oil on your brows every evening to promote symmetric growth. Visible results in 4–8 weeks. Search "brow lift exercise" on YouTube to see the exact technique.' },
+    { zone: 'Jawline',  probleme: 'Lack of lateral definition — soft contour',      conseil: 'Strict mewing progressively repositions the facial bone structure. Place your entire tongue flat against the upper palate, molars lightly in contact, lips closed, breathe only through the nose — constant practice 24/7. Add 30 min of hard chewing gum (Falim or Mastic gum, available on Amazon) per day, alternating both sides to develop the masseters. Jawline definition results visible in 6–18 months. Search "mewing tutorial" on YouTube or TikTok.' },
+    { zone: 'Skin',     probleme: 'Visible texture irregularities and dull glow',   conseil: 'Niacinamide 10% (The Ordinary, available on Amazon) reduces visible pores, evens skin tone and smooths irregularities — apply morning and evening. Add an AHA/BHA exfoliant (The Ordinary AHA 30% + BHA 2%) 2×/week in the evening to smooth texture. SPF50+ every morning is mandatory to stop photo-induced damage. Visible results in 3 weeks. Search "niacinamide routine" on YouTube.' },
   ],
 }
 
@@ -36,18 +36,28 @@ function scoreColor(s) {
 }
 function scoreLabel(s) {
   if (s >= 87) return 'Excellent'
-  if (s >= 72) return 'Bien'
-  if (s >= 65) return 'Moyen'
-  return 'À améliorer'
+  if (s >= 72) return 'Good'
+  if (s >= 65) return 'Average'
+  return 'To improve'
 }
 
 const ZONE_MAP = {
-  nez:      { icon: '👃', color: '#e8608a' }, nasal:    { icon: '👃', color: '#e8608a' },
-  sourcil:  { icon: '〰️', color: '#b57cff' }, yeux:     { icon: '👁️', color: '#5cc8ff' },
-  regard:   { icon: '👁️', color: '#5cc8ff' }, joue:     { icon: '◉',  color: '#f472b6' },
-  mâchoire: { icon: '⬟',  color: '#fb923c' }, structure:{ icon: '⬟',  color: '#fb923c' },
-  pommette: { icon: '◈',  color: '#a78bfa' }, peau:     { icon: '✦',  color: '#34d399' },
-  lèvres:   { icon: '◡',  color: '#f87171' }, front:    { icon: '▱',  color: '#60a5fa' },
+  // English
+  nose:      { icon: '👃', color: '#e8608a' }, nasal:     { icon: '👃', color: '#e8608a' },
+  eyebrow:   { icon: '〰️', color: '#b57cff' }, brow:      { icon: '〰️', color: '#b57cff' },
+  eye:       { icon: '👁️', color: '#5cc8ff' }, eyes:      { icon: '👁️', color: '#5cc8ff' },
+  gaze:      { icon: '👁️', color: '#5cc8ff' }, cheek:     { icon: '◉',  color: '#f472b6' },
+  jaw:       { icon: '⬟',  color: '#fb923c' }, jawline:   { icon: '⬟',  color: '#fb923c' },
+  structure: { icon: '⬟',  color: '#fb923c' }, cheekbone: { icon: '◈',  color: '#a78bfa' },
+  skin:      { icon: '✦',  color: '#34d399' }, lip:       { icon: '◡',  color: '#f87171' },
+  forehead:  { icon: '▱',  color: '#60a5fa' }, chin:      { icon: '◇',  color: '#fbbf24' },
+  symmetry:  { icon: '⟺', color: '#cc3c69' }, proportion:{ icon: '⬡',  color: '#818cf8' },
+  // French fallback
+  nez:       { icon: '👃', color: '#e8608a' }, sourcil:   { icon: '〰️', color: '#b57cff' },
+  yeux:      { icon: '👁️', color: '#5cc8ff' }, regard:    { icon: '👁️', color: '#5cc8ff' },
+  joue:      { icon: '◉',  color: '#f472b6' }, mâchoire:  { icon: '⬟',  color: '#fb923c' },
+  pommette:  { icon: '◈',  color: '#a78bfa' }, peau:      { icon: '✦',  color: '#34d399' },
+  lèvres:    { icon: '◡',  color: '#f87171' }, front:     { icon: '▱',  color: '#60a5fa' },
 }
 function zoneStyle(zone) {
   const z = (zone || '').toLowerCase()
@@ -157,9 +167,12 @@ function parseConseilSteps(text) {
 // Extrait l'horizon de résultats du texte
 function extractTimeline(text) {
   if (!text) return null
-  const m = text.match(/(?:résultats?|visible[s]?|amélioration)[^.]*en\s+([\d–\-àà]+\s+(?:semaines?|mois|jours?))/i)
+  const m = text.match(/(?:results?|visible[s]?|improvement)[^.]*in\s+([\d–\-]+\s+(?:weeks?|months?|days?))/i)
+    || text.match(/in\s+([\d–\-]+\s+(?:weeks?|months?|days?))/i)
+    || text.match(/([\d–\-]+\s+(?:weeks?|months?|days?)\s+of\s+(?:practice|results?))/i)
+    // French fallback for AI responses that still use French units
+    || text.match(/(?:résultats?|visible[s]?|amélioration)[^.]*en\s+([\d–\-àà]+\s+(?:semaines?|mois|jours?))/i)
     || text.match(/en\s+([\d–\-à]+\s+(?:semaines?|mois|jours?))/i)
-    || text.match(/([\d–\-]+\s+(?:semaines?|mois|jours?)\s+de\s+(?:pratique|résultat))/i)
   return m ? m[1] : null
 }
 
@@ -1179,8 +1192,8 @@ async function buildResultsCanvas(scores) {
     { label: 'Symétrie',            key: 'symmetry'    },
     { label: 'Proportions',         key: 'proportions' },
     { label: 'Impact du regard',    key: 'regard'      },
-    { label: 'Structure du visage', key: 'structure'   },
-    { label: 'Qualité de peau',     key: 'skin'        },
+    { label: 'Face structure', key: 'structure'   },
+    { label: 'Skin quality',  key: 'skin'        },
     { label: 'Photogénie',          key: 'photogenie'  },
   ]
   const GAP = 8

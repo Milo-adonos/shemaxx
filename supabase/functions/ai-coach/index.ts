@@ -3,20 +3,23 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
-// Thèmes acceptés (looksmaxxing, beauté, naturopathie, soin)
+// Accepted beauty/looksmaxxing topics
 const BEAUTY_KEYWORDS = [
+  // English
+  'face','skin','eyebrow','eye','nose','lip','mouth','jaw','jawline','cheek','cheekbone',
+  'forehead','chin','complexion','wrinkle','pore','acne','scar','skincare','serum',
+  'retinol','niacinamide','spf','cream','mask','routine','mewing','gua sha','guasha',
+  'roller','derma','led','facial exercise','contour','collagen','omega','zinc','vitamin',
+  'herbal','tea','nutrition','diet','beauty','attractiveness','looksmax','looksmaxxing',
+  'score','analysis','proportion','symmetry','structure','gaze','lifting','drainage',
+  'lymphatic','massage','oil','natural','naturo','plant','ginger','hydrat','glow',
+  'texture','firmness','elasticity','advice','improvement','potential','self care','selfcare',
+  'hair','lash','brow','eyelid','canthal','tilt','dark circle','puffiness','bloating',
+  // French (users may type in French even if app is in English)
   'visage','peau','sourcil','yeux','nez','lèvre','lèvres','bouche','mâchoire','machoire',
-  'joue','pommette','front','menton','teint','rides','pores','acné','acne','cicatrice',
-  'soin','sérum','retinol','niacinamide','spf','crème','creme','masque','routine',
-  'mewing','gua sha','guasha','roller','derma','led','exercice facial','jawline','contour',
-  'collagène','collagene','omega','zinc','vitamine','tisane','nutrition','alimentation',
-  'beauté','beaute','attractivité','attractivite','looksmax','looksmaxing','looksmaxxing',
-  'score','analyse','proportion','symetrie','symétrie','structure','regard','lifting',
-  'drainage','lymphatique','massage','huile','soin naturel','naturo','plante','gingembre',
-  'skin','face','cheek','jaw','eye','nose','lip','brow','forehead','hair','cils','cheveux',
-  'hydrat','éclat','eclat','lumineux','luminosité','texture','fermeté','fermete','elasticité',
-  'conseil','amélioration','amelioration','ameliorer','améliorer','progresser','potentiel',
-  'beauté intérieure','self care','selfcare',
+  'joue','pommette','front','menton','teint','rides','pores','acné','cicatrice',
+  'soin','sérum','crème','creme','beauté','beaute','attractivité','attractivite',
+  'conseil','amélioration','amelioration','potentiel','tisane','alimentation',
 ]
 
 function isBeautyRelated(text: string): boolean {
@@ -24,56 +27,49 @@ function isBeautyRelated(text: string): boolean {
   return BEAUTY_KEYWORDS.some(kw => lower.includes(kw))
 }
 
-const SYSTEM_PROMPT = `Tu es Shemaxx Coach, une experte en looksmaxxing, beauté naturelle et naturopathie. Tu aidES des femmes à améliorer leur apparence physique de façon 100% naturelle et durable.
+const SYSTEM_PROMPT = `You are Shemaxx Coach, an expert in looksmaxxing, natural beauty, and food-based naturopathy. You help women improve their physical appearance in a 100% natural and sustainable way.
 
-REGLES ABSOLUES :
-- Réponds UNIQUEMENT aux questions sur la beauté, le looksmaxxing, les soins du visage, la naturopathie liée à la peau/visage, les exercices faciaux, l'alimentation pour la beauté
-- Si la question ne parle pas de ces sujets, réponds UNIQUEMENT : "Je suis spécialisée uniquement en beauté et looksmaxxing. Pose-moi une question sur tes soins, ton visage ou ton alimentation !"
-- ZERO maquillage, ZERO chirurgie, ZERO médicament — uniquement des techniques naturelles et des aliments
-- Réponses COURTES : 2 à 4 phrases maximum, vocabulaire simple et direct
-- Sois chaleureuse, encourageante, experte
-- Cite toujours 1 technique concrète ou 1 aliment précis dans ta réponse
-- Si pertinent, mentionne qu'un produit est disponible sur Amazon`
+ABSOLUTE RULES:
+- Only respond to questions about beauty, looksmaxxing, facial care, skin-related naturopathy, facial exercises, or nutrition for beauty
+- If the question is not related to these topics, respond ONLY with: "I only specialize in beauty and looksmaxxing. Ask me about your skincare, face or nutrition!"
+- ZERO makeup, ZERO surgery, ZERO medications — only natural techniques and real foods
+- SHORT responses: 2 to 4 sentences maximum, simple and direct vocabulary
+- Be warm, encouraging, and expert
+- Always mention 1 concrete technique or 1 specific food/ingredient in your answer
+- If relevant, mention that a product is available on Amazon`
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders })
 
   try {
-    const { message, history = [], lang = 'fr' } = await req.json()
+    const { message, history = [], lang = 'en' } = await req.json()
 
     if (!message?.trim()) {
-      return new Response(JSON.stringify({ error: 'Message vide' }), {
+      return new Response(JSON.stringify({ error: 'Empty message' }), {
         status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       })
     }
 
     const apiKey = Deno.env.get('OPENAI_API_KEY')
     if (!apiKey) {
-      return new Response(JSON.stringify({ error: 'Clé API manquante' }), {
+      return new Response(JSON.stringify({ error: 'API key missing' }), {
         status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       })
     }
 
-    // Vérification côté serveur si la question est liée à la beauté
+    // Server-side check: question must be beauty-related
     if (!isBeautyRelated(message)) {
-      const offTopicReply = lang === 'en'
-        ? "I only specialize in beauty and looksmaxxing. Ask me about your skincare, face or nutrition!"
-        : "Je suis spécialisée uniquement en beauté et looksmaxxing. Pose-moi une question sur tes soins, ton visage ou ton alimentation !"
-      return new Response(JSON.stringify({ reply: offTopicReply }), {
+      return new Response(JSON.stringify({
+        reply: "I only specialize in beauty and looksmaxxing. Ask me about your skincare, face or nutrition!"
+      }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       })
     }
 
-    const systemPrompt = lang === 'en'
-      ? SYSTEM_PROMPT.replace('Tu es Shemaxx Coach', 'You are Shemaxx Coach')
-          .replace('UNIQUEMENT aux questions', 'ONLY to questions')
-          .replace('Réponds', 'Respond')
-      : SYSTEM_PROMPT
-
     // Construit l'historique (max 6 derniers messages pour limiter les tokens)
     const recentHistory = (history || []).slice(-6)
     const messages = [
-      { role: 'system', content: systemPrompt },
+      { role: 'system', content: SYSTEM_PROMPT },
       ...recentHistory,
       { role: 'user', content: message },
     ]
@@ -86,14 +82,13 @@ Deno.serve(async (req) => {
       },
       body: JSON.stringify({
         model: 'gpt-4o-mini',
-        max_tokens: 180,   // Réponses courtes = peu de tokens = coût minimal
+        max_tokens: 180,
         temperature: 0.5,
         messages,
       }),
     })
 
     if (!response.ok) {
-      const errText = await response.text()
       return new Response(JSON.stringify({ error: `OpenAI ${response.status}` }), {
         status: 502, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       })
@@ -106,7 +101,7 @@ Deno.serve(async (req) => {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     })
   } catch (err: any) {
-    return new Response(JSON.stringify({ error: err?.message || 'Erreur inconnue' }), {
+    return new Response(JSON.stringify({ error: err?.message || 'Unknown error' }), {
       status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     })
   }

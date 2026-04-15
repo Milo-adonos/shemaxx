@@ -2,11 +2,7 @@
 const ANALYZE_FUNCTION_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/analyze-face`
 const SUPABASE_ANON_KEY    = import.meta.env.VITE_SUPABASE_ANON_KEY
 
-// Détecte la langue de l'utilisatrice pour l'envoyer au serveur
-function detectLang() {
-  const nav = (navigator.language || 'fr').toLowerCase()
-  return nav.startsWith('en') ? 'en' : 'fr'
-}
+function detectLang() { return 'en' }
 
 /**
  * Capture une frame de la vidéo et retourne un data URL base64 (JPEG)

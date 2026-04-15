@@ -294,8 +294,8 @@ export default function Step8Photos({ onNext, onNextUpload }) {
           {titleLines[0]}<br />{titleLines[1]}
         </h1>
         <p className="text-sm mt-3 leading-relaxed" style={{ color: 'rgba(255,255,255,0.45)' }}>
-          Notre IA va scanner ton visage en temps réel.<br />
-          Tu suivras d'abord des positions de tête, puis un mouvement circulaire.
+          Our AI will scan your face in real time.<br />
+          Take a selfie, then slowly move your head in a circle.
         </p>
       </motion.div>
 
@@ -385,7 +385,7 @@ export default function Step8Photos({ onNext, onNextUpload }) {
           color: 'rgba(255,255,255,0.7)',
           border: '1px solid rgba(255,255,255,0.12)',
         }}>
-        📁 Upload tes photos
+        📁 Upload my photos
       </motion.button>
     </div>
   )

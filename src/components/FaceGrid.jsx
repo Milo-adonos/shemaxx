@@ -5,12 +5,12 @@ const SCORE = 98
 const RANKING = 'Top 1 %'
 
 const details = [
-  { label: 'Symétrie',           icon: '◈', value: 97 },
-  { label: 'Proportions',        icon: '◈', value: 96 },
-  { label: 'Impact du regard',   icon: '◈', value: 98 },
-  { label: 'Structure du visage',icon: '◈', value: 97 },
-  { label: 'Qualité de peau',    icon: '◈', value: 96 },
-  { label: 'Photogénie',         icon: '◈', value: 98 },
+  { label: 'Symmetry',      icon: '◈', value: 97 },
+  { label: 'Proportions',   icon: '◈', value: 96 },
+  { label: 'Eye impact',    icon: '◈', value: 98 },
+  { label: 'Face structure',icon: '◈', value: 97 },
+  { label: 'Skin quality',  icon: '◈', value: 96 },
+  { label: 'Photogeny',     icon: '◈', value: 98 },
 ]
 
 function FillBar({ value, delayMs = 0 }) {
@@ -92,7 +92,7 @@ export default function FaceGrid() {
           style={{ background: 'rgba(205,55,103,0.08)', border: '1px solid rgba(205,55,103,0.2)' }}>
           <div className="flex items-center gap-2">
             <span style={{ fontSize: 13 }}>🏆</span>
-            <span className="text-[12px] font-semibold" style={{ color: 'rgba(255,255,255,0.6)' }}>Classement global</span>
+            <span className="text-[12px] font-semibold" style={{ color: 'rgba(255,255,255,0.6)' }}>Global ranking</span>
           </div>
           <span className="text-[14px] font-black" style={{ color: '#ff4d88' }}>{RANKING}</span>
         </div>

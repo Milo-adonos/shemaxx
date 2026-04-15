@@ -13,8 +13,8 @@ export default function CreateAccountModal({ prefillEmail = '', onSuccess, onClo
 
   const handleSubmit = async (e) => {
     e.preventDefault()
-    if (!email || !password) { setError('Remplis tous les champs.'); return }
-    if (password.length < 6)  { setError('Le mot de passe doit faire au moins 6 caractères.'); return }
+    if (!email || !password) { setError('Please fill in all fields.'); return }
+    if (password.length < 6)  { setError('Password must be at least 6 characters.'); return }
 
     setLoading(true); setError(null)
 
@@ -30,7 +30,7 @@ export default function CreateAccountModal({ prefillEmail = '', onSuccess, onClo
 
       // Récupère la session après login
       const { data: { session } } = await supabase.auth.getSession()
-      if (!session?.access_token) throw new Error('Session introuvable après inscription.')
+      if (!session?.access_token) throw new Error('Session not found after signup.')
 
       // Lie le paiement Stripe au nouveau compte
       setLinking(true)
@@ -79,9 +79,9 @@ export default function CreateAccountModal({ prefillEmail = '', onSuccess, onClo
           </div>
         </div>
 
-        <h2 className="text-xl font-black text-white text-center mb-1">Paiement réussi !</h2>
+        <h2 className="text-xl font-black text-white text-center mb-1">Payment successful!</h2>
         <p className="text-sm text-center mb-6" style={{ color: 'rgba(255,255,255,0.4)' }}>
-          Crée ton compte pour accéder à tes résultats débloqués.
+          Create your account to access your unlocked results.
         </p>
 
         <form onSubmit={handleSubmit} className="space-y-3">
@@ -89,7 +89,7 @@ export default function CreateAccountModal({ prefillEmail = '', onSuccess, onClo
             type="email"
             value={email}
             onChange={e => setEmail(e.target.value)}
-            placeholder="Adresse e-mail"
+            placeholder="Email address"
             className="w-full px-4 py-3.5 rounded-2xl text-sm text-white outline-none"
             style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)' }}
           />
@@ -97,7 +97,7 @@ export default function CreateAccountModal({ prefillEmail = '', onSuccess, onClo
             type="password"
             value={password}
             onChange={e => setPassword(e.target.value)}
-            placeholder="Choisis un mot de passe (6 car. min.)"
+            placeholder="Choose a password (min. 6 chars)"
             className="w-full px-4 py-3.5 rounded-2xl text-sm text-white outline-none"
             style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)' }}
           />
@@ -120,14 +120,14 @@ export default function CreateAccountModal({ prefillEmail = '', onSuccess, onClo
           >
             {loading
               ? linking
-                ? 'Activation de ton accès…'
-                : 'Création du compte…'
-              : 'Accéder à mes résultats →'}
+                ? 'Activating your access…'
+                : 'Creating account…'
+              : 'Access my results →'}
           </button>
         </form>
 
         <p className="text-[10px] text-center mt-4" style={{ color: 'rgba(255,255,255,0.2)' }}>
-          🔒 Tes données sont sécurisées et ne seront jamais partagées.
+          🔒 Your data is secure and will never be shared.
         </p>
       </motion.div>
     </motion.div>

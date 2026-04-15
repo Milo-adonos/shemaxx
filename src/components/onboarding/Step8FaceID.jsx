@@ -42,10 +42,10 @@ const PINK_A = (a) => `rgba(204,60,105,${a})`
 
 // Messages d'erreur selon le contexte
 const RETRY_REASONS = [
-  'Assure-toi d\'être dans une pièce bien éclairée',
-  'Évite les contre-jours (fenêtre derrière toi)',
-  'Centre bien ton visage dans le cadre',
-  'Fais le cercle lentement et régulièrement',
+  'Make sure you\'re in a well-lit room',
+  'Avoid backlighting (window behind you)',
+  'Center your face well in the frame',
+  'Move slowly and steadily around the circle',
 ]
 
 export default function Step8FaceID({ onNext, onRetry, age = null }) {
@@ -202,7 +202,7 @@ export default function Step8FaceID({ onNext, onRetry, age = null }) {
     streamRef.current?.getTracks().forEach(t => t.stop())
     streamRef.current = null
     if (faceMeshRef.current) { faceMeshRef.current.close?.(); faceMeshRef.current = null }
-    setScanError(errorMsg || 'Une erreur est survenue pendant l\'analyse.')
+    setScanError(errorMsg || 'An error occurred during the analysis.')
     setPhaseSync('error')
   }
 
@@ -706,9 +706,9 @@ export default function Step8FaceID({ onNext, onRetry, age = null }) {
           className="w-12 h-12 rounded-full border-2"
           style={{ borderColor: PINK, borderTopColor: 'transparent' }} />
         <div>
-          <p className="text-xl font-black text-white mb-2">Activation de la caméra</p>
+          <p className="text-xl font-black text-white mb-2">Activating camera</p>
           <p className="text-sm" style={{ color: 'rgba(255,255,255,0.4)' }}>
-            Autorise l'accès à ta caméra pour analyser ton visage.
+            Allow camera access to analyze your face.
           </p>
         </div>
       </div>
@@ -720,14 +720,14 @@ export default function Step8FaceID({ onNext, onRetry, age = null }) {
       <div className="flex flex-col items-center justify-center min-h-full px-6 text-center gap-5">
         <div className="text-5xl">📷</div>
         <div>
-          <p className="text-xl font-black text-white mb-2">Caméra refusée</p>
+          <p className="text-xl font-black text-white mb-2">Camera denied</p>
           <p className="text-sm leading-relaxed mb-6" style={{ color: 'rgba(255,255,255,0.4)' }}>
-            Active l'accès à la caméra dans les réglages puis réessaie.
+            Enable camera access in your settings and try again.
           </p>
         </div>
         <button onClick={onNext} className="px-8 py-3 rounded-full text-sm font-bold text-white"
           style={{ background: PINK }}>
-          Continuer sans caméra
+          Continue without camera
         </button>
       </div>
     )
@@ -765,19 +765,19 @@ export default function Step8FaceID({ onNext, onRetry, age = null }) {
             className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full mb-4"
             style={{ background: PINK_A(0.12), border: `1px solid ${PINK_A(0.35)}` }}>
             <span className="text-xs font-black uppercase tracking-widest" style={{ color: PINK }}>
-              Étape 1 sur 2
+              Step 1 of 2
             </span>
           </motion.div>
           <motion.h2 initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
             className="text-2xl font-black text-white leading-tight mb-2">
-            Prends-toi en photo
+            Take your photo
           </motion.h2>
           <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2 }}
             className="text-sm leading-relaxed px-4"
             style={{ color: 'rgba(255,255,255,0.4)' }}>
-            Centre ton visage dans le cercle,<br />
-            regarde droit dans la caméra, puis appuie sur le bouton.
+            Center your face in the circle,<br />
+            look straight into the camera, then tap the button.
           </motion.p>
         </div>
 
@@ -895,16 +895,16 @@ export default function Step8FaceID({ onNext, onRetry, age = null }) {
               <span className="text-xs font-semibold"
                 style={{ color: photoReady ? GREEN : PINK }}>
                 {!faceOk
-                  ? 'Place ton visage dans le cercle'
+                  ? 'Place your face in the circle'
                   : faceTooFar
-                  ? 'Rapproche-toi de la caméra 📷'
-                  : centerHint === 'left'  ? 'Décale-toi vers la gauche ←'
-                  : centerHint === 'right' ? 'Décale-toi vers la droite →'
-                  : centerHint === 'up'    ? 'Remonte ton visage ↑'
-                  : centerHint === 'down'  ? 'Descends ton visage ↓'
+                  ? 'Move closer to the camera 📷'
+                  : centerHint === 'left'  ? 'Move to the left ←'
+                  : centerHint === 'right' ? 'Move to the right →'
+                  : centerHint === 'up'    ? 'Move your face up ↑'
+                  : centerHint === 'down'  ? 'Move your face down ↓'
                   : gazeOff
-                  ? 'Regarde directement dans la caméra 👁'
-                  : '✓ Parfait ! Appuie sur le bouton'}
+                  ? 'Look directly into the camera 👁'
+                  : '✓ Perfect! Tap the button'}
               </span>
             </motion.div>
           </AnimatePresence>
@@ -937,7 +937,7 @@ export default function Step8FaceID({ onNext, onRetry, age = null }) {
           </motion.button>
 
           <p className="text-[10px] text-center" style={{ color: 'rgba(255,255,255,0.2)' }}>
-            Cette photo reste sur ton appareil — elle n'est jamais partagée
+            This photo stays on your device — it is never shared
           </p>
         </div>
 
@@ -968,7 +968,7 @@ export default function Step8FaceID({ onNext, onRetry, age = null }) {
                 <div className="w-full rounded-2xl px-4 py-3 space-y-2 text-left"
                   style={{ background: 'rgba(204,60,105,0.07)', border: '1px solid rgba(204,60,105,0.2)' }}>
                   <p className="text-[10px] font-black uppercase tracking-widest mb-1"
-                    style={{ color: 'rgba(204,60,105,0.7)' }}>Comment corriger</p>
+                    style={{ color: 'rgba(204,60,105,0.7)' }}>How to fix it</p>
                   {photoQualError.tips.map((tip, i) => (
                     <div key={i} className="flex items-start gap-2">
                       <span style={{ color: PINK, fontSize: 10, marginTop: 2 }}>›</span>
@@ -984,7 +984,7 @@ export default function Step8FaceID({ onNext, onRetry, age = null }) {
                   className="w-full py-4 rounded-2xl font-black text-base text-white"
                   style={{ background: 'linear-gradient(135deg, #cc3c69, #e8608a)',
                     boxShadow: '0 0 24px rgba(204,60,105,0.45)' }}>
-                  📸 Réessayer la photo
+                  📸 Retake photo
                 </motion.button>
               </div>
             </motion.div>
@@ -1011,7 +1011,7 @@ export default function Step8FaceID({ onNext, onRetry, age = null }) {
         <div>
           <motion.p initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
             className="text-xl font-black text-white mb-3">
-            Analyse impossible
+            Analysis failed
           </motion.p>
           <motion.p initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
@@ -1026,7 +1026,7 @@ export default function Step8FaceID({ onNext, onRetry, age = null }) {
           className="w-full max-w-xs rounded-2xl p-4 space-y-2.5"
           style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)' }}>
           <p className="text-xs font-bold uppercase tracking-widest mb-3"
-            style={{ color: 'rgba(255,255,255,0.3)' }}>Pour une meilleure analyse</p>
+            style={{ color: 'rgba(255,255,255,0.3)' }}>Tips for a better analysis</p>
           {RETRY_REASONS.map((tip, i) => (
             <div key={i} className="flex items-start gap-2.5">
               <span style={{ color: PINK, fontSize: 10, marginTop: 2 }}>✦</span>
@@ -1045,7 +1045,7 @@ export default function Step8FaceID({ onNext, onRetry, age = null }) {
             background: 'linear-gradient(135deg, #cc3c69, #e8608a)',
             boxShadow: '0 0 28px rgba(204,60,105,0.45), 0 8px 24px rgba(0,0,0,0.4)',
           }}>
-          Refaire l'analyse →
+          Redo analysis →
         </motion.button>
       </div>
     )
@@ -1150,22 +1150,22 @@ export default function Step8FaceID({ onNext, onRetry, age = null }) {
                 <span className="text-xs font-semibold"
                   style={{ color: phase === 'front' && holdProgress > 60 ? '#fff' : PINK }}>
                   {phase === 'front' && faceTooFar
-                    ? 'Rapproche-toi de la caméra 📷'
+                    ? 'Move closer to the camera 📷'
                     : phase === 'front' && centerHint === 'left'
-                    ? 'Décale-toi vers la gauche ←'
+                    ? 'Move to the left ←'
                     : phase === 'front' && centerHint === 'right'
-                    ? 'Décale-toi vers la droite →'
+                    ? 'Move to the right →'
                     : phase === 'front' && centerHint === 'up'
-                    ? 'Remonte ton visage ↑'
+                    ? 'Move your face up ↑'
                     : phase === 'front' && centerHint === 'down'
-                    ? 'Descends ton visage ↓'
+                    ? 'Move your face down ↓'
                     : phase === 'front' && gazeOff
-                    ? 'Regarde directement dans la caméra 👁'
+                    ? 'Look directly into the camera 👁'
                     : phase === 'front' && holdProgress > 60
-                    ? '📸 Ne bouge plus…'
+                    ? '📸 Hold still…'
                     : faceOk
-                    ? 'Maintiens la position…'
-                    : 'Positionne ton visage'}
+                    ? 'Hold position…'
+                    : 'Position your face'}
                 </span>
               </motion.div>
             )}
@@ -1176,7 +1176,7 @@ export default function Step8FaceID({ onNext, onRetry, age = null }) {
                 <motion.div animate={{ opacity: [0.4, 1, 0.4] }} transition={{ duration: 1.2, repeat: Infinity }}
                   className="w-1.5 h-1.5 rounded-full bg-white/40" />
                 <span className="text-xs font-semibold text-white/40">
-                  {isCalib ? 'Calibration…' : faceOk ? 'Visage détecté ✓' : 'Positionne ton visage…'}
+                  {isCalib ? 'Calibrating…' : faceOk ? 'Face detected ✓' : 'Position your face…'}
                 </span>
               </motion.div>
             )}
@@ -1220,7 +1220,7 @@ export default function Step8FaceID({ onNext, onRetry, age = null }) {
                     style={{ border: `2px solid ${PINK_A(0.3)}`, borderTopColor: PINK }}
                   />
                   <span className="text-xs font-semibold" style={{ color: PINK_A(0.6) }}>
-                    Activation caméra…
+                    Activating camera…
                   </span>
                 </motion.div>
               )}
@@ -1278,8 +1278,8 @@ export default function Step8FaceID({ onNext, onRetry, age = null }) {
                   className="absolute inset-0 flex flex-col items-center justify-center gap-2"
                   style={{ background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(2px)' }}>
                   <span className="text-2xl">👤</span>
-                  <p className="text-xs font-bold text-red-400">Aucun visage détecté</p>
-                  <p className="text-xs text-white/40 px-6 text-center">Replace-toi dans le cadre</p>
+                  <p className="text-xs font-bold text-red-400">No face detected</p>
+                  <p className="text-xs text-white/40 px-6 text-center">Get back in the frame</p>
                 </motion.div>
               )}
             </AnimatePresence>
@@ -1376,21 +1376,21 @@ export default function Step8FaceID({ onNext, onRetry, age = null }) {
         <AnimatePresence mode="wait">
           {isDone ? (
             <motion.div key="done-msg" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}>
-              <p className="text-2xl font-black text-white">Analyse terminée ✓</p>
-              <p className="text-sm mt-1" style={{ color: 'rgba(255,255,255,0.4)' }}>Traitement en cours…</p>
+              <p className="text-2xl font-black text-white">Analysis complete ✓</p>
+              <p className="text-sm mt-1" style={{ color: 'rgba(255,255,255,0.4)' }}>Processing…</p>
             </motion.div>
           ) : isPaused ? (
             <motion.div key="pause-msg" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}>
-              <p className="text-xl font-black text-white">Analyse en pause</p>
+              <p className="text-xl font-black text-white">Analysis paused</p>
               <p className="text-sm mt-1" style={{ color: 'rgba(255,255,255,0.4)' }}>
-                Replace ton visage dans le cadre pour reprendre
+                Get back in the frame to resume
               </p>
             </motion.div>
           ) : isScanning ? (
             <motion.div key={`msg-${msgIndex}`}
               initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -6 }}>
               <p className="text-lg font-bold text-white">{SCAN_MESSAGES[msgIndex]?.text}</p>
-              <p className="text-xs mt-1" style={{ color: 'rgba(255,255,255,0.3)' }}>Analyse faciale IA en cours</p>
+              <p className="text-xs mt-1" style={{ color: 'rgba(255,255,255,0.3)' }}>AI facial analysis in progress</p>
             </motion.div>
           ) : isPosPhase && currentPosStep ? (
             <motion.div key={`pos-msg-${phase}`}
@@ -1404,16 +1404,16 @@ export default function Step8FaceID({ onNext, onRetry, age = null }) {
               </motion.div>
               <p className="text-xl font-black text-white">{currentPosStep.label}</p>
               <p className="text-sm mt-1" style={{ color: 'rgba(255,255,255,0.4)' }}>
-                {faceOk ? currentPosStep.hint : 'Centre ton visage dans le cadre'}
+                {faceOk ? currentPosStep.hint : 'Center your face in the frame'}
               </p>
             </motion.div>
           ) : (
             <motion.div key="wait-msg" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
               <p className="text-xl font-black text-white">
-                {isCalib ? 'Calibration en cours…' : faceOk ? 'Visage détecté' : 'Positionne ton visage'}
+                {isCalib ? 'Calibrating…' : faceOk ? 'Face detected' : 'Position your face'}
               </p>
               <p className="text-sm mt-1" style={{ color: 'rgba(255,255,255,0.4)' }}>
-                {isCalib ? 'Reste immobile quelques instants' : faceOk ? 'Préparation du scan…' : 'Centre ton visage dans le cadre'}
+                {isCalib ? 'Hold still for a moment…' : faceOk ? 'Preparing scan…' : 'Center your face in the frame'}
               </p>
             </motion.div>
           )}

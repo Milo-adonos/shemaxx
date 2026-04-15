@@ -5,39 +5,39 @@ import { useRef } from 'react'
 const benefits = [
   {
     emoji: '🎯',
-    title: 'Insights qui changent la donne',
-    desc: 'Des données précises sur ton visage, pas des généralités.',
-    tag: 'Précision',
+    title: 'Game-changing insights',
+    desc: 'Precise data about your face, not generic advice.',
+    tag: 'Precision',
   },
   {
     emoji: '💡',
-    title: 'Conseils actionnables',
-    desc: 'Coupe de cheveux, contour, soins ciblés — immédiatement applicables.',
-    tag: 'Pratique',
+    title: 'Actionable advice',
+    desc: 'Facial exercises, skincare, natural techniques — ready to apply immediately.',
+    tag: 'Practical',
   },
   {
     emoji: '🔒',
-    title: 'Confidentialité absolue',
-    desc: 'Tes photos ne sont jamais stockées ni partagées.',
-    tag: 'Privé',
+    title: 'Absolute privacy',
+    desc: 'Your photos are never stored or shared.',
+    tag: 'Private',
   },
   {
     emoji: '🌍',
-    title: 'Pour toutes les femmes',
-    desc: 'Nos algorithmes valorisent la diversité — toutes origines, tous types.',
-    tag: 'Inclusif',
+    title: 'For all women',
+    desc: 'Our algorithms celebrate diversity — all origins, all types.',
+    tag: 'Inclusive',
   },
   {
     emoji: '📈',
-    title: 'Suis ton évolution',
-    desc: 'Compare tes analyses et mesure l\'impact de ta routine beauté.',
-    tag: 'Suivi',
+    title: 'Track your progress',
+    desc: 'Compare your analyses and measure the impact of your beauty routine.',
+    tag: 'Tracking',
   },
   {
     emoji: '⚡',
-    title: 'Résultats en 30 secondes',
-    desc: 'Notre IA de dernière génération. Zéro attente.',
-    tag: 'Rapide',
+    title: 'Results in 30 seconds',
+    desc: 'Our next-gen AI. Zero wait time.',
+    tag: 'Fast',
   },
 ]
 
@@ -61,7 +61,7 @@ export default function Benefits() {
             transition={{ duration: 0.5 }}
             className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-[#cc3c69]/30 bg-[#cc3c69]/10 text-[#cc3c69] text-xs font-semibold tracking-widest uppercase mb-5"
           >
-            Ce que tu gagnes
+            What you get
           </motion.div>
           <motion.h2
             initial={{ opacity: 0, y: 20 }}
@@ -69,8 +69,8 @@ export default function Benefits() {
             transition={{ duration: 0.6, delay: 0.1 }}
             className="text-3xl sm:text-4xl md:text-5xl font-black leading-tight tracking-tight"
           >
-            Pourquoi <span className="text-[#cc3c69]">des milliers de femmes</span>
-            <br />utilisent notre analyse.
+            Why <span className="text-[#cc3c69]">thousands of women</span>
+            <br />use our analysis.
           </motion.h2>
         </div>
 
