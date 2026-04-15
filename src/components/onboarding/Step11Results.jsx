@@ -4,7 +4,7 @@ import HolographicFaceTraits from './HolographicFaceTraits'
 import { useAuth } from '../../contexts/AuthContext'
 import { saveScans, loadScans, upsertProfile, startOneTimePayment } from '../../lib/supabase'
 import { track } from '../../lib/posthog.js'
-import { useT } from '../../contexts/LangContext'
+import { useT, LANG } from '../../contexts/LangContext'
 
 const PINK   = '#cc3c69'
 const PINK_A = (a) => `rgba(204,60,105,${a})`
@@ -2274,12 +2274,12 @@ function ExtrasStyleTransform({ onBack }) {
               <button onClick={() => { setResult(null); setError(null) }}
                 className="flex-1 py-3 rounded-2xl text-xs font-black"
                 style={{ background: 'rgba(255,255,255,0.06)', color: 'rgba(255,255,255,0.5)' }}>
-                Recommencer
+                {LANG === 'fr' ? 'Recommencer' : 'Retry'}
               </button>
               <a href={result} download="shemaxx-style.jpg" target="_blank" rel="noopener noreferrer"
                 className="flex-1 py-3 rounded-2xl text-xs font-black text-white text-center flex items-center justify-center"
                 style={{ background: 'linear-gradient(135deg,#cc3c69,#e8608a)' }}>
-                Enregistrer ↓
+                {LANG === 'fr' ? 'Enregistrer ↓' : 'Save ↓'}
               </a>
             </div>
           </motion.div>
@@ -2396,19 +2396,19 @@ function ExtrasTenOutOfTen({ onBack }) {
               style={{ background: PINK_A(0.1), border: `1px solid ${PINK_A(0.3)}` }}>
               <p className="text-sm font-black text-white">{t.results.extras.tenOutOfTen.generated}</p>
               <p className="text-xs mt-0.5" style={{ color: 'rgba(255,255,255,0.4)' }}>
-                Symétrie parfaite • Proportions dorées • Éclat maximal
+                {LANG === 'fr' ? 'Symétrie parfaite • Proportions dorées • Éclat maximal' : 'Perfect symmetry • Golden proportions • Maximum glow'}
               </p>
             </div>
             <div className="w-full flex gap-3">
               <button onClick={() => { setResult(null); setError(null) }}
                 className="flex-1 py-3 rounded-2xl text-xs font-black"
                 style={{ background: 'rgba(255,255,255,0.06)', color: 'rgba(255,255,255,0.5)' }}>
-                Recommencer
+                {LANG === 'fr' ? 'Recommencer' : 'Retry'}
               </button>
               <a href={result} download="shemaxx-10sur10.jpg" target="_blank" rel="noopener noreferrer"
                 className="flex-1 py-3 rounded-2xl text-xs font-black text-white text-center flex items-center justify-center"
                 style={{ background: 'linear-gradient(135deg,#cc3c69,#e8608a)' }}>
-                Enregistrer ↓
+                {LANG === 'fr' ? 'Enregistrer ↓' : 'Save ↓'}
               </a>
             </div>
           </motion.div>
@@ -2436,7 +2436,7 @@ function saveCoachHistory(h) {
   try { localStorage.setItem(COACH_HIST_KEY, JSON.stringify(h.slice(-12))) } catch {}
 }
 
-const SUGGESTIONS = [
+const SUGGESTIONS_FR = [
   'Comment améliorer ma mâchoire naturellement ?',
   'Quelle routine pour une peau lumineuse ?',
   'Comment réduire mes cernes sans maquillage ?',
@@ -2444,10 +2444,17 @@ const SUGGESTIONS = [
   'Comment faire du mewing correctement ?',
   'Gua sha : comment l\'utiliser pour le visage ?',
 ]
+const SUGGESTIONS_EN = [
+  'How to improve my jawline naturally?',
+  'What routine for glowing skin?',
+  'How to reduce dark circles without makeup?',
+  'What foods boost collagen production?',
+  'How to do mewing correctly?',
+  'Gua sha: how to use it on the face?',
+]
 
 function ExtrasAICoach({ onBack }) {
-  const t = useT()
-  const lang = t === useT() ? (navigator.language?.startsWith('en') ? 'en' : 'fr') : 'fr'
+  const lang = LANG
   const bottomRef   = useRef(null)
   const inputRef    = useRef(null)
 
@@ -2494,12 +2501,12 @@ function ExtrasAICoach({ onBack }) {
         }
       )
       const data = await resp.json()
-      const reply = data.reply || '⚠️ Une erreur est survenue, réessaie.'
+      const reply = data.reply || (lang === 'fr' ? '⚠️ Une erreur est survenue, réessaie.' : '⚠️ An error occurred, please try again.')
       const withReply = [...next, { role: 'assistant', content: reply }]
       setMessages(withReply)
       saveCoachHistory(withReply)
     } catch {
-      const withErr = [...next, { role: 'assistant', content: '⚠️ Connexion interrompue, réessaie.' }]
+      const withErr = [...next, { role: 'assistant', content: lang === 'fr' ? '⚠️ Connexion interrompue, réessaie.' : '⚠️ Connection lost, please try again.' }]
       setMessages(withErr)
     } finally {
       setLoading(false)
@@ -2525,7 +2532,7 @@ function ExtrasAICoach({ onBack }) {
             <p className="text-base font-black text-white">Shemaxx Coach</p>
           </div>
           <p className="text-[10px]" style={{ color: 'rgba(255,255,255,0.35)' }}>
-            Experte beauté & looksmaxxing
+            {lang === 'fr' ? 'Experte beauté & looksmaxxing' : 'Beauty & looksmaxxing expert'}
           </p>
         </div>
         {/* Compteur */}
@@ -2554,7 +2561,9 @@ function ExtrasAICoach({ onBack }) {
               <div className="rounded-2xl rounded-tl-sm px-4 py-3 max-w-[82%]"
                 style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.09)' }}>
                 <p className="text-sm leading-relaxed" style={{ color: 'rgba(255,255,255,0.88)' }}>
-                  Salut ! Je suis ton coach beauté Shemaxx 👋 Pose-moi n'importe quelle question sur ton visage, tes soins, le looksmaxxing ou ton alimentation beauté. Je te donne des conseils 100% naturels et concrets !
+                  {lang === 'fr'
+                    ? 'Salut ! Je suis ton coach beauté Shemaxx 👋 Pose-moi n\'importe quelle question sur ton visage, tes soins, le looksmaxxing ou ton alimentation beauté. Je te donne des conseils 100% naturels et concrets !'
+                    : 'Hey! I\'m your Shemaxx beauty coach 👋 Ask me anything about your face, skincare, looksmaxxing or beauty nutrition. I give 100% natural, actionable advice!'}
                 </p>
               </div>
             </div>
@@ -2609,9 +2618,11 @@ function ExtrasAICoach({ onBack }) {
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}
             className="text-center py-4 px-6 rounded-2xl mx-2"
             style={{ background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.18)' }}>
-            <p className="text-sm font-bold text-white mb-1">Limite atteinte</p>
+            <p className="text-sm font-bold text-white mb-1">{lang === 'fr' ? 'Limite atteinte' : 'Limit reached'}</p>
             <p className="text-xs" style={{ color: 'rgba(255,255,255,0.4)' }}>
-              Tu as utilisé tes {COACH_MAX_MESSAGES} messages inclus. Reviens demain !
+              {lang === 'fr'
+                ? `Tu as utilisé tes ${COACH_MAX_MESSAGES} messages inclus. Reviens demain !`
+                : `You've used your ${COACH_MAX_MESSAGES} included messages. Come back tomorrow!`}
             </p>
           </motion.div>
         )}
@@ -2625,9 +2636,9 @@ function ExtrasAICoach({ onBack }) {
           <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
             className="shrink-0 px-4 pb-2">
             <p className="text-[10px] font-black uppercase tracking-widest mb-2"
-              style={{ color: 'rgba(255,255,255,0.25)' }}>Questions fréquentes</p>
+              style={{ color: 'rgba(255,255,255,0.25)' }}>{lang === 'fr' ? 'Questions fréquentes' : 'Quick questions'}</p>
             <div className="flex gap-2 overflow-x-auto no-scrollbar pb-1">
-              {SUGGESTIONS.map((s, i) => (
+              {(lang === 'fr' ? SUGGESTIONS_FR : SUGGESTIONS_EN).map((s, i) => (
                 <button key={i} onClick={() => sendMessage(s)}
                   className="shrink-0 px-3 py-2 rounded-full text-[11px] font-semibold whitespace-nowrap"
                   style={{ background: 'rgba(204,60,105,0.1)', border: '1px solid rgba(204,60,105,0.25)', color: 'rgba(255,255,255,0.7)' }}>
@@ -2649,7 +2660,7 @@ function ExtrasAICoach({ onBack }) {
             onChange={e => setInput(e.target.value)}
             onKeyDown={e => e.key === 'Enter' && !e.shiftKey && sendMessage()}
             disabled={loading || exhausted}
-            placeholder={exhausted ? 'Limite atteinte' : 'Pose ta question beauté…'}
+            placeholder={exhausted ? (lang === 'fr' ? 'Limite atteinte' : 'Limit reached') : (lang === 'fr' ? 'Pose ta question beauté…' : 'Ask your beauty question…')}
             className="flex-1 rounded-2xl px-4 py-3 text-sm outline-none"
             style={{
               background: 'rgba(255,255,255,0.05)',
@@ -2674,7 +2685,7 @@ function ExtrasAICoach({ onBack }) {
           </button>
         </div>
         <p className="text-center text-[9px] mt-2" style={{ color: 'rgba(255,255,255,0.18)' }}>
-          Conseils 100% naturels • Pas de maquillage ni chirurgie
+          {lang === 'fr' ? '100% natural advice • No makeup or surgery' : '100% natural advice • No makeup or surgery'}
         </p>
       </div>
     </div>
@@ -2708,13 +2719,13 @@ function TabExtras({ scores, pseudo, onClose, pendingPayment }) {
   const TOOLS = [
     {
       id: 'coach',
-      title: 'Coach IA Beauté',
-      desc:  'Pose toutes tes questions beauté & looksmaxxing à ton coach IA personnel',
+      title: LANG === 'fr' ? 'Coach IA Beauté' : 'AI Beauty Coach',
+      desc:  LANG === 'fr' ? 'Pose toutes tes questions beauté & looksmaxxing à ton coach IA personnel' : 'Ask your AI beauty & looksmaxxing coach anything',
       color: '#34d399',
       gradient: 'linear-gradient(135deg,rgba(52,211,153,0.12),rgba(52,211,153,0.03))',
       border: 'rgba(52,211,153,0.2)',
       free: true,
-      badge: `${coachRemaining} msg restants`,
+      badge: LANG === 'fr' ? `${coachRemaining} msg restants` : `${coachRemaining} msg left`,
     },
     {
       id: 'group',
@@ -2820,7 +2831,7 @@ function TabExtras({ scores, pseudo, onClose, pendingPayment }) {
       <div className="flex items-center gap-3 mb-4">
         <div className="flex-1 h-px" style={{ background: 'rgba(255,255,255,0.08)' }} />
         <span className="text-[10px] font-black uppercase tracking-widest"
-          style={{ color: 'rgba(255,255,255,0.22)' }}>Outils payants</span>
+          style={{ color: 'rgba(255,255,255,0.22)' }}>{LANG === 'fr' ? 'Outils payants' : 'Paid tools'}</span>
         <div className="flex-1 h-px" style={{ background: 'rgba(255,255,255,0.08)' }} />
       </div>
 
@@ -2848,13 +2859,13 @@ function TabExtras({ scores, pseudo, onClose, pendingPayment }) {
                   {TOOLS.find(t => t.id === paywallFor)?.title}
                 </h3>
                 <p className="text-sm" style={{ color: 'rgba(255,255,255,0.45)' }}>
-                  Paiement unique — résultat généré instantanément par l'IA.
+                  {LANG === 'fr' ? 'Paiement unique — résultat généré instantanément par l\'IA.' : 'One-time payment — result generated instantly by AI.'}
                 </p>
               </div>
 
               <div className="rounded-2xl px-4 py-3 mb-5 flex items-center justify-between"
                 style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)' }}>
-                <span className="text-sm text-white/60">Prix par utilisation</span>
+                <span className="text-sm text-white/60">{LANG === 'fr' ? 'Prix par utilisation' : 'Price per use'}</span>
                 <span className="text-xl font-black text-white">3,99€</span>
               </div>
 
@@ -2867,13 +2878,15 @@ function TabExtras({ scores, pseudo, onClose, pendingPayment }) {
                 style={{ background: 'linear-gradient(135deg,#cc3c69,#e8608a)',
                   boxShadow: '0 8px 32px rgba(204,60,105,0.5)',
                   opacity: payLoading ? 0.7 : 1 }}>
-                {payLoading ? '⏳ Redirection Stripe…' : '💳 Payer 3,99€ et utiliser'}
+                {payLoading
+                  ? (LANG === 'fr' ? '⏳ Redirection Stripe…' : '⏳ Redirecting to Stripe…')
+                  : (LANG === 'fr' ? '💳 Payer 3,99€ et utiliser' : '💳 Pay €3.99 and use')}
               </motion.button>
 
               <button onClick={() => setPaywallFor(null)}
                 className="w-full py-2.5 rounded-full text-sm font-semibold"
                 style={{ color: 'rgba(255,255,255,0.35)' }}>
-                Annuler
+                {LANG === 'fr' ? 'Annuler' : 'Cancel'}
               </button>
             </motion.div>
           </motion.div>
@@ -3026,7 +3039,7 @@ function TabClassement({ scores, pseudo }) {
             {shared ? (
               <>
                 <svg width="14" height="14" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><polyline points="2 6 5 9 10 3"/></svg>
-                Lien partagé !
+                {LANG === 'fr' ? 'Lien partagé !' : 'Link shared!'}
               </>
             ) : (
               <>
@@ -3034,7 +3047,7 @@ function TabClassement({ scores, pseudo }) {
                   <circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/>
                   <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
                 </svg>
-                Inviter mes amies
+                {LANG === 'fr' ? 'Inviter mes amies' : 'Invite my friends'}
               </>
             )}
           </motion.button>
@@ -3047,7 +3060,7 @@ function TabClassement({ scores, pseudo }) {
         className="mx-4 mb-5 rounded-[20px] overflow-hidden"
         style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)' }}>
         <p className="text-[10px] font-black uppercase tracking-widest text-center pt-4 pb-5"
-          style={{ color: 'rgba(255,255,255,0.3)' }}>Top du classement</p>
+          style={{ color: 'rgba(255,255,255,0.3)' }}>{LANG === 'fr' ? 'Top du classement' : 'Top ranking'}</p>
 
         <div className="flex flex-col items-center pb-5">
           <span className="text-2xl mb-2">🥇</span>
@@ -3075,7 +3088,7 @@ function TabClassement({ scores, pseudo }) {
       {/* ── Ligne utilisatrice ── */}
       <div className="px-4 flex flex-col gap-2">
         <p className="text-[10px] font-black uppercase tracking-widest mb-1"
-          style={{ color: 'rgba(255,255,255,0.3)' }}>Ton classement</p>
+          style={{ color: 'rgba(255,255,255,0.3)' }}>{LANG === 'fr' ? 'Ton classement' : 'Your ranking'}</p>
 
         <motion.div initial={{ opacity: 0, x: -12 }} animate={{ opacity: 1, x: 0 }}
           transition={{ delay: 0.14 }}
@@ -3087,17 +3100,17 @@ function TabClassement({ scores, pseudo }) {
             style={{ background: 'linear-gradient(135deg,#cc3c69,#e8608a)', color: '#fff' }}>
             {initials}
           </div>
-          <p className="flex-1 text-sm font-bold text-white">{myName} (moi)</p>
+          <p className="flex-1 text-sm font-bold text-white">{myName} {LANG === 'fr' ? '(moi)' : '(me)'}</p>
           <span className="text-sm font-black" style={{ color: '#ff4d88' }}>{myScore}</span>
         </motion.div>
 
         <p className="text-center text-[11px] mt-2" style={{ color: 'rgba(255,255,255,0.2)' }}>
-          Invite tes amies pour les voir apparaître ici
+          {LANG === 'fr' ? 'Invite tes amies pour les voir apparaître ici' : 'Invite your friends to see them here'}
         </p>
       </div>
 
       <p className="text-center text-[10px] mt-4 px-8" style={{ color: 'rgba(255,255,255,0.15)' }}>
-        Classement basé sur les analyses Shemaxx Pro.
+        {LANG === 'fr' ? 'Classement basé sur les analyses Shemaxx Pro.' : 'Ranking based on Shemaxx Pro analyses.'}
       </p>
     </div>
   )
@@ -3148,7 +3161,7 @@ function SettingsPage({ pseudo, age, email, onClose, onLogout }) {
             <path d="M15 18l-6-6 6-6"/>
           </svg>
         </button>
-        <p className="text-base font-black text-white">Paramètres</p>
+        <p className="text-base font-black text-white">{LANG === 'fr' ? 'Paramètres' : 'Settings'}</p>
       </div>
 
       {/* Contenu scrollable */}
@@ -3156,16 +3169,16 @@ function SettingsPage({ pseudo, age, email, onClose, onLogout }) {
 
         {/* Infos */}
         <div>
-          <p style={{ ...label }}>Prénom</p>
-          <input value={prenom} onChange={e => setPrenom(e.target.value)} placeholder="Ton prénom" style={field} />
+          <p style={{ ...label }}>{LANG === 'fr' ? 'Prénom' : 'First name'}</p>
+          <input value={prenom} onChange={e => setPrenom(e.target.value)} placeholder={LANG === 'fr' ? 'Ton prénom' : 'Your first name'} style={field} />
         </div>
         <div>
-          <p style={{ ...label }}>Âge</p>
-          <input value={ageVal} onChange={e => setAgeVal(e.target.value)} type="number" min="13" max="99" placeholder="Ton âge" style={field} />
+          <p style={{ ...label }}>{LANG === 'fr' ? 'Âge' : 'Age'}</p>
+          <input value={ageVal} onChange={e => setAgeVal(e.target.value)} type="number" min="13" max="99" placeholder={LANG === 'fr' ? 'Ton âge' : 'Your age'} style={field} />
         </div>
         {email && (
           <div>
-            <p style={{ ...label }}>Adresse e-mail</p>
+            <p style={{ ...label }}>{LANG === 'fr' ? 'Adresse e-mail' : 'Email address'}</p>
             <div style={{ ...field, color: 'rgba(255,255,255,0.4)', cursor: 'default' }}>{email}</div>
           </div>
         )}
@@ -3183,7 +3196,7 @@ function SettingsPage({ pseudo, age, email, onClose, onLogout }) {
                 ? <svg className="animate-spin" width="15" height="15" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="rgba(255,77,136,0.3)" strokeWidth="3"/><path d="M12 2a10 10 0 0 1 10 10" stroke="#ff4d88" strokeWidth="3" strokeLinecap="round"/></svg>
                 : <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
               }
-              <span>{portalLoading ? 'Chargement…' : 'Gérer mon abonnement'}</span>
+              <span>{portalLoading ? (LANG === 'fr' ? 'Chargement…' : 'Loading…') : (LANG === 'fr' ? 'Gérer mon abonnement' : 'Manage my subscription')}</span>
             </div>
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><path d="M9 18l6-6-6-6"/></svg>
           </button>
@@ -3198,7 +3211,7 @@ function SettingsPage({ pseudo, age, email, onClose, onLogout }) {
           className="w-full py-3.5 rounded-2xl text-sm font-black flex items-center justify-center gap-2"
           style={{ background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.25)', color: '#f87171' }}>
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
-          Se déconnecter
+          {LANG === 'fr' ? 'Se déconnecter' : 'Sign out'}
         </button>
       </div>
     </motion.div>

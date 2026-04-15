@@ -1,6 +1,6 @@
 import { useState, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { useT } from '../../contexts/LangContext'
+import { useT, LANG } from '../../contexts/LangContext'
 
 const PINK   = '#cc3c69'
 const PINK_A = (a) => `rgba(204,60,105,${a})`
@@ -113,11 +113,11 @@ function UploadFlow({ onDone, onBack }) {
         setChecking(false)
 
         if (brightness < 25) {
-          setError({ title: 'Photo trop sombre 💡', detail: 'Place-toi face à une lumière. La photo doit être bien éclairée.' })
+          setError({ title: LANG === 'fr' ? 'Photo trop sombre 💡' : 'Photo too dark 💡', detail: LANG === 'fr' ? 'Place-toi face à une lumière. La photo doit être bien éclairée.' : 'Stand in front of a light source. The photo must be well-lit.' })
           return
         }
         if (sharpness < 1.5) {
-          setError({ title: 'Photo trop floue 📷', detail: 'Nettoie ton objectif et assure-toi que la photo soit nette.' })
+          setError({ title: LANG === 'fr' ? 'Photo trop floue 📷' : 'Photo too blurry 📷', detail: LANG === 'fr' ? 'Nettoie ton objectif et assure-toi que la photo soit nette.' : 'Clean your lens and make sure the photo is sharp.' })
           return
         }
         setError(null)
@@ -134,14 +134,14 @@ function UploadFlow({ onDone, onBack }) {
 
   const steps = [
     {
-      title:       'Photo de face',
-      hint:        'Regarde droit devant, visage centré, bonne lumière',
+      title:       LANG === 'fr' ? 'Photo de face' : 'Front photo',
+      hint:        LANG === 'fr' ? 'Regarde droit devant, visage centré, bonne lumière' : 'Look straight ahead, face centered, good lighting',
       illustration: <FrontFaceIllustration />,
       photo:       frontPhoto,
     },
     {
-      title:       'Photo de profil',
-      hint:        'Tourne-toi sur le côté gauche ou droit',
+      title:       LANG === 'fr' ? 'Photo de profil' : 'Side profile photo',
+      hint:        LANG === 'fr' ? 'Tourne-toi sur le côté gauche ou droit' : 'Turn to your left or right side',
       illustration: <SideFaceIllustration />,
       photo:       sidePhoto,
     },
@@ -238,7 +238,7 @@ function UploadFlow({ onDone, onBack }) {
               <circle cx="12" cy="12" r="10" stroke="rgba(255,255,255,0.3)" strokeWidth="3"/>
               <path d="M12 2a10 10 0 0 1 10 10" stroke="white" strokeWidth="3" strokeLinecap="round"/>
             </svg>
-            Vérification…
+            {LANG === 'fr' ? 'Vérification…' : 'Checking…'}
           </>
         ) : (
           <>
@@ -246,7 +246,7 @@ function UploadFlow({ onDone, onBack }) {
               <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
               <circle cx="12" cy="13" r="4"/>
             </svg>
-            Upload ou prend un selfie
+            {LANG === 'fr' ? 'Upload ou prend un selfie' : 'Upload or take a selfie'}
           </>
         )}
       </motion.button>
