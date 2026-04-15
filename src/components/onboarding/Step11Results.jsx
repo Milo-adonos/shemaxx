@@ -93,104 +93,39 @@ function FillBar({ value, color, delayMs = 0 }) {
   return <div className="h-full rounded-full" style={{ width: `${w}%`, background: `linear-gradient(90deg, ${color}88, ${color})`, boxShadow: `0 0 6px ${color}55` }} />
 }
 
-// ── Produits Amazon détectés automatiquement dans le conseil ─────────────
+// ── Amazon : URL adaptée à la région de l'utilisatrice ───────────────────────
+function getAmazonDomain() {
+  const lang = (navigator.language || navigator.languages?.[0] || 'fr').toLowerCase()
+  if (lang.startsWith('en-us') || lang.startsWith('en-ca')) return 'amazon.com'
+  if (lang.startsWith('en-gb') || lang.startsWith('en-au')) return 'amazon.co.uk'
+  if (lang.startsWith('de')) return 'amazon.de'
+  if (lang.startsWith('es')) return 'amazon.es'
+  if (lang.startsWith('it')) return 'amazon.it'
+  if (lang.startsWith('nl')) return 'amazon.nl'
+  if (lang.startsWith('pl')) return 'amazon.pl'
+  if (lang.startsWith('se') || lang.startsWith('sv')) return 'amazon.se'
+  return 'amazon.fr'
+}
+function amazonUrl(query) {
+  return `https://www.${getAmazonDomain()}/s?k=${encodeURIComponent(query)}`
+}
+
+// ── Produits Amazon ───────────────────────────────────────────────────────────
 const AMAZON_PRODUCTS = [
-  {
-    keywords: ['gua sha', 'guasha'],
-    name: 'Gua Sha',
-    desc: 'Outil de massage facial',
-    emoji: '🪨',
-    color: '#a78bfa',
-    url: 'https://www.amazon.fr/s?k=gua+sha+visage',
-  },
-  {
-    keywords: ['falim', 'chewing-gum dur', 'chewing gum dur'],
-    name: 'Falim Gum',
-    desc: 'Chewing-gum dur pour mâchoire',
-    emoji: '🍬',
-    color: '#fb923c',
-    url: 'https://www.amazon.fr/s?k=falim+chewing+gum',
-  },
-  {
-    keywords: ['mastic de chios', 'mastic gum'],
-    name: 'Mastic de Chios',
-    desc: 'Résine naturelle pour mâchoire',
-    emoji: '🌿',
-    color: '#34d399',
-    url: 'https://www.amazon.fr/s?k=mastic+de+chios',
-  },
-  {
-    keywords: ['derma roller', 'microneedling', 'dermastamp'],
-    name: 'Derma Roller',
-    desc: 'Microneedling 0.25-0.5mm',
-    emoji: '⚙️',
-    color: '#60a5fa',
-    url: 'https://www.amazon.fr/s?k=derma+roller+visage+0.5mm',
-  },
-  {
-    keywords: ['rétinol', 'retinol', 'tretinoin', 'trétinoïne'],
-    name: 'Rétinol Sérum',
-    desc: 'Renouvellement cellulaire',
-    emoji: '✨',
-    color: '#fbbf24',
-    url: 'https://www.amazon.fr/s?k=serum+retinol+visage',
-  },
-  {
-    keywords: ['vitamine c', 'vitamin c', 'skinceuticals', 'ce ferulic'],
-    name: 'Sérum Vitamine C',
-    desc: 'Éclat et collagène',
-    emoji: '💛',
-    color: '#facc15',
-    url: 'https://www.amazon.fr/s?k=serum+vitamine+c+visage+15',
-  },
-  {
-    keywords: ['niacinamide'],
-    name: 'Niacinamide 10%',
-    desc: 'Pores serrés, éclat uniforme',
-    emoji: '💧',
-    color: '#38bdf8',
-    url: 'https://www.amazon.fr/s?k=the+ordinary+niacinamide+10',
-  },
-  {
-    keywords: ['aha', 'bha', 'glycolic', 'glycolique', 'exfoliant acide', 'acide glycolique'],
-    name: 'Exfoliant AHA/BHA',
-    desc: 'Texture lisse, pores nets',
-    emoji: '⚗️',
-    color: '#f472b6',
-    url: 'https://www.amazon.fr/s?k=the+ordinary+aha+bha+peeling',
-  },
-  {
-    keywords: ['jade roller', 'rouleau de jade', 'rouleau visage', 'face roller'],
-    name: 'Jade Roller',
-    desc: 'Drainage et dégonflement',
-    emoji: '💚',
-    color: '#4ade80',
-    url: 'https://www.amazon.fr/s?k=rouleau+jade+visage',
-  },
-  {
-    keywords: ['peptide', 'peptides', 'copper peptide', 'ghk-cu'],
-    name: 'Sérum Peptides',
-    desc: 'Fermeté et régénération',
-    emoji: '🔬',
-    color: '#c084fc',
-    url: 'https://www.amazon.fr/s?k=serum+peptides+visage',
-  },
-  {
-    keywords: ['led', 'led rouge', 'led therapy', 'omnilux'],
-    name: 'Masque LED Rouge',
-    desc: 'Stimule le collagène',
-    emoji: '🔴',
-    color: '#ef4444',
-    url: 'https://www.amazon.fr/s?k=masque+led+rouge+visage',
-  },
-  {
-    keywords: ['spf', 'spf 50', 'solaire', 'protection solaire'],
-    name: 'SPF 50 Visage',
-    desc: 'Protection UV quotidienne',
-    emoji: '☀️',
-    color: '#fb923c',
-    url: 'https://www.amazon.fr/s?k=creme+solaire+spf50+visage',
-  },
+  { keywords: ['gua sha', 'guasha'],                              name: 'Gua Sha',           desc: 'Drainage & sculpture du visage', emoji: '🪨', color: '#a78bfa', query: 'gua sha facial massage' },
+  { keywords: ['falim', 'chewing-gum dur', 'chewing gum dur'],   name: 'Falim Gum',          desc: 'Mâchoire & masseters',           emoji: '🍬', color: '#fb923c', query: 'falim chewing gum hard' },
+  { keywords: ['mastic de chios', 'mastic gum'],                 name: 'Mastic de Chios',    desc: 'Résine naturelle pour mâchoire', emoji: '🌿', color: '#34d399', query: 'mastic gum chios natural' },
+  { keywords: ['derma roller', 'microneedling', 'dermastamp'],   name: 'Derma Roller 0.5mm', desc: 'Collagène & texture de peau',    emoji: '⚙️', color: '#60a5fa', query: 'derma roller 0.5mm face' },
+  { keywords: ['rétinol', 'retinol', 'tretinoin', 'trétinoïne'],name: 'Rétinol Sérum',      desc: 'Renouvellement cellulaire',      emoji: '✨', color: '#fbbf24', query: 'retinol serum face anti aging' },
+  { keywords: ['vitamine c', 'vitamin c', 'ce ferulic'],         name: 'Vitamine C Sérum',   desc: 'Éclat & synthèse du collagène',  emoji: '💛', color: '#facc15', query: 'vitamin c serum 15 percent face' },
+  { keywords: ['niacinamide'],                                    name: 'Niacinamide 10%',    desc: 'Pores réduits, teint unifié',    emoji: '💧', color: '#38bdf8', query: 'niacinamide 10 percent serum ordinary' },
+  { keywords: ['aha', 'bha', 'glycolique', 'glycolic', 'exfoliant acide'], name: 'AHA/BHA Exfoliant', desc: 'Lisse la texture en profondeur', emoji: '⚗️', color: '#f472b6', query: 'aha bha exfoliant peeling face ordinary' },
+  { keywords: ['jade roller', 'rouleau de jade', 'face roller'], name: 'Jade Roller',         desc: 'Drainage lymphatique facial',    emoji: '💚', color: '#4ade80', query: 'jade roller face massage' },
+  { keywords: ['peptide', 'peptides', 'copper peptide'],         name: 'Sérum Peptides',      desc: 'Fermeté & régénération',         emoji: '🔬', color: '#c084fc', query: 'copper peptide serum face firming' },
+  { keywords: ['led', 'led rouge', 'omnilux'],                   name: 'Masque LED Rouge',    desc: 'Stimule le collagène',           emoji: '🔴', color: '#ef4444', query: 'led red light therapy mask face' },
+  { keywords: ['spf', 'spf 50', 'protection solaire'],           name: 'SPF 50+ Visage',      desc: 'Protection UV quotidienne',      emoji: '☀️', color: '#fb923c', query: 'spf 50 face sunscreen daily' },
+  { keywords: ['huile de ricin', 'castor oil'],                  name: 'Huile de Ricin',      desc: 'Croissance sourcils & cils',     emoji: '🌾', color: '#84cc16', query: 'castor oil eyebrow growth serum' },
+  { keywords: ['acide hyaluronique', 'hyaluronic acid'],         name: 'Acide Hyaluronique',  desc: 'Hydratation intense',            emoji: '🫧', color: '#67e8f9', query: 'hyaluronic acid serum face hydration' },
 ]
 
 function findProducts(text) {
@@ -199,32 +134,63 @@ function findProducts(text) {
   return AMAZON_PRODUCTS.filter(p => p.keywords.some(kw => lower.includes(kw)))
 }
 
+// ── Parsing du conseil en étapes numérotées ───────────────────────────────────
+function parseConseilSteps(text) {
+  if (!text) return []
+  // Cherche pattern "1. ... 2. ..."
+  const parts = text.split(/(?=\d+\.\s)/).map(s => s.trim()).filter(Boolean)
+  if (parts.length >= 2) {
+    return parts.map(p => p.replace(/^\d+\.\s*/, '').trim())
+  }
+  // Cherche séparation par ". " avec majuscule après
+  const sentences = text.match(/[^.!?]+[.!?]+/g)
+  if (sentences && sentences.length >= 3) {
+    const mid = Math.ceil(sentences.length / 2)
+    return [
+      sentences.slice(0, mid).join(' ').trim(),
+      sentences.slice(mid).join(' ').trim(),
+    ].filter(Boolean)
+  }
+  return [text]
+}
+
+// Extrait l'horizon de résultats du texte
+function extractTimeline(text) {
+  if (!text) return null
+  const m = text.match(/(?:résultats?|visible[s]?|amélioration)[^.]*en\s+([\d–\-àà]+\s+(?:semaines?|mois|jours?))/i)
+    || text.match(/en\s+([\d–\-à]+\s+(?:semaines?|mois|jours?))/i)
+    || text.match(/([\d–\-]+\s+(?:semaines?|mois|jours?)\s+de\s+(?:pratique|résultat))/i)
+  return m ? m[1] : null
+}
+
+// ── Chip produit Amazon (nouveau design) ─────────────────────────────────────
 function ProductChip({ product }) {
+  const url = amazonUrl(product.query)
   return (
-    <a
-      href={product.url}
-      target="_blank"
-      rel="noopener noreferrer"
-      className="flex items-center gap-2.5 rounded-xl px-3 py-2.5"
-      style={{ background: `${product.color}10`, border: `1px solid ${product.color}30`, textDecoration: 'none' }}
+    <a href={url} target="_blank" rel="noopener noreferrer"
       onClick={e => e.stopPropagation()}
-    >
-      <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0 text-lg"
-        style={{ background: `${product.color}20` }}>
+      style={{ textDecoration: 'none' }}
+      className="flex items-center gap-3 rounded-2xl px-3 py-2.5 transition-all active:scale-[0.98]"
+      style={{
+        background: `linear-gradient(135deg, ${product.color}12, ${product.color}06)`,
+        border: `1px solid ${product.color}30`,
+        textDecoration: 'none',
+      }}>
+      {/* Emoji dans un cercle coloré */}
+      <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0 text-xl"
+        style={{ background: `${product.color}18`, border: `1px solid ${product.color}25` }}>
         {product.emoji}
       </div>
+      {/* Infos produit */}
       <div className="flex-1 min-w-0">
-        <p className="text-[12px] font-bold leading-tight truncate" style={{ color: 'rgba(255,255,255,0.92)' }}>
-          {product.name}
-        </p>
-        <p className="text-[10px] leading-tight truncate" style={{ color: 'rgba(255,255,255,0.38)' }}>
-          {product.desc}
-        </p>
+        <p className="text-[13px] font-bold leading-tight" style={{ color: '#fff' }}>{product.name}</p>
+        <p className="text-[10px] mt-0.5 leading-tight" style={{ color: 'rgba(255,255,255,0.38)' }}>{product.desc}</p>
       </div>
-      <div className="shrink-0 flex items-center gap-1 rounded-lg px-2 py-1"
-        style={{ background: 'rgba(255,153,0,0.12)', border: '1px solid rgba(255,153,0,0.28)' }}>
-        <svg width="11" height="11" viewBox="0 0 24 24" fill="#ff9900">
-          <path d="M18.42 14.58c-.39.38-1.02.38-1.41 0L12 9.58l-5.01 5c-.39.39-1.02.39-1.41 0-.39-.39-.39-1.02 0-1.41l5.71-5.72c.39-.39 1.02-.39 1.41 0l5.72 5.72c.39.39.39 1.02 0 1.41z"/>
+      {/* Bouton Amazon */}
+      <div className="shrink-0 flex items-center gap-1.5 rounded-xl px-2.5 py-1.5"
+        style={{ background: 'rgba(255,153,0,0.15)', border: '1px solid rgba(255,153,0,0.35)' }}>
+        <svg width="12" height="12" viewBox="0 0 50 50" fill="#ff9900">
+          <path d="M25 5C14 5 5 14 5 25s9 20 20 20 20-9 20-20S36 5 25 5zm9.5 27.5c-4.5 3-10.5 4.5-15.5 2.5-.5-.2-.1-.6.4-.4 4.5 1.5 9.5.5 13.5-2 .4-.3.8.1.4.4l-.8-.5zM36 31c-.5-.7-3.5-.3-4.8-.2-.4 0-.5-.3-.1-.5 2.3-1.7 6.1-1.2 6.5-.6.5.6-.1 4.5-2.3 6.4-.3.3-.7.1-.5-.2.5-1.3 1.6-4.1 1.2-4.9z"/>
         </svg>
         <span className="text-[10px] font-black" style={{ color: '#ff9900' }}>Amazon</span>
       </div>
@@ -232,10 +198,14 @@ function ProductChip({ product }) {
   )
 }
 
-// ── Carte conseil (accordéon) ─────────────────────────────────────────────
+// ── Carte conseil redessinée ──────────────────────────────────────────────────
 function ConseilCard({ defaut, index }) {
   const [open, setOpen] = useState(index === 0)
-  const zs = zoneStyle(defaut.zone)
+  const zs       = zoneStyle(defaut.zone)
+  const steps    = parseConseilSteps(defaut.conseil)
+  const timeline = extractTimeline(defaut.conseil)
+  const products = findProducts(defaut.conseil)
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }}
@@ -243,51 +213,111 @@ function ConseilCard({ defaut, index }) {
       className="relative overflow-hidden rounded-2xl cursor-pointer"
       onClick={() => setOpen(o => !o)}
       style={{
-        background: open ? `linear-gradient(135deg, ${zs.color}10, rgba(255,255,255,0.02))` : 'rgba(255,255,255,0.03)',
-        border: `1px solid ${open ? zs.color + '40' : 'rgba(255,255,255,0.07)'}`,
+        background: open
+          ? `linear-gradient(160deg, ${zs.color}12 0%, rgba(10,8,14,0.98) 100%)`
+          : 'rgba(255,255,255,0.025)',
+        border: `1px solid ${open ? zs.color + '45' : 'rgba(255,255,255,0.07)'}`,
         transition: 'all 0.3s ease',
       }}>
-      <div className="absolute left-0 top-0 bottom-0 w-1 rounded-l-2xl"
-        style={{ background: zs.color, opacity: open ? 1 : 0.4, transition: 'opacity 0.3s' }} />
-      <div className="pl-4 pr-4 pt-3.5 pb-3">
-        <div className="flex items-start justify-between gap-3">
-          <div className="flex items-start gap-2.5 flex-1 min-w-0">
-            <span className="text-base leading-none mt-0.5 shrink-0">{zs.icon}</span>
+
+      {/* Barre latérale colorée */}
+      <div className="absolute left-0 top-0 bottom-0 w-[3px] rounded-l-2xl"
+        style={{ background: `linear-gradient(to bottom, ${zs.color}, ${zs.color}55)`, opacity: open ? 1 : 0.45, transition: 'opacity 0.3s' }} />
+
+      {/* Header */}
+      <div className="pl-5 pr-4 pt-3.5 pb-3.5">
+        <div className="flex items-center justify-between gap-3">
+          <div className="flex items-center gap-3 flex-1 min-w-0">
+            {/* Icône zone dans un badge */}
+            <div className="w-8 h-8 rounded-xl flex items-center justify-center shrink-0"
+              style={{ background: `${zs.color}18`, border: `1px solid ${zs.color}30` }}>
+              <span style={{ fontSize: 15 }}>{zs.icon}</span>
+            </div>
             <div className="flex-1 min-w-0">
-              <span className="text-[10px] font-black uppercase tracking-widest" style={{ color: zs.color }}>{defaut.zone}</span>
-              <p className="text-sm font-semibold leading-snug mt-0.5" style={{ color: 'rgba(255,255,255,0.9)' }}>{defaut.probleme}</p>
+              <div className="flex items-center gap-2 flex-wrap">
+                <span className="text-[9px] font-black uppercase tracking-[0.15em] px-1.5 py-0.5 rounded-md"
+                  style={{ background: `${zs.color}18`, color: zs.color }}>
+                  {defaut.zone}
+                </span>
+                {!open && timeline && (
+                  <span className="text-[9px] font-semibold px-1.5 py-0.5 rounded-md"
+                    style={{ background: 'rgba(255,255,255,0.05)', color: 'rgba(255,255,255,0.3)' }}>
+                    ⏱ {timeline}
+                  </span>
+                )}
+              </div>
+              <p className="text-[13px] font-bold leading-snug mt-1" style={{ color: 'rgba(255,255,255,0.92)' }}>
+                {defaut.probleme}
+              </p>
             </div>
           </div>
+          {/* Chevron */}
           <motion.div animate={{ rotate: open ? 180 : 0 }} transition={{ duration: 0.25 }}
-            className="shrink-0 w-6 h-6 rounded-full flex items-center justify-center mt-0.5"
-            style={{ background: open ? `${zs.color}22` : 'rgba(255,255,255,0.06)' }}>
-            <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
-              <path d="M2 4L5 7L8 4" stroke={open ? zs.color : 'rgba(255,255,255,0.4)'} strokeWidth="1.5" strokeLinecap="round"/>
+            className="shrink-0 w-7 h-7 rounded-full flex items-center justify-center"
+            style={{ background: open ? `${zs.color}22` : 'rgba(255,255,255,0.05)', border: `1px solid ${open ? zs.color + '35' : 'rgba(255,255,255,0.08)'}` }}>
+            <svg width="11" height="11" viewBox="0 0 12 12" fill="none">
+              <path d="M2.5 4.5L6 8L9.5 4.5" stroke={open ? zs.color : 'rgba(255,255,255,0.35)'} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
             </svg>
           </motion.div>
         </div>
+
+        {/* Contenu dépliable */}
         <AnimatePresence>
           {open && (
             <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }}
-              exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
+              exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
               className="overflow-hidden">
-              <div className="mt-3 rounded-xl px-3 py-3"
-                style={{ background: `${zs.color}0d`, border: `1px solid ${zs.color}22` }}>
-                <div className="flex items-start gap-2">
-                  <span style={{ color: zs.color, fontSize: 13, marginTop: 1 }}>✦</span>
-                  <p className="text-sm leading-relaxed" style={{ color: 'rgba(255,255,255,0.85)' }}>{defaut.conseil}</p>
+
+              {/* Timeline badge */}
+              {timeline && (
+                <div className="mt-3 flex items-center gap-2">
+                  <div className="flex items-center gap-1.5 rounded-full px-3 py-1"
+                    style={{ background: `${zs.color}15`, border: `1px solid ${zs.color}30` }}>
+                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke={zs.color} strokeWidth="2" strokeLinecap="round">
+                      <circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/>
+                    </svg>
+                    <span className="text-[10px] font-bold" style={{ color: zs.color }}>
+                      Résultats visibles en {timeline}
+                    </span>
+                  </div>
                 </div>
+              )}
+
+              {/* Étapes numérotées */}
+              <div className="mt-3 space-y-2.5">
+                {steps.map((step, si) => (
+                  <div key={si} className="flex items-start gap-3 rounded-xl px-3 py-2.5"
+                    style={{ background: `${zs.color}08`, border: `1px solid ${zs.color}18` }}>
+                    {steps.length > 1 && (
+                      <div className="w-5 h-5 rounded-full shrink-0 flex items-center justify-center mt-0.5"
+                        style={{ background: `${zs.color}25`, border: `1px solid ${zs.color}40` }}>
+                        <span className="text-[9px] font-black" style={{ color: zs.color }}>{si + 1}</span>
+                      </div>
+                    )}
+                    {steps.length === 1 && (
+                      <span style={{ color: zs.color, fontSize: 12, marginTop: 2, flexShrink: 0 }}>✦</span>
+                    )}
+                    <p className="text-[12px] leading-relaxed flex-1" style={{ color: 'rgba(255,255,255,0.82)' }}>
+                      {step}
+                    </p>
+                  </div>
+                ))}
               </div>
-              {/* Produits Amazon détectés */}
-              {findProducts(defaut.conseil).length > 0 && (
-                <div className="mt-3">
-                  <p className="text-[9px] font-black uppercase tracking-widest mb-2 px-1"
-                    style={{ color: 'rgba(255,255,255,0.25)' }}>
-                    Produits recommandés
-                  </p>
-                  <div className="flex flex-col gap-1.5">
-                    {findProducts(defaut.conseil).map((p, i) => (
-                      <ProductChip key={i} product={p} />
+
+              {/* Produits Amazon */}
+              {products.length > 0 && (
+                <div className="mt-4">
+                  <div className="flex items-center gap-2 mb-2">
+                    <div className="h-px flex-1" style={{ background: 'rgba(255,255,255,0.06)' }} />
+                    <span className="text-[9px] font-black uppercase tracking-[0.18em]"
+                      style={{ color: 'rgba(255,255,255,0.22)' }}>
+                      Produits recommandés
+                    </span>
+                    <div className="h-px flex-1" style={{ background: 'rgba(255,255,255,0.06)' }} />
+                  </div>
+                  <div className="flex flex-col gap-2">
+                    {products.map((p, pi) => (
+                      <ProductChip key={pi} product={p} />
                     ))}
                   </div>
                 </div>
