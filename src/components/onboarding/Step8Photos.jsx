@@ -50,37 +50,25 @@ function checkImageQuality(dataUrl) {
   })
 }
 
-// ── Illustration visage de face (SVG femme) ───────────────────────────────────
+// ── Illustration visage de face (photo femme en gris) ────────────────────────
 function FrontFaceIllustration() {
   return (
-    <svg viewBox="0 0 200 260" width="160" height="210" fill="none" xmlns="http://www.w3.org/2000/svg">
-      {/* Cou */}
-      <path d="M84 195 Q84 215 70 240 L130 240 Q116 215 116 195Z" fill="rgba(255,255,255,0.06)" stroke="rgba(255,255,255,0.12)" strokeWidth="1"/>
-      {/* Visage */}
-      <ellipse cx="100" cy="115" rx="62" ry="78" fill="rgba(255,255,255,0.05)" stroke={PINK_A(0.5)} strokeWidth="1.5"/>
-      {/* Cheveux (longs) */}
-      <path d="M38 100 Q32 60 52 35 Q70 12 100 10 Q130 12 148 35 Q168 60 162 100 Q155 70 148 55 Q130 28 100 26 Q70 28 52 55 Q45 70 38 100Z" fill="rgba(255,255,255,0.08)" stroke="rgba(255,255,255,0.1)" strokeWidth="1"/>
-      <path d="M38 100 Q30 130 32 160 Q34 155 36 145 Q38 160 40 175" stroke="rgba(255,255,255,0.07)" strokeWidth="8" strokeLinecap="round"/>
-      <path d="M162 100 Q170 130 168 160 Q166 155 164 145 Q162 160 160 175" stroke="rgba(255,255,255,0.07)" strokeWidth="8" strokeLinecap="round"/>
-      {/* Sourcils */}
-      <path d="M72 97 Q80 93 90 95" stroke="rgba(255,255,255,0.4)" strokeWidth="1.8" strokeLinecap="round"/>
-      <path d="M110 95 Q120 93 128 97" stroke="rgba(255,255,255,0.4)" strokeWidth="1.8" strokeLinecap="round"/>
-      {/* Yeux */}
-      <ellipse cx="83" cy="108" rx="10" ry="6" fill="none" stroke="rgba(255,255,255,0.35)" strokeWidth="1.5"/>
-      <circle cx="83" cy="108" r="3.5" fill="rgba(255,255,255,0.2)"/>
-      <ellipse cx="117" cy="108" rx="10" ry="6" fill="none" stroke="rgba(255,255,255,0.35)" strokeWidth="1.5"/>
-      <circle cx="117" cy="108" r="3.5" fill="rgba(255,255,255,0.2)"/>
-      {/* Nez */}
-      <path d="M100 112 L97 135 Q100 138 103 135 L100 112Z" stroke="rgba(255,255,255,0.2)" strokeWidth="1.2" fill="none" strokeLinecap="round"/>
-      {/* Bouche */}
-      <path d="M88 152 Q100 160 112 152" stroke="rgba(255,255,255,0.3)" strokeWidth="1.8" fill="none" strokeLinecap="round"/>
-      <path d="M88 152 Q100 150 112 152" stroke="rgba(255,255,255,0.15)" strokeWidth="1" fill="none"/>
-      {/* Oreilles */}
-      <ellipse cx="38" cy="120" rx="6" ry="9" fill="rgba(255,255,255,0.05)" stroke="rgba(255,255,255,0.1)" strokeWidth="1"/>
-      <ellipse cx="162" cy="120" rx="6" ry="9" fill="rgba(255,255,255,0.05)" stroke="rgba(255,255,255,0.1)" strokeWidth="1"/>
-      {/* Indice "FACE" */}
-      <text x="100" y="250" textAnchor="middle" fill={PINK_A(0.6)} fontSize="10" fontWeight="700" letterSpacing="3">FACE</text>
-    </svg>
+    <div className="relative w-full h-full flex items-end justify-center overflow-hidden">
+      <img
+        src="/face-reference.png"
+        alt="face reference"
+        style={{
+          width: '100%',
+          height: '100%',
+          objectFit: 'cover',
+          objectPosition: 'center top',
+          filter: 'grayscale(100%) brightness(0.6) contrast(1.1)',
+          opacity: 0.85,
+        }}
+      />
+      <span className="absolute bottom-3 text-[10px] font-black tracking-[3px]"
+        style={{ color: PINK_A(0.7) }}>FACE</span>
+    </div>
   )
 }
 
