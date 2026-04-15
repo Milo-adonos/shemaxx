@@ -2418,6 +2418,269 @@ function ExtrasTenOutOfTen({ onBack }) {
   )
 }
 
+// ── Coach IA (chat beauté) ────────────────────────────────────────────────────
+const COACH_MAX_MESSAGES = 20   // ~$0.003 par utilisatrice, bien sous 0,50€
+const COACH_STORAGE_KEY  = 'shemaxx_coach_count'
+const COACH_HIST_KEY     = 'shemaxx_coach_history'
+
+function getCoachCount() {
+  try { return parseInt(localStorage.getItem(COACH_STORAGE_KEY) || '0', 10) } catch { return 0 }
+}
+function setCoachCount(n) {
+  try { localStorage.setItem(COACH_STORAGE_KEY, String(n)) } catch {}
+}
+function getCoachHistory() {
+  try { return JSON.parse(localStorage.getItem(COACH_HIST_KEY) || '[]') } catch { return [] }
+}
+function saveCoachHistory(h) {
+  try { localStorage.setItem(COACH_HIST_KEY, JSON.stringify(h.slice(-12))) } catch {}
+}
+
+const SUGGESTIONS = [
+  'Comment améliorer ma mâchoire naturellement ?',
+  'Quelle routine pour une peau lumineuse ?',
+  'Comment réduire mes cernes sans maquillage ?',
+  'Quels aliments pour stimuler mon collagène ?',
+  'Comment faire du mewing correctement ?',
+  'Gua sha : comment l\'utiliser pour le visage ?',
+]
+
+function ExtrasAICoach({ onBack }) {
+  const t = useT()
+  const lang = t === useT() ? (navigator.language?.startsWith('en') ? 'en' : 'fr') : 'fr'
+  const bottomRef   = useRef(null)
+  const inputRef    = useRef(null)
+
+  const [messages,  setMessages]  = useState(() => {
+    const hist = getCoachHistory()
+    return hist.length > 0 ? hist : []
+  })
+  const [input,     setInput]     = useState('')
+  const [loading,   setLoading]   = useState(false)
+  const [count,     setCount]     = useState(getCoachCount)
+  const [showSugg,  setShowSugg]  = useState(true)
+
+  const remaining = COACH_MAX_MESSAGES - count
+  const exhausted = remaining <= 0
+
+  useEffect(() => {
+    bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
+  }, [messages, loading])
+
+  const sendMessage = async (text) => {
+    const msg = (text || input).trim()
+    if (!msg || loading || exhausted) return
+    setInput('')
+    setShowSugg(false)
+
+    const newCount = count + 1
+    setCount(newCount)
+    setCoachCount(newCount)
+
+    const userMsg  = { role: 'user',      content: msg }
+    const next     = [...messages, userMsg]
+    setMessages(next)
+    saveCoachHistory(next)
+    setLoading(true)
+
+    try {
+      const history = next.slice(-8).map(m => ({ role: m.role, content: m.content }))
+      const resp = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/ai-coach`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'apikey': import.meta.env.VITE_SUPABASE_ANON_KEY },
+          body: JSON.stringify({ message: msg, history: history.slice(0, -1), lang }),
+        }
+      )
+      const data = await resp.json()
+      const reply = data.reply || '⚠️ Une erreur est survenue, réessaie.'
+      const withReply = [...next, { role: 'assistant', content: reply }]
+      setMessages(withReply)
+      saveCoachHistory(withReply)
+    } catch {
+      const withErr = [...next, { role: 'assistant', content: '⚠️ Connexion interrompue, réessaie.' }]
+      setMessages(withErr)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  return (
+    <div className="flex flex-col h-full" style={{ background: '#050508', minHeight: '100%' }}>
+
+      {/* Header */}
+      <div className="shrink-0 flex items-center gap-3 px-4 pt-5 pb-4"
+        style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+        <button onClick={onBack}
+          className="w-9 h-9 rounded-full flex items-center justify-center shrink-0"
+          style={{ background: 'rgba(255,255,255,0.07)' }}>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.7)" strokeWidth="2.5" strokeLinecap="round">
+            <path d="M15 18l-6-6 6-6"/>
+          </svg>
+        </button>
+        <div className="flex-1">
+          <div className="flex items-center gap-2">
+            <div className="w-2 h-2 rounded-full" style={{ background: '#34d399' }} />
+            <p className="text-base font-black text-white">Shemaxx Coach</p>
+          </div>
+          <p className="text-[10px]" style={{ color: 'rgba(255,255,255,0.35)' }}>
+            Experte beauté & looksmaxxing
+          </p>
+        </div>
+        {/* Compteur */}
+        <div className="flex flex-col items-end gap-1">
+          <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full"
+            style={{ background: remaining <= 5 ? 'rgba(239,68,68,0.12)' : 'rgba(52,211,153,0.1)', border: `1px solid ${remaining <= 5 ? 'rgba(239,68,68,0.25)' : 'rgba(52,211,153,0.2)'}` }}>
+            <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke={remaining <= 5 ? '#f87171' : '#34d399'} strokeWidth="2.5" strokeLinecap="round">
+              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+            </svg>
+            <span className="text-[10px] font-black" style={{ color: remaining <= 5 ? '#f87171' : '#34d399' }}>
+              {remaining} msg
+            </span>
+          </div>
+        </div>
+      </div>
+
+      {/* Messages */}
+      <div className="flex-1 overflow-y-auto no-scrollbar px-4 py-4 space-y-3">
+
+        {/* Message de bienvenue */}
+        {messages.length === 0 && (
+          <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}>
+            <div className="flex items-start gap-3">
+              <div className="w-8 h-8 rounded-full shrink-0 flex items-center justify-center text-sm"
+                style={{ background: 'linear-gradient(135deg, #cc3c69, #e8608a)' }}>✦</div>
+              <div className="rounded-2xl rounded-tl-sm px-4 py-3 max-w-[82%]"
+                style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.09)' }}>
+                <p className="text-sm leading-relaxed" style={{ color: 'rgba(255,255,255,0.88)' }}>
+                  Salut ! Je suis ton coach beauté Shemaxx 👋 Pose-moi n'importe quelle question sur ton visage, tes soins, le looksmaxxing ou ton alimentation beauté. Je te donne des conseils 100% naturels et concrets !
+                </p>
+              </div>
+            </div>
+          </motion.div>
+        )}
+
+        {/* Historique */}
+        {messages.map((msg, i) => (
+          <motion.div key={i}
+            initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.2 }}
+            className={`flex items-end gap-2 ${msg.role === 'user' ? 'flex-row-reverse' : 'flex-row'}`}>
+            {msg.role === 'assistant' && (
+              <div className="w-7 h-7 rounded-full shrink-0 flex items-center justify-center text-xs mb-0.5"
+                style={{ background: 'linear-gradient(135deg, #cc3c69, #e8608a)' }}>✦</div>
+            )}
+            <div className={`rounded-2xl px-4 py-2.5 max-w-[80%] ${msg.role === 'user' ? 'rounded-br-sm' : 'rounded-bl-sm'}`}
+              style={{
+                background: msg.role === 'user'
+                  ? 'linear-gradient(135deg, #cc3c69, #e8608a)'
+                  : 'rgba(255,255,255,0.06)',
+                border: msg.role === 'user' ? 'none' : '1px solid rgba(255,255,255,0.09)',
+              }}>
+              <p className="text-sm leading-relaxed" style={{ color: msg.role === 'user' ? '#fff' : 'rgba(255,255,255,0.88)' }}>
+                {msg.content}
+              </p>
+            </div>
+          </motion.div>
+        ))}
+
+        {/* Indicateur "en train d'écrire" */}
+        {loading && (
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex items-end gap-2">
+            <div className="w-7 h-7 rounded-full shrink-0 flex items-center justify-center text-xs"
+              style={{ background: 'linear-gradient(135deg, #cc3c69, #e8608a)' }}>✦</div>
+            <div className="rounded-2xl rounded-bl-sm px-4 py-3"
+              style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.09)' }}>
+              <div className="flex gap-1.5 items-center">
+                {[0,1,2].map(i => (
+                  <motion.div key={i} className="w-1.5 h-1.5 rounded-full"
+                    style={{ background: '#cc3c69' }}
+                    animate={{ scale: [1, 1.5, 1], opacity: [0.4, 1, 0.4] }}
+                    transition={{ duration: 0.8, repeat: Infinity, delay: i * 0.2 }} />
+                ))}
+              </div>
+            </div>
+          </motion.div>
+        )}
+
+        {/* Épuisé */}
+        {exhausted && (
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}
+            className="text-center py-4 px-6 rounded-2xl mx-2"
+            style={{ background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.18)' }}>
+            <p className="text-sm font-bold text-white mb-1">Limite atteinte</p>
+            <p className="text-xs" style={{ color: 'rgba(255,255,255,0.4)' }}>
+              Tu as utilisé tes {COACH_MAX_MESSAGES} messages inclus. Reviens demain !
+            </p>
+          </motion.div>
+        )}
+
+        <div ref={bottomRef} />
+      </div>
+
+      {/* Suggestions rapides */}
+      <AnimatePresence>
+        {showSugg && messages.length === 0 && !exhausted && (
+          <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
+            className="shrink-0 px-4 pb-2">
+            <p className="text-[10px] font-black uppercase tracking-widest mb-2"
+              style={{ color: 'rgba(255,255,255,0.25)' }}>Questions fréquentes</p>
+            <div className="flex gap-2 overflow-x-auto no-scrollbar pb-1">
+              {SUGGESTIONS.map((s, i) => (
+                <button key={i} onClick={() => sendMessage(s)}
+                  className="shrink-0 px-3 py-2 rounded-full text-[11px] font-semibold whitespace-nowrap"
+                  style={{ background: 'rgba(204,60,105,0.1)', border: '1px solid rgba(204,60,105,0.25)', color: 'rgba(255,255,255,0.7)' }}>
+                  {s}
+                </button>
+              ))}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Zone de saisie */}
+      <div className="shrink-0 px-4 pb-6 pt-3"
+        style={{ borderTop: '1px solid rgba(255,255,255,0.06)' }}>
+        <div className="flex gap-2 items-end">
+          <input
+            ref={inputRef}
+            value={input}
+            onChange={e => setInput(e.target.value)}
+            onKeyDown={e => e.key === 'Enter' && !e.shiftKey && sendMessage()}
+            disabled={loading || exhausted}
+            placeholder={exhausted ? 'Limite atteinte' : 'Pose ta question beauté…'}
+            className="flex-1 rounded-2xl px-4 py-3 text-sm outline-none"
+            style={{
+              background: 'rgba(255,255,255,0.05)',
+              border: '1px solid rgba(255,255,255,0.1)',
+              color: '#fff',
+              opacity: exhausted ? 0.4 : 1,
+            }}
+          />
+          <button
+            onClick={() => sendMessage()}
+            disabled={!input.trim() || loading || exhausted}
+            className="w-11 h-11 rounded-2xl flex items-center justify-center shrink-0 transition-all"
+            style={{
+              background: input.trim() && !loading && !exhausted
+                ? 'linear-gradient(135deg, #cc3c69, #e8608a)'
+                : 'rgba(255,255,255,0.07)',
+              boxShadow: input.trim() && !loading && !exhausted ? '0 0 20px rgba(204,60,105,0.4)' : 'none',
+            }}>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" style={{ opacity: input.trim() && !loading && !exhausted ? 1 : 0.3 }}>
+              <line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/>
+            </svg>
+          </button>
+        </div>
+        <p className="text-center text-[9px] mt-2" style={{ color: 'rgba(255,255,255,0.18)' }}>
+          Conseils 100% naturels • Pas de maquillage ni chirurgie
+        </p>
+      </div>
+    </div>
+  )
+}
+
 // ── TabExtras principal ───────────────────────────────────────────────────────
 function TabExtras({ scores, pseudo, onClose, pendingPayment }) {
   const t = useT()
@@ -2438,8 +2701,21 @@ function TabExtras({ scores, pseudo, onClose, pendingPayment }) {
   if (activeExtra === 'group')   return <ExtrasGroupRanking onBack={() => setActiveExtra(null)} />
   if (activeExtra === 'style')   return <ExtrasStyleTransform onBack={() => setActiveExtra(null)} />
   if (activeExtra === 'ten')     return <ExtrasTenOutOfTen onBack={() => setActiveExtra(null)} />
+  if (activeExtra === 'coach')   return <ExtrasAICoach onBack={() => setActiveExtra(null)} />
+
+  const coachRemaining = COACH_MAX_MESSAGES - getCoachCount()
 
   const TOOLS = [
+    {
+      id: 'coach',
+      title: 'Coach IA Beauté',
+      desc:  'Pose toutes tes questions beauté & looksmaxxing à ton coach IA personnel',
+      color: '#34d399',
+      gradient: 'linear-gradient(135deg,rgba(52,211,153,0.12),rgba(52,211,153,0.03))',
+      border: 'rgba(52,211,153,0.2)',
+      free: true,
+      badge: `${coachRemaining} msg restants`,
+    },
     {
       id: 'group',
       title: t.results.extras.tools[0].title,
@@ -2467,6 +2743,7 @@ function TabExtras({ scores, pseudo, onClose, pendingPayment }) {
   ]
 
   const handleExtraClick = (id) => {
+    if (id === 'coach') { setActiveExtra('coach'); return }
     setPayErr(null)
     setPaywallFor(id)
   }
@@ -2513,8 +2790,20 @@ function TabExtras({ scores, pseudo, onClose, pendingPayment }) {
                 <p className="text-xs leading-snug" style={{ color: 'rgba(255,255,255,0.4)' }}>{t.desc}</p>
               </div>
               <div className="flex flex-col items-end gap-0.5 shrink-0">
-                <span className="text-xs font-black" style={{ color: t.color }}>3,99€</span>
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeOpacity="0.25" strokeLinecap="round"><polyline points="9 18 15 12 9 6"/></svg>
+                {t.free ? (
+                  <>
+                    <span className="text-[9px] font-black px-1.5 py-0.5 rounded-full"
+                      style={{ background: 'rgba(52,211,153,0.15)', color: '#34d399', border: '1px solid rgba(52,211,153,0.3)' }}>
+                      INCLUS
+                    </span>
+                    <span className="text-[9px]" style={{ color: 'rgba(255,255,255,0.3)' }}>{t.badge}</span>
+                  </>
+                ) : (
+                  <>
+                    <span className="text-xs font-black" style={{ color: t.color }}>3,99€</span>
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeOpacity="0.25" strokeLinecap="round"><polyline points="9 18 15 12 9 6"/></svg>
+                  </>
+                )}
               </div>
             </div>
           </motion.button>
