@@ -69,32 +69,22 @@ function FrontFaceIllustration() {
   )
 }
 
-// ── Illustration profil de côté (SVG femme) ───────────────────────────────────
+// ── Illustration profil de côté (photo femme en gris) ────────────────────────
 function SideFaceIllustration() {
   return (
-    <svg viewBox="0 0 200 260" width="160" height="210" fill="none" xmlns="http://www.w3.org/2000/svg">
-      {/* Cou */}
-      <path d="M85 195 Q80 215 72 240 L110 240 Q108 215 105 195Z" fill="rgba(255,255,255,0.06)" stroke="rgba(255,255,255,0.12)" strokeWidth="1"/>
-      {/* Visage profil */}
-      <path d="M145 60 Q155 80 158 110 Q160 140 150 165 Q138 190 120 195 Q100 198 85 195 L85 160 Q95 165 105 158 Q115 148 118 135 Q122 120 118 105 Q112 88 100 80 Q90 72 85 65 Q95 40 115 35 Q135 38 145 60Z"
-        fill="rgba(255,255,255,0.05)" stroke={PINK_A(0.5)} strokeWidth="1.5"/>
-      {/* Cheveux arrière */}
-      <path d="M85 65 Q65 55 52 80 Q42 105 45 140 Q48 165 60 185 Q70 200 85 195"
-        fill="rgba(255,255,255,0.07)" stroke="rgba(255,255,255,0.1)" strokeWidth="1"/>
-      {/* Oeil */}
-      <ellipse cx="132" cy="100" rx="8" ry="5" fill="none" stroke="rgba(255,255,255,0.35)" strokeWidth="1.5"/>
-      <circle cx="132" cy="100" r="2.5" fill="rgba(255,255,255,0.2)"/>
-      {/* Sourcil */}
-      <path d="M122 88 Q132 84 142 88" stroke="rgba(255,255,255,0.4)" strokeWidth="1.8" strokeLinecap="round"/>
-      {/* Nez */}
-      <path d="M152 120 Q160 130 155 140 Q150 145 145 143" stroke="rgba(255,255,255,0.3)" strokeWidth="1.5" fill="none" strokeLinecap="round"/>
-      {/* Bouche */}
-      <path d="M135 160 Q142 162 148 158" stroke="rgba(255,255,255,0.3)" strokeWidth="1.8" fill="none" strokeLinecap="round"/>
-      {/* Oreille */}
-      <ellipse cx="88" cy="118" rx="5" ry="8" fill="rgba(255,255,255,0.05)" stroke="rgba(255,255,255,0.15)" strokeWidth="1"/>
-      {/* Indice */}
-      <text x="100" y="250" textAnchor="middle" fill={PINK_A(0.6)} fontSize="10" fontWeight="700" letterSpacing="3">PROFIL</text>
-    </svg>
+    <img
+      src="/side-reference.png"
+      alt="side reference"
+      style={{
+        position: 'absolute',
+        inset: 0,
+        width: '100%',
+        height: '100%',
+        objectFit: 'cover',
+        objectPosition: 'center top',
+        filter: 'grayscale(100%) brightness(0.55) contrast(1.15)',
+      }}
+    />
   )
 }
 
