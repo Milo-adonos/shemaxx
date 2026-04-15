@@ -370,7 +370,7 @@ export default function Step8Photos({ onNext, onNextUpload }) {
       <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.95 }}
         className="flex items-center gap-3 my-3">
         <div className="flex-1 h-px" style={{ background: 'rgba(255,255,255,0.08)' }} />
-        <span className="text-xs font-semibold" style={{ color: 'rgba(255,255,255,0.25)' }}>Ou</span>
+        <span className="text-xs font-semibold" style={{ color: 'rgba(255,255,255,0.25)' }}>Or</span>
         <div className="flex-1 h-px" style={{ background: 'rgba(255,255,255,0.08)' }} />
       </motion.div>
 
