@@ -2760,6 +2760,51 @@ function TabExtras({ scores, pseudo, onClose, pendingPayment }) {
     }
   }
 
+  const coachTool = TOOLS.find(tool => tool.id === 'coach')
+  const paidTools = TOOLS.filter(tool => !tool.free)
+
+  const renderTool = (tool, i) => (
+    <motion.button key={tool.id}
+      initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: 0.05 + i * 0.08 }}
+      whileTap={{ scale: 0.97 }}
+      onClick={() => handleExtraClick(tool.id)}
+      className="w-full text-left rounded-2xl p-4"
+      style={{ background: tool.gradient, border: `1px solid ${tool.border}` }}>
+      <div className="flex items-center gap-4">
+        <div className="w-12 h-12 rounded-xl flex items-center justify-center shrink-0"
+          style={{ background: `${tool.color}15`, border: `1px solid ${tool.color}25` }}>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={tool.color} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+            {tool.id === 'coach'
+              ? <><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></>
+              : <><circle cx="12" cy="12" r="3"/><path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/></>
+            }
+          </svg>
+        </div>
+        <div className="flex-1 min-w-0">
+          <p className="text-sm font-black text-white mb-0.5">{tool.title}</p>
+          <p className="text-xs leading-snug" style={{ color: 'rgba(255,255,255,0.4)' }}>{tool.desc}</p>
+        </div>
+        <div className="flex flex-col items-end gap-0.5 shrink-0">
+          {tool.free ? (
+            <>
+              <span className="text-[9px] font-black px-1.5 py-0.5 rounded-full"
+                style={{ background: 'rgba(52,211,153,0.15)', color: '#34d399', border: '1px solid rgba(52,211,153,0.3)' }}>
+                INCLUS
+              </span>
+              <span className="text-[9px]" style={{ color: 'rgba(255,255,255,0.3)' }}>{tool.badge}</span>
+            </>
+          ) : (
+            <>
+              <span className="text-xs font-black" style={{ color: tool.color }}>3,99€</span>
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeOpacity="0.25" strokeLinecap="round"><polyline points="9 18 15 12 9 6"/></svg>
+            </>
+          )}
+        </div>
+      </div>
+    </motion.button>
+  )
+
   return (
     <div className="px-4 pt-4 pb-6">
       <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="mb-5">
@@ -2769,45 +2814,22 @@ function TabExtras({ scores, pseudo, onClose, pendingPayment }) {
         </p>
       </motion.div>
 
+      {/* Coach IA — section gratuite */}
+      <div className="mb-4">
+        {coachTool && renderTool(coachTool, 0)}
+      </div>
+
+      {/* Séparateur */}
+      <div className="flex items-center gap-3 mb-4">
+        <div className="flex-1 h-px" style={{ background: 'rgba(255,255,255,0.08)' }} />
+        <span className="text-[10px] font-black uppercase tracking-widest"
+          style={{ color: 'rgba(255,255,255,0.22)' }}>Outils payants</span>
+        <div className="flex-1 h-px" style={{ background: 'rgba(255,255,255,0.08)' }} />
+      </div>
+
       <div className="space-y-3">
-        {TOOLS.map((t, i) => (
-          <motion.button key={t.id}
-            initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.05 + i * 0.08 }}
-            whileTap={{ scale: 0.97 }}
-            onClick={() => handleExtraClick(t.id)}
-            className="w-full text-left rounded-2xl p-4"
-            style={{ background: t.gradient, border: `1px solid ${t.border}` }}>
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 rounded-xl flex items-center justify-center shrink-0"
-                style={{ background: `${t.color}15`, border: `1px solid ${t.color}25` }}>
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={t.color} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-                  <circle cx="12" cy="12" r="3"/><path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/>
-                </svg>
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-black text-white mb-0.5">{t.title}</p>
-                <p className="text-xs leading-snug" style={{ color: 'rgba(255,255,255,0.4)' }}>{t.desc}</p>
-              </div>
-              <div className="flex flex-col items-end gap-0.5 shrink-0">
-                {t.free ? (
-                  <>
-                    <span className="text-[9px] font-black px-1.5 py-0.5 rounded-full"
-                      style={{ background: 'rgba(52,211,153,0.15)', color: '#34d399', border: '1px solid rgba(52,211,153,0.3)' }}>
-                      INCLUS
-                    </span>
-                    <span className="text-[9px]" style={{ color: 'rgba(255,255,255,0.3)' }}>{t.badge}</span>
-                  </>
-                ) : (
-                  <>
-                    <span className="text-xs font-black" style={{ color: t.color }}>3,99€</span>
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeOpacity="0.25" strokeLinecap="round"><polyline points="9 18 15 12 9 6"/></svg>
-                  </>
-                )}
-              </div>
-            </div>
-          </motion.button>
-        ))}
+        {paidTools.map((tool, i) => renderTool(tool, i + 1))}
+
       </div>
 
       {/* ── Modal paywall extra ── */}
