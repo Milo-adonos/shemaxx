@@ -2809,9 +2809,6 @@ function TabExtras({ scores, pseudo, onClose, pendingPayment }) {
     <div className="px-4 pt-4 pb-6">
       <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="mb-5">
         <h2 className="text-xl font-black text-white mb-1">{t.results.extras.title}</h2>
-        <p className="text-sm" style={{ color: 'rgba(255,255,255,0.35)' }}>
-          {t.results.extras.subtitle}
-        </p>
       </motion.div>
 
       {/* Coach IA — section gratuite */}
