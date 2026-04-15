@@ -30,9 +30,9 @@ export default function Step5Potential({ onNext, faceScores = null }) {
 
   return (
     <StepLayout
-      title="Nous voyons ton potentiel"
-      subtitle="Avec les bons conseils, tu peux révéler ce qui est déjà en toi."
-      cta={ready ? (t.step5?.cta ?? 'Voir mon analyse complète →') : null}
+      title="We see your potential"
+      subtitle="With the right guidance, you can reveal what's already within you."
+      cta={ready ? (t.step5?.cta ?? 'See my full analysis →') : null}
       onCta={onNext}
     >
       {/* ── Jauge verticale ── */}
@@ -50,7 +50,7 @@ export default function Step5Potential({ onNext, faceScores = null }) {
               className="flex flex-col items-center gap-1"
             >
               <span className="text-[11px] font-bold uppercase tracking-widest"
-                style={{ color: PINK }}>Ton score potentiel</span>
+                style={{ color: PINK }}>Your potential score</span>
               <span className="text-3xl font-black" style={{ color: PINK, textShadow: `0 0 20px ${PINK_A(0.5)}` }}>
                 {potentialScore}
               </span>
@@ -118,7 +118,7 @@ export default function Step5Potential({ onNext, faceScores = null }) {
                 {currentScore}
               </span>
               <span className="text-[11px] font-bold uppercase tracking-widest"
-                style={{ color: 'rgba(255,255,255,0.35)' }}>Ton score actuel</span>
+                style={{ color: 'rgba(255,255,255,0.35)' }}>Your current score</span>
             </motion.div>
           </div>
 
@@ -135,14 +135,14 @@ export default function Step5Potential({ onNext, faceScores = null }) {
                 +{gain} points
               </p>
               <p className="text-xs leading-relaxed" style={{ color: 'rgba(255,255,255,0.55)' }}>
-                de progression potentielle identifiée
+                potential progression points identified
               </p>
             </div>
 
             <div className="rounded-2xl px-3 py-3"
               style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)' }}>
               <p className="text-xs leading-relaxed" style={{ color: 'rgba(255,255,255,0.45)' }}>
-                D'après ton analyse faciale, tu as un fort potentiel d'amélioration.
+                Based on your facial analysis, you have strong improvement potential.
               </p>
             </div>
           </motion.div>
@@ -156,7 +156,7 @@ export default function Step5Potential({ onNext, faceScores = null }) {
           className="text-xs text-center leading-relaxed px-4"
           style={{ color: 'rgba(255,255,255,0.35)' }}
         >
-          Ton plan personnalisé va te montrer exactement comment y arriver.
+          Your personalized plan will show you exactly how to get there.
         </motion.p>
       </div>
 
@@ -167,7 +167,7 @@ export default function Step5Potential({ onNext, faceScores = null }) {
           className="text-xs text-center mt-6"
           style={{ color: 'rgba(255,255,255,0.25)' }}
         >
-          Calcul de ton potentiel...
+          Calculating your potential...
         </motion.p>
       )}
     </StepLayout>

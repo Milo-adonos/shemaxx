@@ -29,21 +29,23 @@ async function compressPhoto(dataUrl, maxW = 500, quality = 0.65) {
 }
 
 const PAYWALL_ZONE_ICONS = {
-  nez:       { icon: '👃', color: '#e8608a' },
-  nasal:     { icon: '👃', color: '#e8608a' },
-  sourcil:   { icon: '〰️', color: '#b57cff' },
-  yeux:      { icon: '👁️', color: '#5cc8ff' },
-  regard:    { icon: '👁️', color: '#5cc8ff' },
-  joue:      { icon: '◉',  color: '#f472b6' },
-  mâchoire:  { icon: '⬟',  color: '#fb923c' },
-  structure: { icon: '⬟',  color: '#fb923c' },
-  pommette:  { icon: '◈',  color: '#a78bfa' },
-  peau:      { icon: '✦',  color: '#34d399' },
-  front:     { icon: '▱',  color: '#60a5fa' },
-  lèvres:    { icon: '◡',  color: '#f87171' },
-  menton:    { icon: '◇',  color: '#fbbf24' },
-  symétrie:  { icon: '⟺', color: '#cc3c69' },
-  proportion:{ icon: '⬡',  color: '#818cf8' },
+  // English
+  nose:       { icon: '👃', color: '#e8608a' }, nasal:     { icon: '👃', color: '#e8608a' },
+  eyebrow:    { icon: '〰️', color: '#b57cff' }, brow:      { icon: '〰️', color: '#b57cff' },
+  eye:        { icon: '👁️', color: '#5cc8ff' }, eyes:      { icon: '👁️', color: '#5cc8ff' },
+  gaze:       { icon: '👁️', color: '#5cc8ff' }, cheek:     { icon: '◉',  color: '#f472b6' },
+  jaw:        { icon: '⬟',  color: '#fb923c' }, jawline:   { icon: '⬟',  color: '#fb923c' },
+  structure:  { icon: '⬟',  color: '#fb923c' }, cheekbone: { icon: '◈',  color: '#a78bfa' },
+  skin:       { icon: '✦',  color: '#34d399' }, lip:       { icon: '◡',  color: '#f87171' },
+  forehead:   { icon: '▱',  color: '#60a5fa' }, chin:      { icon: '◇',  color: '#fbbf24' },
+  symmetry:   { icon: '⟺', color: '#cc3c69' }, proportion:{ icon: '⬡',  color: '#818cf8' },
+  // French fallback
+  nez:       { icon: '👃', color: '#e8608a' }, sourcil:   { icon: '〰️', color: '#b57cff' },
+  yeux:      { icon: '👁️', color: '#5cc8ff' }, regard:    { icon: '👁️', color: '#5cc8ff' },
+  joue:      { icon: '◉',  color: '#f472b6' }, mâchoire:  { icon: '⬟',  color: '#fb923c' },
+  pommette:  { icon: '◈',  color: '#a78bfa' }, peau:      { icon: '✦',  color: '#34d399' },
+  lèvres:    { icon: '◡',  color: '#f87171' }, front:     { icon: '▱',  color: '#60a5fa' },
+  menton:    { icon: '◇',  color: '#fbbf24' }, symétrie:  { icon: '⟺', color: '#cc3c69' },
 }
 function getPaywallZoneStyle(zone) {
   const z = (zone || '').toLowerCase()
@@ -54,19 +56,18 @@ function getPaywallZoneStyle(zone) {
 }
 
 const METRIC_GRID = [
-  { label: 'Symétrie',           icon: '◈', key: 'symmetry'    },
-  { label: 'Proportions',        icon: '⬡', key: 'proportions' },
-  { label: 'Impact du regard',   icon: '◎', key: 'regard'      },
-  { label: 'Structure du visage',icon: '⬟', key: 'structure'   },
-  { label: 'Qualité de peau',    icon: '✦', key: 'skin'        },
-  { label: 'Photogénie',         icon: '◇', key: 'photogenie'  },
+  { label: 'Symmetry',      icon: '◈', key: 'symmetry'    },
+  { label: 'Proportions',   icon: '⬡', key: 'proportions' },
+  { label: 'Eye impact',    icon: '◎', key: 'regard'      },
+  { label: 'Face structure',icon: '⬟', key: 'structure'   },
+  { label: 'Skin quality',  icon: '✦', key: 'skin'        },
+  { label: 'Photogeny',     icon: '◇', key: 'photogenie'  },
 ]
 
-
 const SLIDES = [
-  { id: 'ratings', title: 'Ta carte résultats' },
-  { id: 'traits',  title: 'En apprendre sur toi' },
-  { id: 'improve', title: 'Commence à progresser' },
+  { id: 'ratings', title: 'Your results card' },
+  { id: 'traits',  title: 'Learn about yourself' },
+  { id: 'improve', title: 'Start progressing' },
 ]
 
 export default function Step10Paywall({ pseudo, faceScores = {}, onNext, onClose }) {
@@ -155,14 +156,14 @@ export default function Step10Paywall({ pseudo, faceScores = {}, onNext, onClose
       }
 
       if (error) {
-        let errMsg = error.message || 'Erreur checkout'
+        let errMsg = error.message || 'Checkout error'
         try {
           const body = await error.context?.json?.()
           if (body?.error || body?.message) errMsg = body.error || body.message
         } catch { /* ignore */ }
         throw new Error(errMsg)
       }
-      if (!data?.url) throw new Error('URL de paiement manquante')
+      if (!data?.url) throw new Error('Payment URL missing')
 
       // Sauvegarde les scores avant la redirection Stripe
       if (faceScores) {
@@ -188,7 +189,7 @@ export default function Step10Paywall({ pseudo, faceScores = {}, onNext, onClose
 
       window.location.href = data.url
     } catch (err) {
-      setCheckoutErr(err.message || 'Erreur lors du paiement.')
+      setCheckoutErr(err.message || 'Payment error.')
       setCheckoutLoading(false)
     }
   }
@@ -213,15 +214,15 @@ export default function Step10Paywall({ pseudo, faceScores = {}, onNext, onClose
           className="font-black text-white leading-none tracking-tight"
           style={{ fontSize: 'clamp(2.4rem, 8vw, 3rem)', letterSpacing: '-0.02em' }}>
           {pseudo
-            ? <><span style={{ color: PINK }}>{pseudo}</span>, débloque<br />tes résultats</>
-            : <>Débloque tes<br /><span style={{ color: PINK }}>résultats complets</span></>
+            ? <><span style={{ color: PINK }}>{pseudo}</span>, unlock<br />your results</>
+            : <>Unlock your<br /><span style={{ color: PINK }}>full results</span></>
           }
         </motion.h1>
         <motion.p
           initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.15 }}
           className="mt-2 text-sm"
           style={{ color: 'rgba(255,255,255,0.4)' }}>
-          Prouvé pour révéler ton potentiel beauté.
+          Proven to reveal your beauty potential.
         </motion.p>
       </div>
 
@@ -346,7 +347,7 @@ export default function Step10Paywall({ pseudo, faceScores = {}, onNext, onClose
                         style={{ background: 'rgba(205,55,103,0.08)', border: '1px solid rgba(205,55,103,0.2)' }}>
                         <div className="flex items-center gap-2">
                           <span style={{ fontSize: 13 }}>🏆</span>
-                          <span className="text-[12px] font-semibold" style={{ color: 'rgba(255,255,255,0.6)' }}>Classement global</span>
+                          <span className="text-[12px] font-semibold" style={{ color: 'rgba(255,255,255,0.6)' }}>Global ranking</span>
                         </div>
                         <span className="text-[14px] font-black" style={{ color: '#ff4d88' }}>{ranking}</span>
                       </div>
@@ -406,7 +407,7 @@ export default function Step10Paywall({ pseudo, faceScores = {}, onNext, onClose
                   transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
                   className="space-y-3 pr-0.5">
                   <p className="text-[11px] leading-relaxed px-1 -mt-1 mb-2" style={{ color: 'rgba(255,255,255,0.38)' }}>
-                    Tes améliorations personnalisées — débloque pour tout lire.
+                    Your personalized improvements — unlock to read everything.
                   </p>
                   {(faceScores?.defauts?.length > 0 ? faceScores.defauts : DEFAULT_DEFAUTS).map((d, i) => {
                     const zoneStyle = getPaywallZoneStyle(d.zone)
@@ -526,7 +527,7 @@ export default function Step10Paywall({ pseudo, faceScores = {}, onNext, onClose
                 </svg>
                 {t.paywall.processing}
               </>
-            ) : 'Obtiens tes résultats maintenant 🙌'}
+            ) : 'Get my results now 🙌'}
           </span>
         </motion.button>
 
@@ -540,7 +541,7 @@ export default function Step10Paywall({ pseudo, faceScores = {}, onNext, onClose
         <button onClick={onClose}
           className="w-full text-center text-xs py-1 transition-opacity hover:opacity-60"
           style={{ color: 'rgba(255,255,255,0.18)' }}>
-          Peut-être plus tard
+          Maybe later
         </button>
       </div>
     </div>

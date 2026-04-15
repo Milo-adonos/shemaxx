@@ -28,7 +28,7 @@ const POSITION_STEPS = []
 
 // ── Messages liés aux secteurs visités ───────────────────────────────────────
 const SCAN_MESSAGES = [
-  { atSectors: 0,  text: 'Fais un cercle complet avec ta tête' },
+  { atSectors: 0,  text: 'Make a full circle with your head' },
   { atSectors: 3,  text: 'Analyse de la structure faciale…' },
   { atSectors: 6,  text: 'Mesure de la symétrie…' },
   { atSectors: 9,  text: 'Calcul de l\'harmonie faciale…' },

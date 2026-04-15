@@ -93,11 +93,11 @@ export default function Step9Loading({ onNext }) {
                   animate={{ scale: [1, 1.6, 1], opacity: [0.6, 1, 0.6] }}
                   transition={{ duration: 1.2, repeat: Infinity }} />
                 <span className="text-xs font-semibold uppercase tracking-widest"
-                  style={{ color: PINK_A(0.7) }}>IA en cours d'analyse</span>
+                  style={{ color: PINK_A(0.7) }}>AI analysis in progress</span>
               </div>
-              <h2 className="text-2xl font-black text-white">Traitement de ton visage</h2>
+              <h2 className="text-2xl font-black text-white">Processing your face</h2>
               <p className="text-sm mt-1" style={{ color: 'rgba(255,255,255,0.35)' }}>
-                Analyse par intelligence artificielle
+                Artificial intelligence analysis
               </p>
             </motion.div>
 
@@ -175,7 +175,7 @@ export default function Step9Loading({ onNext }) {
                     style={{ color: '#fff', lineHeight: 1 }}>
                     {avgScore}%
                   </motion.span>
-                  <span className="text-[10px] mt-0.5 uppercase tracking-widest" style={{ color: PINK_A(0.6) }}>analyse</span>
+                  <span className="text-[10px] mt-0.5 uppercase tracking-widest" style={{ color: PINK_A(0.6) }}>analysis</span>
                 </div>
               </div>
             </motion.div>

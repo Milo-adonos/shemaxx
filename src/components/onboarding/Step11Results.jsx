@@ -289,7 +289,7 @@ function ConseilCard({ defaut, index }) {
                       <circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/>
                     </svg>
                     <span className="text-[10px] font-bold" style={{ color: zs.color }}>
-                      Résultats visibles en {timeline}
+                      Results visible in {timeline}
                     </span>
                   </div>
                 </div>
@@ -323,7 +323,7 @@ function ConseilCard({ defaut, index }) {
                     <div className="h-px flex-1" style={{ background: 'rgba(255,255,255,0.06)' }} />
                     <span className="text-[9px] font-black uppercase tracking-[0.18em]"
                       style={{ color: 'rgba(255,255,255,0.22)' }}>
-                      Produits recommandés
+                      Recommended products
                     </span>
                     <div className="h-px flex-1" style={{ background: 'rgba(255,255,255,0.06)' }} />
                   </div>
@@ -3001,9 +3001,9 @@ function TabClassement({ scores, pseudo }) {
         style={{ background: 'linear-gradient(135deg,rgba(204,60,105,0.18),rgba(204,60,105,0.06))',
           border: '1px solid rgba(204,60,105,0.3)' }}>
         <div className="px-4 pt-4 pb-4">
-          <p className="text-base font-black text-white mb-0.5">Compare avec tes amies</p>
+          <p className="text-base font-black text-white mb-0.5">Compare with your friends</p>
           <p className="text-xs mb-3" style={{ color: 'rgba(255,255,255,0.45)' }}>
-            Partage ton lien — quand tes amies s'inscrivent avec ton code, ton compteur se met à jour.
+            Share your link — when your friends sign up with your code, your counter updates.
           </p>
 
           <div className="flex items-center gap-2 rounded-xl px-3 py-2.5 mb-3"
@@ -3019,19 +3019,19 @@ function TabClassement({ scores, pseudo }) {
               className="text-[10px] font-black px-2 py-1 rounded-lg shrink-0 transition-all"
               style={{ background: copied ? 'rgba(16,185,129,0.25)' : 'rgba(255,255,255,0.1)',
                 color: copied ? '#4ade80' : 'rgba(255,255,255,0.6)' }}>
-              {copied ? '✓ Copié' : 'Copier'}
+              {copied ? '✓ Copied' : 'Copy'}
             </button>
           </div>
 
           <div className="mb-3">
             <div className="flex justify-between items-center mb-1.5">
               <span className="text-[11px] font-bold" style={{ color: 'rgba(255,255,255,0.5)' }}>
-                {hasBonus ? '🎉 Analyse offerte débloquée !' : `${invites}/5 amies inscrites`}
+                {hasBonus ? '🎉 Free analysis unlocked!' : `${invites}/5 friends signed up`}
               </span>
               {!hasBonus && (
                 <span className="text-[10px] font-bold px-2 py-0.5 rounded-full"
                   style={{ background: 'rgba(255,77,136,0.15)', color: '#ff4d88' }}>
-                  encore {inviteMore} pour 1 analyse gratuite
+                  {inviteMore} more for 1 free analysis
                 </span>
               )}
             </div>
@@ -3051,7 +3051,7 @@ function TabClassement({ scores, pseudo }) {
             {shared ? (
               <>
                 <svg width="14" height="14" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><polyline points="2 6 5 9 10 3"/></svg>
-                {LANG === 'fr' ? 'Lien partagé !' : 'Link shared!'}
+                {'Link shared!'}
               </>
             ) : (
               <>
@@ -3059,7 +3059,7 @@ function TabClassement({ scores, pseudo }) {
                   <circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/>
                   <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
                 </svg>
-                {LANG === 'fr' ? 'Inviter mes amies' : 'Invite my friends'}
+                {'Invite my friends'}
               </>
             )}
           </motion.button>
@@ -3117,7 +3117,7 @@ function TabClassement({ scores, pseudo }) {
         </motion.div>
 
         <p className="text-center text-[11px] mt-2" style={{ color: 'rgba(255,255,255,0.2)' }}>
-          {LANG === 'fr' ? 'Invite tes amies pour les voir apparaître ici' : 'Invite your friends to see them here'}
+          {'Invite your friends to see them here'}
         </p>
       </div>
 
