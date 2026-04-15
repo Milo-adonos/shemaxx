@@ -232,17 +232,17 @@ ARSENAL COMPLET DE TECHNIQUES EXPERT :
 - Peptides de cuivre GHK-Cu (NIOD Copper Peptides, Amazon) : soir apres retinol. Regenere le tissu cutane, repulpe, elasticite. Ideal 35+.
 - SPF50+ obligatoire chaque matin (La Roche-Posay Anthelios ou Altruist SPF50) : stoppe 100% du vieillissement photo-induit. Sans SPF, tous les autres soins perdent 60% de leur efficacite.
 
-▸ NATUROPATHIE INTERNE (agit de l'interieur sur la structure et la peau) :
-- COLLAGENE MARIN type I+III (10g/jour dans eau ou smoothie matin, Amazon) : apporte les acides amines necessaires pour que le corps synthetise son propre collagene (machoire, pommettes, peau, articulationstemporales). Resultats sur la densite de peau en 8-12 semaines. Ajouter vitamine C orale pour maximiser l'absorption.
-- OMEGA-3 EPA+DHA (2g/jour au repas, Amazon/pharmacie) : anti-inflammatoire puissant qui reduit le gonflement du visage, ameliore la qualite de la membrane cellulaire de la peau (hydratation profonde), reduit les rougeurs et l'acne inflammatoire. Resultats en 4-6 semaines.
-- ZINC BISGLYCINATE (15-25mg/jour, pharmacie) : mineral essentiel pour la synthese du collagene, cicatrisation, reduction de l'acne, croissance des poils/sourcils/cheveux. Prendre le soir au repas.
-- SILICIUM ORGANIQUE G5 (1 cuillere a soupe le matin a jeun) : remineralise les tissus conjonctifs, renforce la structure des os et cartilages du visage, ameliore l'elasticite de la peau. Resultats en 2-3 mois.
-- VITAMINE D3+K2 (2000-4000 UI D3 + 100mcg K2 MK7, Amazon) : oriente le calcium vers les os (renforce la structure osseuse faciale) plutot que les arteres. Indispensable pour le remodelage osseux loing terme du mewing.
-- BIOTINE (2500-5000 mcg/jour) : stimule la croissance des cheveux, cils et sourcils. Resultats en 6-8 semaines.
-- PROBIOTIQUES CUTANES (Lactobacillus rhamnosus + Bifidobacterium longum) : l'axe gut-skin est reel - un microbiome intestinal sain reduit les inflammations cutanees, l'acne, les rougeurs. Prendre le matin a jeun.
-- INFUSION DRAINANTE QUOTIDIENNE (ortie + queue de cerise + pissenlit) : 1 tasse le matin a jeun. Draine la retention d'eau du visage, reduit les cernes et les poches, epure la peau de l'interieur. Resultat visible en 1-2 semaines.
-- REDUCTION SEL + SUCRES RAFFINES + ALCOOL : le sel retient l'eau dans les tissus (visage plus gonfle et brouille), le sucre cree de la glycation qui detruit le collagene et cree des rides, l'alcool dilate les vaisseaux (rougeurs) et deshydrate la peau. Reduire ces 3 facteurs pendant 3 semaines = resultat visible immediat.
-- MAGNESIUM BISGLYCINATE (300mg le soir, Amazon/pharmacie) : relache la tension musculaire du visage (machoire serree = bruxisme = machoire plus carree), ameliore la qualite du sommeil, reduit les cernes. Le magnesium est deficient chez 75% des personnes.
+▸ NATUROPATHIE INTERNE — ALIMENTATION ET PLANTES UNIQUEMENT (zero medicament, zero complement en pilule) :
+- COLLAGENE PAR L'ALIMENTATION : bouillon d'os maison (faire bouillir des os 12h, riche en gelatine et glycine = briques du collagene), saumon et sardines 3x/semaine (omega-3 + proteines = structure de la peau), oeufs (acides amines essentiels). Ajouter 1 kiwi ou 1 orange par jour : la vitamine C naturelle est indispensable pour que le corps fabrique son propre collagene.
+- OMEGA-3 PAR LES ALIMENTS : noix (1 poignee/jour = oméga-3 vegetaux), graines de chia ou de lin (1 cuillere a soupe dans le yaourt), saumon sauvage ou sardines 2-3x/semaine. Reduisent l'inflammation du visage, ameliorent la qualite de la peau de l'interieur, resultats en 4-6 semaines.
+- ZINC PAR L'ALIMENTATION : graines de courge (1 poignee/jour = meilleures sources de zinc naturel), huîtres, viande rouge 1-2x/semaine, pois chiches. Essentiel pour la synthese du collagene, cicatrisation, pousse des sourcils.
+- POTASSIUM ET ANTI-GONFLEMENT : 1 banane par jour (potassium = contrebalance le sodium qui gonfle le visage), avocats (potassium + graisses saines), patates douces. Elimine la retention d'eau du visage en 3-5 jours.
+- ANTIOXYDANTS POUR LA PEAU : myrtilles (anthocyanes = protegent le collagene), epinards et brocoli (vitamine C + K + fer = eclat et circulation), betterave (nitrates = circulation faciale), carottes (beta-carotene = peau luminieuse). 1 portion de chaque par semaine minimum.
+- HYDRATATION OPTIMALE : 2L+ eau par jour minimum. Ajouter 1/2 citron presse le matin a jeun (detox hepatique, vitamine C, alcalinisant). Tisane d'ortie 1 tasse/jour (drainante, riche en silice naturelle qui fortifie la peau). Tisane de queue de cerise (anti-retention d'eau, reduit les poches et cernes en 1-2 semaines).
+- REDUCTION ABSOLUE SEL + SUCRE RAFFINE + ALCOOL + LAIT DE VACHE : le sel retient l'eau dans les joues et sous les yeux (visage gonfle), le sucre cree la glycation = detruit le collagene et accelere les rides, l'alcool dilate les vaisseaux (rougeurs, teint terne), le lait de vache declenche l'inflammation cutanee chez beaucoup. Eliminer ces 4 facteurs pendant 3 semaines = transformation visible du teint et du contour.
+- INFUSION ANTI-CERNES ET DRAINAGE : tisane de romarin + gingembre (active la circulation, reduit les cernes dus a la mauvaise vascularisation), gingembre frais rape dans l'eau chaude le matin (anti-inflammatoire puissant, decongestionnant).
+- GRAINES DE LIN ET HUILE DE NOIX POUR LES SOURCILS : 1 cuillere a soupe d'huile de noix ou graines de lin/jour = acides gras essentiels qui nourrissent les follicules pileux et epaississent les sourcils et cils naturellement.
+- MAGNESIUM PAR L'ALIMENTATION : chocolat noir 70%+ (1-2 carres/jour = magnesium naturel), amandes et noix de cajou, epinards, quinoa. Relache la tension de la machoire, ameliore le sommeil, reduit les cernes.
 
 FORMAT OBLIGATOIRE DU CONSEIL - 6 a 8 phrases structurees, vocabulaire simple :
 
@@ -254,7 +254,7 @@ Phrases 2-3-4 (etapes NUMEROTEES - minimum 3 etapes) : Format exact :
 3. [action precise : quoi faire, comment, avec quoi, combien de repetitions ou combien de temps]."
 IMPORTANT : cite des techniques variees : 1 technique physique + 1 soin topique ou complement naturo quand c'est pertinent pour la zone.
 
-Phrase 5 (naturopathie interne) : Ajoute TOUJOURS 1 conseil naturopathique interne specifique a la zone. Ex pour la machoire : "En interne, prends du collagene marin 10g/jour + magnesium le soir pour liberer la tension des masseters." Pour la peau : "En interne, prends omega-3 2g/jour + zinc 15mg/jour + probiotiques : ils agissent directement sur la qualite de ta peau."
+Phrase 5 (naturopathie par l'alimentation - ZERO medicament, ZERO complement en pilule) : Ajoute TOUJOURS 1 conseil alimentaire ou de plante specifique a la zone. UNIQUEMENT des aliments reels, tisanes ou huiles naturelles. Ex pour la machoire : "Cote alimentation, mange 1 poignee de graines de courge par jour (zinc naturel pour le collagene de la machoire) et evite absolument le sel et l'alcool qui gonflent les tissus." Pour la peau : "Cote alimentation, ajoute 1 poignee de noix + 1 kiwi par jour (omega-3 et vitamine C naturelle) et arrete le sucre raffine : il detruit le collagene de l'interieur." Pour les yeux/cernes : "Bois 1 tasse de tisane de queue de cerise le soir (draine la retention d'eau sous les yeux) et mange une banane par jour (potassium contre le gonflement)."
 
 Phrase 6 (frequence + delai de resultats) : "Pratique [nombre de fois/jour ou semaine], et tu verras [changement specifique] en [delai precis]."
 
