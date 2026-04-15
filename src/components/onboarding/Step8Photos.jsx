@@ -53,22 +53,19 @@ function checkImageQuality(dataUrl) {
 // ── Illustration visage de face (photo femme en gris) ────────────────────────
 function FrontFaceIllustration() {
   return (
-    <div className="relative w-full h-full flex items-end justify-center overflow-hidden">
-      <img
-        src="/face-reference.png"
-        alt="face reference"
-        style={{
-          width: '100%',
-          height: '100%',
-          objectFit: 'cover',
-          objectPosition: 'center top',
-          filter: 'grayscale(100%) brightness(0.6) contrast(1.1)',
-          opacity: 0.85,
-        }}
-      />
-      <span className="absolute bottom-3 text-[10px] font-black tracking-[3px]"
-        style={{ color: PINK_A(0.7) }}>FACE</span>
-    </div>
+    <img
+      src="/face-reference.png"
+      alt="face reference"
+      style={{
+        position: 'absolute',
+        inset: 0,
+        width: '100%',
+        height: '100%',
+        objectFit: 'cover',
+        objectPosition: 'center top',
+        filter: 'grayscale(100%) brightness(0.55) contrast(1.15)',
+      }}
+    />
   )
 }
 
@@ -201,10 +198,10 @@ function UploadFlow({ onDone, onBack }) {
           <motion.div key={uploadStep + (cur.photo ? '-filled' : '-empty')}
             initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }}
             transition={{ duration: 0.3 }}
-            className="relative w-56 rounded-3xl overflow-hidden flex items-center justify-center"
+            className="relative w-56 rounded-3xl overflow-hidden"
             style={{
               height: 280,
-              background: cur.photo ? 'transparent' : 'rgba(255,255,255,0.03)',
+              background: 'rgba(20,15,25,1)',
               border: `1px solid ${cur.photo ? PINK_A(0.4) : 'rgba(255,255,255,0.08)'}`,
               boxShadow: cur.photo ? `0 0 30px ${PINK_A(0.2)}` : 'none',
             }}>
@@ -212,15 +209,11 @@ function UploadFlow({ onDone, onBack }) {
               <img src={cur.photo} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
             ) : cur.illustration}
 
-            {/* Overlay coins décoratifs */}
-            {!cur.photo && (
-              <>
-                <div className="absolute top-3 left-3 w-5 h-5 border-t-2 border-l-2 rounded-tl-lg" style={{ borderColor: PINK_A(0.5) }} />
-                <div className="absolute top-3 right-3 w-5 h-5 border-t-2 border-r-2 rounded-tr-lg" style={{ borderColor: PINK_A(0.5) }} />
-                <div className="absolute bottom-3 left-3 w-5 h-5 border-b-2 border-l-2 rounded-bl-lg" style={{ borderColor: PINK_A(0.5) }} />
-                <div className="absolute bottom-3 right-3 w-5 h-5 border-b-2 border-r-2 rounded-br-lg" style={{ borderColor: PINK_A(0.5) }} />
-              </>
-            )}
+            {/* Coins décoratifs toujours visibles */}
+            <div className="absolute top-3 left-3 w-5 h-5 border-t-2 border-l-2 rounded-tl-lg z-10" style={{ borderColor: PINK_A(0.7) }} />
+            <div className="absolute top-3 right-3 w-5 h-5 border-t-2 border-r-2 rounded-tr-lg z-10" style={{ borderColor: PINK_A(0.7) }} />
+            <div className="absolute bottom-3 left-3 w-5 h-5 border-b-2 border-l-2 rounded-bl-lg z-10" style={{ borderColor: PINK_A(0.7) }} />
+            <div className="absolute bottom-3 right-3 w-5 h-5 border-b-2 border-r-2 rounded-br-lg z-10" style={{ borderColor: PINK_A(0.7) }} />
           </motion.div>
         </AnimatePresence>
       </div>
