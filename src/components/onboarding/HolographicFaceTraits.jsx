@@ -64,53 +64,53 @@ function buildZones(scores, lms) {
 
   return [
     {
-      id: 'skin',   label: 'Peau',      short: 'Texture & éclat',
+      id: 'skin',   label: 'Skin',       short: 'Texture & glow',
       color: PINK_B, icon: '✦',
       score: s('skin', 80),
       ...pos('skin'),
-      hint: 'Uniformité, pores et réflexion de la lumière : une base saine amplifie tous les autres atouts du visage.',
+      hint: 'Evenness, pore visibility and light reflection: healthy skin amplifies every other facial asset.',
     },
     {
-      id: 'eyes',   label: 'Yeux',      short: 'Regard & ouverture',
+      id: 'eyes',   label: 'Eyes',       short: 'Gaze & openness',
       color: PINK_B, icon: '◎',
       score: s('regard', 78),
       ...pos('eyes'),
-      hint: 'Tilt canthal, symétrie des paupières et expressivité — facteurs clés de l\'harmonie du regard.',
+      hint: 'Canthal tilt, eyelid symmetry and expressiveness — key factors of eye harmony.',
     },
     {
-      id: 'cheeks', label: 'Pommettes', short: 'Volume & lumière',
+      id: 'cheeks', label: 'Cheekbones', short: 'Volume & light',
       color: PINK_B, icon: '◈',
       score: s('structure', 76),
       ...pos('cheeks'),
-      hint: 'Saillie des pommettes et jeu de lumière sur les joues : pilier du V-taper féminin et de la photogénie.',
+      hint: 'Cheekbone projection and light play on the cheeks: the foundation of feminine V-taper and photogeny.',
     },
     {
-      id: 'joue',   label: 'Joue',      short: 'Galbe & symétrie',
+      id: 'joue',   label: 'Cheeks',     short: 'Shape & symmetry',
       color: PINK_B, icon: '◉',
       score: Math.max(50, s('structure', 76) - 3),
       ...pos('joue'),
-      hint: 'Volume et galbe de la joue : la symétrie des deux côtés et le ratio de remplissage influencent la jeunesse et la photogénie.',
+      hint: 'Cheek volume and shape: symmetry between both sides and fill ratio influence youthfulness and photogeny.',
     },
     {
-      id: 'nose',   label: 'Nez',       short: 'Profil & proportions',
+      id: 'nose',   label: 'Nose',       short: 'Profile & proportions',
       color: PINK_B, icon: '◇',
       score: s('proportions', 74),
       ...pos('nose'),
-      hint: 'Largeur relative, hauteur du dorsum et rapport avec la bouche : tout influence l\'équilibre global.',
+      hint: 'Relative width, dorsum height and relationship with the mouth — all influence overall facial balance.',
     },
     {
-      id: 'mouth',  label: 'Bouche',    short: 'Lèvres & sourire',
+      id: 'mouth',  label: 'Mouth',      short: 'Lips & smile',
       color: PINK_B, icon: '◡',
       score: Math.min(99, s('proportions', 74) + 1),
       ...pos('mouth'),
-      hint: 'Volume des lèvres, courbe du Cupidon et alignement avec le menton pour un sourire équilibré.',
+      hint: 'Lip volume, Cupid\'s bow curve and alignment with the chin for a balanced smile.',
     },
     {
-      id: 'jaw',    label: 'Mâchoire',  short: 'Ligne & définition',
+      id: 'jaw',    label: 'Jawline',    short: 'Line & definition',
       color: PINK_B, icon: '⬟',
       score: Math.max(48, s('structure', 76) - 2),
       ...pos('jaw'),
-      hint: 'Angle mandibulaire et finesse sous l\'oreille : structure qui cadre le visage et renforce la féminité.',
+      hint: 'Mandibular angle and definition below the ear: the structure that frames the face and enhances femininity.',
     },
   ]
 }
@@ -198,8 +198,8 @@ export default function HolographicFaceTraits({ faceScores = {}, photoUrl = null
     <div className="space-y-3">
       <p className="text-[11px] text-center leading-relaxed px-1" style={{ color: 'rgba(255,255,255,0.38)' }}>
         {usePhoto
-          ? 'Touche les points sur ton visage pour voir l\'analyse par zone'
-          : 'Scan holographique — touche les points lumineux pour voir ton potentiel par zone'}
+          ? 'Tap the points on your face to see the zone-by-zone analysis'
+          : 'Holographic scan — tap the glowing points to see your potential by zone'}
       </p>
 
       {/* ── Zone image ── */}
@@ -220,7 +220,7 @@ export default function HolographicFaceTraits({ faceScores = {}, photoUrl = null
           <div className="relative w-full">
             <img
               src={photoUrl}
-              alt="Ton visage"
+              alt="Your face"
               style={{ width: '100%', height: 'auto', display: 'block',
                 filter: 'brightness(0.9) contrast(1.05)' }}
             />
@@ -299,7 +299,7 @@ export default function HolographicFaceTraits({ faceScores = {}, photoUrl = null
                   style={{ color: unlocked ? 'rgba(255,255,255,0.82)' : 'rgba(255,255,255,0.7)',
                     filter: unlocked ? 'none' : 'blur(4px)', pointerEvents: unlocked ? 'auto' : 'none' }}>
                   {activeZone.hint}
-                  {!unlocked && ' Débloque l\'analyse complète pour accéder aux recommandations personnalisées et routines adaptées.'}
+                  {!unlocked && ' Unlock the full analysis to access personalized recommendations and tailored routines.'}
                 </p>
                 {!unlocked && (
                   <div className="absolute bottom-0 inset-x-0 h-8 flex items-end justify-end px-2 pb-1.5 pointer-events-none"
@@ -316,7 +316,7 @@ export default function HolographicFaceTraits({ faceScores = {}, photoUrl = null
               <button onClick={() => setOpenId(null)}
                 className="mt-2 w-full text-[10px] font-semibold text-center py-1"
                 style={{ color: 'rgba(255,255,255,0.25)' }}>
-                Fermer ×
+                Close ×
               </button>
             </div>
           </motion.div>

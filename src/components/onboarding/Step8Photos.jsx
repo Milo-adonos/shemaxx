@@ -252,7 +252,7 @@ function UploadFlow({ onDone, onBack }) {
       </motion.button>
 
       <p className="text-[10px] text-center mt-3" style={{ color: 'rgba(255,255,255,0.2)' }}>
-        🔒 Tes photos ne sont jamais stockées ni partagées
+        🔒 Your photos are never stored or shared
       </p>
     </div>
   )

@@ -122,20 +122,20 @@ function amazonUrl(query) {
 
 // ── Produits Amazon ───────────────────────────────────────────────────────────
 const AMAZON_PRODUCTS = [
-  { keywords: ['gua sha', 'guasha'],                              name: 'Gua Sha',           desc: 'Drainage & sculpture du visage', emoji: '🪨', color: '#a78bfa', query: 'gua sha facial massage' },
-  { keywords: ['falim', 'chewing-gum dur', 'chewing gum dur'],   name: 'Falim Gum',          desc: 'Mâchoire & masseters',           emoji: '🍬', color: '#fb923c', query: 'falim chewing gum hard' },
-  { keywords: ['mastic de chios', 'mastic gum'],                 name: 'Mastic de Chios',    desc: 'Résine naturelle pour mâchoire', emoji: '🌿', color: '#34d399', query: 'mastic gum chios natural' },
-  { keywords: ['derma roller', 'microneedling', 'dermastamp'],   name: 'Derma Roller 0.5mm', desc: 'Collagène & texture de peau',    emoji: '⚙️', color: '#60a5fa', query: 'derma roller 0.5mm face' },
-  { keywords: ['rétinol', 'retinol', 'tretinoin', 'trétinoïne'],name: 'Rétinol Sérum',      desc: 'Renouvellement cellulaire',      emoji: '✨', color: '#fbbf24', query: 'retinol serum face anti aging' },
-  { keywords: ['vitamine c', 'vitamin c', 'ce ferulic'],         name: 'Vitamine C Sérum',   desc: 'Éclat & synthèse du collagène',  emoji: '💛', color: '#facc15', query: 'vitamin c serum 15 percent face' },
-  { keywords: ['niacinamide'],                                    name: 'Niacinamide 10%',    desc: 'Pores réduits, teint unifié',    emoji: '💧', color: '#38bdf8', query: 'niacinamide 10 percent serum ordinary' },
-  { keywords: ['aha', 'bha', 'glycolique', 'glycolic', 'exfoliant acide'], name: 'AHA/BHA Exfoliant', desc: 'Lisse la texture en profondeur', emoji: '⚗️', color: '#f472b6', query: 'aha bha exfoliant peeling face ordinary' },
-  { keywords: ['jade roller', 'rouleau de jade', 'face roller'], name: 'Jade Roller',         desc: 'Drainage lymphatique facial',    emoji: '💚', color: '#4ade80', query: 'jade roller face massage' },
-  { keywords: ['peptide', 'peptides', 'copper peptide'],         name: 'Sérum Peptides',      desc: 'Fermeté & régénération',         emoji: '🔬', color: '#c084fc', query: 'copper peptide serum face firming' },
-  { keywords: ['led', 'led rouge', 'omnilux'],                   name: 'Masque LED Rouge',    desc: 'Stimule le collagène',           emoji: '🔴', color: '#ef4444', query: 'led red light therapy mask face' },
-  { keywords: ['spf', 'spf 50', 'protection solaire'],           name: 'SPF 50+ Visage',      desc: 'Protection UV quotidienne',      emoji: '☀️', color: '#fb923c', query: 'spf 50 face sunscreen daily' },
-  { keywords: ['huile de ricin', 'castor oil'],                  name: 'Huile de Ricin',      desc: 'Croissance sourcils & cils',     emoji: '🌾', color: '#84cc16', query: 'castor oil eyebrow growth serum' },
-  { keywords: ['acide hyaluronique', 'hyaluronic acid'],         name: 'Acide Hyaluronique',  desc: 'Hydratation intense',            emoji: '🫧', color: '#67e8f9', query: 'hyaluronic acid serum face hydration' },
+  { keywords: ['gua sha', 'guasha'],                              name: 'Gua Sha',            desc: 'Drainage & facial sculpting',    emoji: '🪨', color: '#a78bfa', query: 'gua sha facial massage' },
+  { keywords: ['falim', 'chewing-gum dur', 'chewing gum dur'],   name: 'Falim Gum',           desc: 'Jawline & masseters',            emoji: '🍬', color: '#fb923c', query: 'falim chewing gum hard' },
+  { keywords: ['mastic de chios', 'mastic gum'],                 name: 'Mastic Gum',          desc: 'Natural resin for the jaw',      emoji: '🌿', color: '#34d399', query: 'mastic gum chios natural' },
+  { keywords: ['derma roller', 'microneedling', 'dermastamp'],   name: 'Derma Roller 0.5mm',  desc: 'Collagen & skin texture',        emoji: '⚙️', color: '#60a5fa', query: 'derma roller 0.5mm face' },
+  { keywords: ['rétinol', 'retinol', 'tretinoin', 'trétinoïne'],name: 'Retinol Serum',        desc: 'Cell renewal',                   emoji: '✨', color: '#fbbf24', query: 'retinol serum face anti aging' },
+  { keywords: ['vitamine c', 'vitamin c', 'ce ferulic'],         name: 'Vitamin C Serum',      desc: 'Glow & collagen synthesis',      emoji: '💛', color: '#facc15', query: 'vitamin c serum 15 percent face' },
+  { keywords: ['niacinamide'],                                    name: 'Niacinamide 10%',      desc: 'Reduced pores, even skin tone',  emoji: '💧', color: '#38bdf8', query: 'niacinamide 10 percent serum ordinary' },
+  { keywords: ['aha', 'bha', 'glycolique', 'glycolic', 'exfoliant acide'], name: 'AHA/BHA Exfoliant', desc: 'Smooths texture deeply',  emoji: '⚗️', color: '#f472b6', query: 'aha bha exfoliant peeling face ordinary' },
+  { keywords: ['jade roller', 'rouleau de jade', 'face roller'], name: 'Jade Roller',          desc: 'Facial lymphatic drainage',      emoji: '💚', color: '#4ade80', query: 'jade roller face massage' },
+  { keywords: ['peptide', 'peptides', 'copper peptide'],         name: 'Peptide Serum',         desc: 'Firmness & regeneration',        emoji: '🔬', color: '#c084fc', query: 'copper peptide serum face firming' },
+  { keywords: ['led', 'led rouge', 'omnilux'],                   name: 'Red LED Mask',          desc: 'Boosts collagen',               emoji: '🔴', color: '#ef4444', query: 'led red light therapy mask face' },
+  { keywords: ['spf', 'spf 50', 'protection solaire'],           name: 'SPF 50+ Face',          desc: 'Daily UV protection',            emoji: '☀️', color: '#fb923c', query: 'spf 50 face sunscreen daily' },
+  { keywords: ['huile de ricin', 'castor oil'],                  name: 'Castor Oil',             desc: 'Eyebrow & lash growth',          emoji: '🌾', color: '#84cc16', query: 'castor oil eyebrow growth serum' },
+  { keywords: ['acide hyaluronique', 'hyaluronic acid'],         name: 'Hyaluronic Acid',        desc: 'Intense hydration',              emoji: '🫧', color: '#67e8f9', query: 'hyaluronic acid serum face hydration' },
 ]
 
 function findProducts(text) {

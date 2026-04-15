@@ -47,7 +47,7 @@ export default function Navbar({ onCta, onSignOut, user }) {
           {user && (
             <button
               onClick={onSignOut}
-              title="Se déconnecter"
+              title="Sign out"
               className="w-9 h-9 rounded-full flex items-center justify-center active:scale-95 transition-all duration-150"
               style={{
                 background: 'rgba(255,255,255,0.06)',

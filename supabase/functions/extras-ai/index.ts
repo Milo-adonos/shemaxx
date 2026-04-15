@@ -12,27 +12,27 @@ function json(data: unknown, status = 200) {
 
 // ── Prompts ───────────────────────────────────────────────────────────────────
 
-const GROUP_RANKING_PROMPT = `Tu es un expert en détection de visages et looksmaxxing féminin.
+const GROUP_RANKING_PROMPT = `You are an expert in face detection and female looksmaxxing.
 
-ÉTAPE 1 — Compte TOUS les visages féminins visibles sur cette photo. Note ce nombre.
-ÉTAPE 2 — Pour CHACUN de ces visages (sans en oublier aucun) :
+STEP 1 — Count ALL visible female faces in this photo. Note this number.
+STEP 2 — For EACH of these faces (without missing any):
 
-A. Note looksmaxxing 1→10 basée sur : mâchoire définie, structure osseuse, tilt canthal, pommettes, symétrie, sous-orbite, nez, regard, peau. IGNORE maquillage et vêtements.
+A. Looksmaxxing score 1→10 based on: defined jawline, bone structure, canthal tilt, cheekbones, symmetry, under-eye area, nose, gaze, skin. IGNORE makeup and clothing.
 
-B. Bbox du visage en coordonnées normalisées 0→1. RÈGLES CRITIQUES :
-   - bbox.x = position X du bord GAUCHE de la tête ÷ largeur totale image
-   - bbox.y = position Y du sommet du FRONT ÷ hauteur totale image  
-   - bbox.w = largeur de la tête ÷ largeur totale image
-   - bbox.h = hauteur tête (front→menton) ÷ hauteur totale image
-   - Chaque bbox = 1 seul visage. Pas de chevauchement.
-   - Sois précis : si une personne est à x=400px sur image 1000px large, bbox.x=0.40
+B. Face bounding box in normalized coordinates 0→1. CRITICAL RULES:
+   - bbox.x = X position of the LEFT edge of the head ÷ total image width
+   - bbox.y = Y position of the top of the FOREHEAD ÷ total image height
+   - bbox.w = head width ÷ total image width
+   - bbox.h = head height (forehead→chin) ÷ total image height
+   - Each bbox = 1 face only. No overlap.
+   - Be precise: if a person is at x=400px on a 1000px wide image, bbox.x=0.40
 
-C. 1 trait looksmaxxing en français (ex: "pommettes hautes et saillantes").
+C. 1 looksmaxxing trait in English (e.g., "high and prominent cheekbones").
 
-Désigne la plus hot.
-JSON : { "total_faces": 7, "girls": [ { "id": 1, "score": 8.4, "traits": "...", "winner": false, "bbox": { "x": 0.08, "y": 0.03, "w": 0.18, "h": 0.32 } } ], "winner_id": 1, "winner_reason": "..." }
+Designate the hottest.
+JSON: { "total_faces": 7, "girls": [ { "id": 1, "score": 8.4, "traits": "...", "winner": false, "bbox": { "x": 0.08, "y": 0.03, "w": 0.18, "h": 0.32 } } ], "winner_id": 1, "winner_reason": "..." }
 
-IMPORTANT : girls.length DOIT être égal à total_faces. Aucun visage de face ne doit être omis.`
+IMPORTANT: girls.length MUST equal total_faces. No visible face should be omitted.`
 
 const DESCRIBE_PERSON_PROMPT = `Describe this woman's exact physical appearance in detail for a photorealistic portrait generation. Include:
 - Exact hair color (shade), texture, length, style
@@ -52,20 +52,20 @@ Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders })
 
   const key = Deno.env.get('OPENAI_API_KEY')
-  if (!key) return json({ error: 'Clé OpenAI non configurée côté serveur' }, 500)
+  if (!key) return json({ error: 'OpenAI API key not configured on server' }, 500)
 
   let body: { type?: string; imageBase64?: string; prompt?: string }
   try {
     body = await req.json()
   } catch {
-    return json({ error: 'Corps de requête invalide' }, 400)
+    return json({ error: 'Invalid request body' }, 400)
   }
 
   const { type, imageBase64, prompt } = body
 
   // ── group_ranking : analyse photo de groupe via GPT-4o vision ─────────────
   if (type === 'group_ranking') {
-    if (!imageBase64) return json({ error: 'imageBase64 manquant' }, 400)
+    if (!imageBase64) return json({ error: 'imageBase64 missing' }, 400)
 
     const resp = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
@@ -96,7 +96,7 @@ Deno.serve(async (req) => {
 
   // ── style_transform : édition d'image via GPT-image-1 ────────────────────
   if (type === 'style_transform') {
-    if (!imageBase64 || !prompt) return json({ error: 'imageBase64 et prompt requis' }, 400)
+    if (!imageBase64 || !prompt) return json({ error: 'imageBase64 and prompt required' }, 400)
 
     const imageBytes = Uint8Array.from(atob(imageBase64), (c) => c.charCodeAt(0))
     const imageBlob  = new Blob([imageBytes], { type: 'image/jpeg' })
@@ -122,13 +122,13 @@ Deno.serve(async (req) => {
 
     const data = await resp.json()
     const b64  = data?.data?.[0]?.b64_json
-    if (!b64) return json({ error: 'Réponse inattendue de OpenAI' }, 502)
+    if (!b64) return json({ error: 'Unexpected response from OpenAI' }, 502)
     return json({ b64_json: b64 })
   }
 
   // ── describe_person : description physique via GPT-4o ─────────────────────
   if (type === 'describe_person') {
-    if (!imageBase64) return json({ error: 'imageBase64 manquant' }, 400)
+    if (!imageBase64) return json({ error: 'imageBase64 missing' }, 400)
 
     const resp = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
@@ -158,7 +158,7 @@ Deno.serve(async (req) => {
 
   // ── generate_image : génération via DALL-E 3 ─────────────────────────────
   if (type === 'generate_image') {
-    if (!prompt) return json({ error: 'prompt manquant' }, 400)
+    if (!prompt) return json({ error: 'prompt missing' }, 400)
 
     const resp = await fetch('https://api.openai.com/v1/images/generations', {
       method:  'POST',
@@ -171,5 +171,5 @@ Deno.serve(async (req) => {
     return json({ url: d.data?.[0]?.url ?? null })
   }
 
-  return json({ error: `Type inconnu : ${type}` }, 400)
+  return json({ error: `Unknown type: ${type}` }, 400)
 })

@@ -29,10 +29,10 @@ const POSITION_STEPS = []
 // ── Messages liés aux secteurs visités ───────────────────────────────────────
 const SCAN_MESSAGES = [
   { atSectors: 0,  text: 'Make a full circle with your head' },
-  { atSectors: 3,  text: 'Analyse de la structure faciale…' },
-  { atSectors: 6,  text: 'Mesure de la symétrie…' },
-  { atSectors: 9,  text: 'Calcul de l\'harmonie faciale…' },
-  { atSectors: 11, text: 'Génération du rapport…' },
+  { atSectors: 3,  text: 'Analyzing facial structure…' },
+  { atSectors: 6,  text: 'Measuring symmetry…' },
+  { atSectors: 9,  text: 'Calculating facial harmony…' },
+  { atSectors: 11, text: 'Generating report…' },
 ]
 
 // ── Couleurs ─────────────────────────────────────────────────────────────────
@@ -117,14 +117,14 @@ export default function Step8FaceID({ onNext, onRetry, age = null }) {
 
       // Seuils volontairement très souples — seuls les cas vraiment inutilisables bloquent
       if (bright < 8) return resolve({
-        ok: false, emoji: '💡', title: 'Trop sombre',
-        detail: 'Il fait vraiment trop noir. Allume une lumière devant toi.',
-        tips: ['Allume une lampe devant toi', 'Mets-toi face à une fenêtre'],
+        ok: false, emoji: '💡', title: 'Too dark',
+        detail: 'It\'s really too dark. Turn on a light in front of you.',
+        tips: ['Turn on a lamp facing you', 'Stand near a window'],
       })
       if (bright > 252) return resolve({
-        ok: false, emoji: '☀️', title: 'Image surexposée',
-        detail: 'La photo est entièrement blanche. Éloigne-toi de la lumière.',
-        tips: ['Éloigne-toi de la source lumineuse'],
+        ok: false, emoji: '☀️', title: 'Overexposed image',
+        detail: 'The photo is completely white. Move away from the light source.',
+        tips: ['Move away from the light source'],
       })
 
       // Flou — seuil très bas, on bloque uniquement les images vraiment inutilisables
@@ -147,9 +147,9 @@ export default function Step8FaceID({ onNext, onRetry, age = null }) {
       const variance = s2 / n - (s / n) ** 2
 
       if (variance < 5) return resolve({
-        ok: false, emoji: '📷', title: 'Image trop floue',
-        detail: 'L\'objectif est peut-être couvert. Nettoie ta caméra.',
-        tips: ['Nettoie l\'objectif de ta caméra', 'Reste immobile'],
+        ok: false, emoji: '📷', title: 'Image too blurry',
+        detail: 'The lens may be covered. Clean your camera.',
+        tips: ['Clean your camera lens', 'Stay still'],
       })
 
       resolve({ ok: true })
@@ -1113,7 +1113,7 @@ export default function Step8FaceID({ onNext, onRetry, age = null }) {
                 className="flex items-center gap-2 px-3 py-1 rounded-full"
                 style={{ background: 'rgba(52,211,153,0.12)', border: '1px solid rgba(52,211,153,0.4)' }}>
                 <div className="w-1.5 h-1.5 rounded-full" style={{ background: GREEN }} />
-                <span className="text-xs font-semibold" style={{ color: GREEN }}>Analyse complète</span>
+                <span className="text-xs font-semibold" style={{ color: GREEN }}>Analysis complete</span>
               </motion.div>
             )}
             {isPaused && (
