@@ -131,7 +131,14 @@ export default function Onboarding({ onClose, initialUser, initialSubscribed, in
     <Step4      key={4}  onNext={(v) => next({ result: v })} />,
     <Step6      key={5}  onNext={() => next()} />,
     <Step7      key={6}  onNext={(v) => next({ pseudo: v })} />,
-    <Step8      key={7}  onNext={() => next()} />,
+    <Step8      key={7}  onNext={() => next()}
+      onNextUpload={(raw) => {
+        // Mode upload : saute Step8FaceID et passe directement à l'analyse IA
+        setData(d => ({ ...d, photoUrl: raw.photoUrl, photoLandmarks: raw.photoLandmarks, analysisData: raw.analysisData }))
+        setDirection(1)
+        setStep(9)
+      }}
+    />,
     <Step8FaceID key={`faceid-${faceidKey}`} age={data.age} onNext={(raw) => next({ photoUrl: raw.photoUrl, photoLandmarks: raw.photoLandmarks, analysisData: raw.analysisData })} onRetry={() => setFaceidKey(k => k + 1)} />,
     <Step9AnalyzingIA key={9} age={data.age} analysisData={data.analysisData}
       onNext={(scores) => {
