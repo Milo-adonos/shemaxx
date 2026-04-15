@@ -16,7 +16,7 @@ Deno.serve(async (req) => {
   try {
     const authHeader = req.headers.get('Authorization')
     if (!authHeader) {
-      return new Response(JSON.stringify({ error: 'Non authentifié' }), {
+      return new Response(JSON.stringify({ error: 'Not authenticated' }), {
         status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       })
     }
@@ -29,7 +29,7 @@ Deno.serve(async (req) => {
 
     const { data: { user }, error: authError } = await supabase.auth.getUser()
     if (authError || !user) {
-      return new Response(JSON.stringify({ error: 'Non authentifié — token invalide' }), {
+      return new Response(JSON.stringify({ error: 'Not authenticated — invalid token' }), {
         status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       })
     }
@@ -46,7 +46,7 @@ Deno.serve(async (req) => {
       .single()
 
     if (!sub?.stripe_customer_id) {
-      return new Response(JSON.stringify({ error: 'Aucun abonnement trouvé' }), {
+      return new Response(JSON.stringify({ error: 'No subscription found' }), {
         status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       })
     }
@@ -57,13 +57,14 @@ Deno.serve(async (req) => {
     const session = await stripe.billingPortal.sessions.create({
       customer:   sub.stripe_customer_id,
       return_url: returnUrl,
+      locale:     'en',
     })
 
     return new Response(JSON.stringify({ url: session.url }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     })
   } catch (err: any) {
-    const msg = err?.message || String(err) || 'Erreur inconnue'
+    const msg = err?.message || String(err) || 'Unknown error'
     return new Response(JSON.stringify({ error: msg }), {
       status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     })

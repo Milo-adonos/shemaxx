@@ -18,7 +18,7 @@ Deno.serve(async (req) => {
 
   try {
     const authHeader = req.headers.get('Authorization')
-    if (!authHeader) return json({ error: 'Non authentifié' }, 401)
+    if (!authHeader) return json({ error: 'Not authenticated' }, 401)
 
     const supabase = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
@@ -26,7 +26,7 @@ Deno.serve(async (req) => {
       { global: { headers: { Authorization: authHeader } } },
     )
     const { data: { user }, error: authError } = await supabase.auth.getUser()
-    if (authError || !user) return json({ error: 'Token invalide' }, 401)
+    if (authError || !user) return json({ error: 'Invalid token' }, 401)
 
     const supabaseAdmin = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
@@ -35,7 +35,7 @@ Deno.serve(async (req) => {
 
     // Recherche le customer Stripe par email
     const customers = await stripe.customers.list({ email: user.email!, limit: 5 })
-    if (!customers.data.length) return json({ error: 'Aucun paiement trouvé pour cet email' }, 404)
+    if (!customers.data.length) return json({ error: 'No payment found for this email' }, 404)
 
     // Prend le customer le plus récent
     const customer = customers.data[0]
@@ -50,7 +50,7 @@ Deno.serve(async (req) => {
       ?? subs.data[0]
 
     if (!activeSub) {
-      return json({ error: 'Aucun abonnement trouvé — vérifie ton paiement.' }, 404)
+      return json({ error: 'No subscription found — check your payment.' }, 404)
     }
 
     // Upsert dans la table subscriptions
@@ -78,6 +78,6 @@ Deno.serve(async (req) => {
 
     return json({ success: true })
   } catch (err: any) {
-    return json({ error: err?.message || 'Erreur inconnue' }, 500)
+    return json({ error: err?.message || 'Unknown error' }, 500)
   }
 })

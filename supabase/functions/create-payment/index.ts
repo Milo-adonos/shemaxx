@@ -16,7 +16,7 @@ Deno.serve(async (req) => {
   try {
     const authHeader = req.headers.get('Authorization')
     if (!authHeader) {
-      return new Response(JSON.stringify({ error: 'Non authentifié' }), {
+      return new Response(JSON.stringify({ error: 'Not authenticated' }), {
         status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       })
     }
@@ -29,7 +29,7 @@ Deno.serve(async (req) => {
 
     const { data: { user }, error: authError } = await supabase.auth.getUser()
     if (authError || !user) {
-      return new Response(JSON.stringify({ error: 'Non authentifié — token invalide' }), {
+      return new Response(JSON.stringify({ error: 'Not authenticated — invalid token' }), {
         status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       })
     }
@@ -38,7 +38,7 @@ Deno.serve(async (req) => {
     const body = await req.json()
     const { priceId, successUrl, cancelUrl, type } = body
     if (!priceId || !successUrl || !cancelUrl) {
-      return new Response(JSON.stringify({ error: 'Paramètres manquants' }), {
+      return new Response(JSON.stringify({ error: 'Missing parameters' }), {
         status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       })
     }
@@ -60,7 +60,7 @@ Deno.serve(async (req) => {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     })
   } catch (err: any) {
-    const msg = err?.message || String(err) || 'Erreur inconnue'
+    const msg = err?.message || String(err) || 'Unknown error'
     const status = err?.statusCode ?? err?.status ?? 400
     return new Response(JSON.stringify({ error: msg }), {
       status: typeof status === 'number' && status >= 400 && status < 600 ? status : 400,

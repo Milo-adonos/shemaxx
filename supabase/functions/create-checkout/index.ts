@@ -21,7 +21,7 @@ Deno.serve(async (req) => {
     const { priceId, successUrl, cancelUrl, guest_email } = body
 
     if (!priceId || !successUrl || !cancelUrl) {
-      return json({ error: 'Paramètres manquants (priceId, successUrl, cancelUrl)' }, 400)
+      return json({ error: 'Missing parameters (priceId, successUrl, cancelUrl)' }, 400)
     }
 
     const authHeader = req.headers.get('Authorization')
@@ -36,7 +36,7 @@ Deno.serve(async (req) => {
         { global: { headers: { Authorization: authHeader } } },
       )
       const { data: { user }, error: authError } = await supabase.auth.getUser()
-      if (authError || !user) return json({ error: 'Token invalide' }, 401)
+      if (authError || !user) return json({ error: 'Invalid token' }, 401)
       userEmail = user.email ?? null
       userId    = user.id
     } else {
@@ -70,7 +70,7 @@ Deno.serve(async (req) => {
 
     return json({ url: session.url })
   } catch (err: any) {
-    const msg    = err?.message || String(err) || 'Erreur inconnue'
+    const msg    = err?.message || String(err) || 'Unknown error'
     const status = err?.statusCode ?? err?.status ?? 400
     return new Response(JSON.stringify({ error: msg }), {
       status: typeof status === 'number' && status >= 400 && status < 600 ? status : 400,
