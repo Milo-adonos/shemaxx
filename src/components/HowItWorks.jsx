@@ -1,14 +1,12 @@
 import { motion } from 'framer-motion'
-import { useInView } from 'framer-motion'
-import { useRef } from 'react'
 import { Camera, Cpu, Sparkles, Download } from 'lucide-react'
 import { useT } from '../contexts/LangContext'
+import { useScrollReveal } from '../hooks/useScrollReveal'
 
 const ICONS = [Camera, Cpu, Sparkles, Download]
 
 export default function HowItWorks() {
-  const ref = useRef(null)
-  const inView = useInView(ref, { once: true, margin: '-80px' })
+  const { ref, inView } = useScrollReveal()
   const t = useT()
   const steps = t.howItWorks.steps.map((s, i) => ({ ...s, icon: ICONS[i], number: String(i + 1).padStart(2, '0') }))
 

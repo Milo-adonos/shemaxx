@@ -1,12 +1,10 @@
 import { motion } from 'framer-motion'
-import { useInView } from 'framer-motion'
-import { useRef } from 'react'
 import { ShieldCheck, Clock, Sparkles } from 'lucide-react'
 import { useT } from '../contexts/LangContext'
+import { useScrollReveal } from '../hooks/useScrollReveal'
 
 export default function FinalCTA({ onCta }) {
-  const ref = useRef(null)
-  const inView = useInView(ref, { once: true, margin: '-80px' })
+  const { ref, inView } = useScrollReveal()
   const t = useT()
   const reassurances = [
     { icon: ShieldCheck, text: t.finalCta.confidential },

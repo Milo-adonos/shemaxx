@@ -62,6 +62,19 @@ function AppInner() {
     track('landing_page_viewed')
   }, [])
 
+  // ── Fix IntersectionObserver on initial load ──
+  // Some browsers don't fire IO callbacks for elements already in view at mount.
+  // A 1px scroll nudge forces re-evaluation of all observers.
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (window.scrollY === 0) {
+        window.scrollBy(0, 1)
+        window.scrollBy(0, -1)
+      }
+    }, 120)
+    return () => clearTimeout(timer)
+  }, [])
+
   // ── Analytics : identification utilisateur connecté ──
   useEffect(() => {
     if (!loading) {

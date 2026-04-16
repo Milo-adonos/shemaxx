@@ -1,6 +1,7 @@
-import { motion, useInView, useMotionValue, useTransform, animate } from 'framer-motion'
+import { motion, useMotionValue, useTransform, animate } from 'framer-motion'
 import { useRef, useEffect } from 'react'
 import { useT } from '../contexts/LangContext'
+import { useScrollReveal } from '../hooks/useScrollReveal'
 
 function CountUp({ target, suffix, inView }) {
   const count = useMotionValue(0)
@@ -49,8 +50,7 @@ function AnimatedStat({ target, suffix, inView }) {
 }
 
 export default function WhyNow() {
-  const ref = useRef(null)
-  const inView = useInView(ref, { once: true, margin: '-80px' })
+  const { ref, inView } = useScrollReveal()
   const t = useT()
   const stats = t.whyNow.stats
 

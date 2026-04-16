@@ -1,12 +1,10 @@
 import { motion } from 'framer-motion'
-import { useInView } from 'framer-motion'
-import { useRef } from 'react'
 import FaceGrid from './FaceGrid'
 import { useT } from '../contexts/LangContext'
+import { useScrollReveal } from '../hooks/useScrollReveal'
 
 export default function Reveal() {
-  const ref = useRef(null)
-  const inView = useInView(ref, { once: true, margin: '-80px' })
+  const { ref, inView } = useScrollReveal()
   const t = useT()
 
   return (
