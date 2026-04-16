@@ -7,16 +7,29 @@ const stripe = new Stripe(Deno.env.get('STRIPE_SECRET_KEY') ?? '', {
 
 const corsHeaders = { 'Access-Control-Allow-Origin': '*' }
 
+const ok  = () => new Response(JSON.stringify({ received: true }), {
+  headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+})
+const err = (msg: string, status = 400) =>
+  new Response(msg, { status, headers: corsHeaders })
+
 Deno.serve(async (req) => {
-  const sig     = req.headers.get('stripe-signature') ?? ''
-  const secret  = Deno.env.get('STRIPE_WEBHOOK_SECRET') ?? ''
-  const body    = await req.text()
+  // ── Vérification signature Stripe ─────────────────────────────────────────
+  const sig    = req.headers.get('stripe-signature') ?? ''
+  const secret = Deno.env.get('STRIPE_WEBHOOK_SECRET') ?? ''
+  const body   = await req.text()
+
+  if (!secret) {
+    console.error('STRIPE_WEBHOOK_SECRET not set')
+    return err('Webhook secret not configured', 500)
+  }
 
   let event: Stripe.Event
   try {
     event = await stripe.webhooks.constructEventAsync(body, sig, secret)
-  } catch (err) {
-    return new Response(`Webhook signature error: ${err.message}`, { status: 400 })
+  } catch (e: any) {
+    console.error('Signature error:', e.message)
+    return err(`Webhook signature error: ${e.message}`, 400)
   }
 
   const supabase = createClient(
@@ -24,36 +37,70 @@ Deno.serve(async (req) => {
     Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '',
   )
 
+  // ── Helper : upsert abonnement ─────────────────────────────────────────────
   const upsertSub = async (sub: Stripe.Subscription) => {
-    const userId = sub.metadata?.supabase_user_id
-    if (!userId) return
-    await supabase.from('subscriptions').upsert({
-      user_id:              userId,
-      stripe_customer_id:   String(sub.customer),
-      stripe_subscription_id: sub.id,
-      status:               sub.status,
-      price_id:             sub.items.data[0]?.price?.id ?? null,
-      current_period_end:   new Date(sub.current_period_end * 1000).toISOString(),
-      updated_at:           new Date().toISOString(),
-    }, { onConflict: 'user_id' })
-  }
+    // Cherche d'abord par supabase_user_id dans les metadata
+    let userId = sub.metadata?.supabase_user_id ?? null
 
-  switch (event.type) {
-    case 'checkout.session.completed': {
-      const session = event.data.object as Stripe.Checkout.Session
-      if (session.mode === 'subscription' && session.subscription) {
-        const sub = await stripe.subscriptions.retrieve(String(session.subscription))
-        await upsertSub(sub)
-      }
-      break
+    // Fallback : recherche par stripe_customer_id dans la table
+    if (!userId) {
+      const { data } = await supabase
+        .from('subscriptions')
+        .select('user_id')
+        .eq('stripe_customer_id', String(sub.customer))
+        .maybeSingle()
+      userId = data?.user_id ?? null
     }
-    case 'customer.subscription.updated':
-    case 'customer.subscription.deleted':
-      await upsertSub(event.data.object as Stripe.Subscription)
-      break
+
+    if (!userId) {
+      console.warn('No user_id found for subscription', sub.id)
+      return
+    }
+
+    const periodEnd = sub.current_period_end
+      ? new Date(sub.current_period_end * 1000).toISOString()
+      : null
+
+    const { error } = await supabase.from('subscriptions').upsert({
+      user_id:                userId,
+      stripe_customer_id:     String(sub.customer),
+      stripe_subscription_id: sub.id,
+      status:                 sub.status,
+      price_id:               sub.items.data[0]?.price?.id ?? null,
+      current_period_end:     periodEnd,
+    }, { onConflict: 'user_id' })
+
+    if (error) console.error('upsertSub error:', error.message)
+    else console.log(`Subscription ${sub.id} → ${sub.status} (user ${userId})`)
   }
 
-  return new Response(JSON.stringify({ received: true }), {
-    headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-  })
+  // ── Traitement des événements ──────────────────────────────────────────────
+  try {
+    switch (event.type) {
+
+      case 'checkout.session.completed': {
+        const session = event.data.object as Stripe.Checkout.Session
+        if (session.mode === 'subscription' && session.subscription) {
+          const sub = await stripe.subscriptions.retrieve(String(session.subscription))
+          await upsertSub(sub)
+        }
+        break
+      }
+
+      case 'customer.subscription.created':
+      case 'customer.subscription.updated':
+      case 'customer.subscription.deleted':
+        await upsertSub(event.data.object as Stripe.Subscription)
+        break
+
+      default:
+        console.log(`Unhandled event type: ${event.type}`)
+    }
+  } catch (e: any) {
+    // On logue l'erreur mais on renvoie 200 pour que Stripe n'essaie plus
+    console.error('Event processing error:', e.message)
+  }
+
+  // Toujours renvoyer 200 → Stripe arrête de réessayer
+  return ok()
 })
