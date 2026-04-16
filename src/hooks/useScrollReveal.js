@@ -29,11 +29,10 @@ export function useScrollReveal() {
     return () => window.removeEventListener('resize', check)
   }, [])
 
-  // Positive bottom margin = detect element 50px before it enters viewport
-  // → animation starts just as element scrolls into view, feels perfectly timed
+  // 150px before entering viewport → animation already in progress when user sees it
   const inViewDesktop = useInView(ref, {
     once: true,
-    margin: '0px 0px 50px 0px',
+    margin: '0px 0px 150px 0px',
   })
 
   return { ref, inView: isMobile ? true : inViewDesktop }
