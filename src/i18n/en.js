@@ -16,11 +16,11 @@ const en = {
   // Hero
   hero: {
     badge: 'analyses today',
-    title1: 'Maximize',
-    title2: 'your potential',
-    title3: 'with AI.',
-    subtitle: 'Analyze your face and get personalized advice to unlock your full potential.',
-    cta: 'Analyze my face',
+    title1: "What's your",
+    title2: 'beauty score',
+    title3: '?',
+    subtitle: 'AI face analysis for women. Get your score + personalized glow up plan in 60 seconds.',
+    cta: 'Get my score 🔬',
     stats: [
       { value: '+12,000', label: 'analyses' },
       { value: '4.9/5',   label: 'rating' },

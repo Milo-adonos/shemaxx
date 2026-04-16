@@ -52,8 +52,7 @@ export default function Hero({ onCta }) {
             <svg className="absolute -bottom-1 left-0 w-full" viewBox="0 0 300 8" fill="none" aria-hidden="true">
               <path d="M2 6C50 2 150 2 298 6" stroke="#cc3c69" strokeWidth="2.5" strokeLinecap="round" opacity="0.5"/>
             </svg>
-          </span>
-          <br />{t.hero.title3}
+          </span>{t.hero.title3}
         </motion.h1>
 
         <motion.p
@@ -64,12 +63,17 @@ export default function Hero({ onCta }) {
         </motion.p>
 
         <motion.div {...fadeUp(0.5)} className="flex justify-center mb-10">
-          <button
+          <motion.button
             onClick={onCta}
-            className="px-8 py-4 rounded-full font-bold text-base bg-[#cc3c69] text-white text-center active:scale-95 transition-transform duration-150 shadow-[0_0_30px_rgba(204,60,105,0.3)]"
+            animate={{ scale: [1, 1.045, 1] }}
+            transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
+            className="px-8 py-4 rounded-full font-bold text-base bg-[#cc3c69] text-white text-center active:scale-95"
+            style={{
+              boxShadow: '0 0 40px 12px rgba(204,60,105,0.55), 0 0 80px 20px rgba(204,60,105,0.25)',
+            }}
           >
             {t.hero.cta}
-          </button>
+          </motion.button>
         </motion.div>
 
         <motion.div
