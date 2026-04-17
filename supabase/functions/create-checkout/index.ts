@@ -29,7 +29,6 @@ Deno.serve(async (req) => {
     let userId:    string | null = null
 
     if (authHeader) {
-      // Utilisateur connecté — flux normal
       const supabase = createClient(
         Deno.env.get('SUPABASE_URL') ?? '',
         Deno.env.get('SUPABASE_ANON_KEY') ?? '',
@@ -40,22 +39,23 @@ Deno.serve(async (req) => {
       userEmail = user.email ?? null
       userId    = user.id
     } else {
-      // Mode invité — l'email est optionnel, Stripe le collecte pendant le paiement
+      // Guest — Stripe collects email during checkout
       userEmail = guest_email ?? null
     }
 
     const session = await stripe.checkout.sessions.create({
       ...(userEmail ? { customer_email: userEmail } : {}),
-      mode:                 'subscription',
+      mode:                 'payment',          // ← one-time payment
       payment_method_types: ['card'],
       line_items:           [{ price: priceId, quantity: 1 }],
       success_url:          `${successUrl}&session_id={CHECKOUT_SESSION_ID}`,
       cancel_url:           cancelUrl,
-      metadata:             {
+      metadata: {
         ...(userId ? { supabase_user_id: userId } : {}),
         guest_email: userEmail ?? '',
       },
-      subscription_data: {
+      payment_intent_data: {
+        statement_descriptor: 'SHEMAXX',
         metadata: {
           ...(userId ? { supabase_user_id: userId } : {}),
           guest_email: userEmail ?? '',

@@ -47,6 +47,33 @@ const PAYWALL_ZONE_ICONS = {
   lèvres:    { icon: '◡',  color: '#f87171' }, front:     { icon: '▱',  color: '#60a5fa' },
   menton:    { icon: '◇',  color: '#fbbf24' }, symétrie:  { icon: '⟺', color: '#cc3c69' },
 }
+// Translate French zone names to English
+const ZONE_FR_TO_EN = {
+  'yeux': 'Eyes', 'oeil': 'Eyes', 'œil': 'Eyes',
+  'sourcils': 'Eyebrows', 'sourcil': 'Eyebrows',
+  'nez': 'Nose', 'nasal': 'Nose',
+  'joues': 'Cheeks', 'joue': 'Cheeks',
+  'mâchoire': 'Jawline', 'machoire': 'Jawline',
+  'pommettes': 'Cheekbones', 'pommette': 'Cheekbones',
+  'peau': 'Skin', 'teint': 'Skin',
+  'lèvres': 'Lips', 'levres': 'Lips', 'lèvre': 'Lips',
+  'front': 'Forehead',
+  'menton': 'Chin',
+  'symétrie': 'Symmetry', 'symetrie': 'Symmetry',
+  'regard': 'Eye impact',
+  'structure': 'Structure', 'visage': 'Face',
+  'proportions': 'Proportions',
+}
+function translateZone(zone) {
+  if (!zone) return zone
+  const lower = zone.toLowerCase().trim()
+  for (const [fr, en] of Object.entries(ZONE_FR_TO_EN)) {
+    if (lower.includes(fr)) return en
+  }
+  // Already English or unknown — capitalize first letter
+  return zone.charAt(0).toUpperCase() + zone.slice(1)
+}
+
 function getPaywallZoneStyle(zone) {
   const z = (zone || '').toLowerCase()
   for (const [key, val] of Object.entries(PAYWALL_ZONE_ICONS)) {
@@ -426,7 +453,7 @@ export default function Step10Paywall({ pseudo, faceScores = {}, onNext, onClose
                             <span className="text-sm leading-none">{zoneStyle.icon}</span>
                             <span className="text-[10px] font-black uppercase tracking-widest px-2 py-0.5 rounded-full"
                               style={{ background: `${zoneStyle.color}22`, color: zoneStyle.color, border: `1px solid ${zoneStyle.color}44` }}>
-                              {d.zone}
+                              {translateZone(d.zone)}
                             </span>
                           </div>
                           {/* Problème — flouté */}

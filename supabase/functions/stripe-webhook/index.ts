@@ -80,9 +80,41 @@ Deno.serve(async (req) => {
 
       case 'checkout.session.completed': {
         const session = event.data.object as Stripe.Checkout.Session
+
         if (session.mode === 'subscription' && session.subscription) {
+          // Legacy subscription flow
           const sub = await stripe.subscriptions.retrieve(String(session.subscription))
           await upsertSub(sub)
+
+        } else if (session.mode === 'payment') {
+          // One-time payment → grant lifetime access
+          let userId = session.metadata?.supabase_user_id ?? null
+
+          // Fallback: look up by Stripe customer id
+          if (!userId && session.customer) {
+            const { data } = await supabase
+              .from('subscriptions')
+              .select('user_id')
+              .eq('stripe_customer_id', String(session.customer))
+              .maybeSingle()
+            userId = data?.user_id ?? null
+          }
+
+          if (userId) {
+            const { error } = await supabase.from('subscriptions').upsert({
+              user_id:            userId,
+              stripe_customer_id: session.customer ? String(session.customer) : null,
+              stripe_subscription_id: null,
+              status:             'active',
+              price_id:           null,
+              current_period_end: null,
+            }, { onConflict: 'user_id' })
+            if (error) console.error('one-time upsert error:', error.message)
+            else console.log(`One-time access granted to user ${userId}`)
+          } else {
+            // Guest user — will be linked after account creation via link-payment
+            console.log('Guest one-time payment — will link on account creation')
+          }
         }
         break
       }

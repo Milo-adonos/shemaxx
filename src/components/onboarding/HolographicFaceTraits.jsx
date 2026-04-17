@@ -51,11 +51,14 @@ const LM_FALLBACK = {
 /**
  * Convertit un landmark en % de la photo.
  * Photo mirrorée horizontalement : x affiché = (1 - lm.x) * 100
- * Pas de correction object-cover : la photo est affichée à taille naturelle.
+ * On clamp px/py dans des bornes raisonnables pour éviter
+ * que les points sortent du visage (épaules, hors cadre, etc.)
  */
 function lmPct(lm) {
   if (!lm) return null
-  return { px: (1 - lm.x) * 100, py: lm.y * 100 }
+  const px = Math.max(8, Math.min(92, (1 - lm.x) * 100))
+  const py = Math.max(5, Math.min(83, lm.y  * 100))
+  return { px, py }
 }
 
 function buildZones(scores, lms) {
