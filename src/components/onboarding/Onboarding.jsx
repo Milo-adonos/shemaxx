@@ -3,12 +3,8 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { X } from 'lucide-react'
 import { track } from '../../lib/posthog.js'
 import { useT } from '../../contexts/LangContext'
-import Step1 from './Step1Qualification'
 import Step2 from './Step2Age'
-import Step3 from './Step3Zones'
-import Step4 from './Step4Result'
 import Step5 from './Step5Potential'
-import Step6 from './Step6Graph'
 import Step7 from './Step7Pseudo'
 import Step8 from './Step8Photos'
 import Step8FaceID from './Step8FaceID'
@@ -18,21 +14,22 @@ import Step9Reveal, { DEFAULT_DEFAUTS } from './Step9Reveal'
 import Step10 from './Step10Paywall'
 import Step11 from './Step11Results'
 
-const TOTAL = 14
+// New flow: Age → Pseudo → Photos → Capture → AnalyzingIA → Loading → Potential → Reveal → Paywall → Results
+const TOTAL = 10
 
-// Étapes sans header (plein écran immersif)
-const IMMERSIVE_STEPS = [8, 9, 10, 12, 13, 14]
+// Steps shown without header (full-screen immersive)
+const IMMERSIVE_STEPS = [4, 5, 6, 8, 9, 10]
+
+// Number of non-immersive questionnaire steps shown in the progress bar
+const PROGRESS_STEPS = 3
 
 export default function Onboarding({ onClose, initialUser, initialSubscribed, initialScans, initialProfile, pendingScores, pendingPayment = 'none' }) {
   const t = useT()
-  // Bloque le scroll du body pendant que l'app est ouverte
   useEffect(() => {
     document.body.classList.add('app-open')
     return () => document.body.classList.remove('app-open')
   }, [])
 
-  // Accès à l'app (Step11) uniquement si connecté ET abonné,
-  // ou si on revient juste de Stripe avec un paiement validé
   const justPaid  = pendingPayment === 'subscription'
   const canAccess = (initialUser && initialSubscribed) || justPaid
   const startStep = canAccess ? TOTAL : 1
@@ -42,43 +39,32 @@ export default function Onboarding({ onClose, initialUser, initialSubscribed, in
   const [faceidKey, setFaceidKey] = useState(0)
   const [rescanMode, setRescanMode] = useState(false)
 
-  // Noms des étapes pour PostHog
   const STEP_NAMES = {
-    1:  '01_qualification_objectif',
-    2:  '02_saisie_age',
-    3:  '03_zones_concernees',
-    4:  '04_type_de_resultats',
-    5:  '05_graphique_progression',
-    6:  '06_saisie_pseudo',
-    7:  '07_instructions_photo',
-    8:  '08_capture_photo',
-    9:  '09_analyse_ia_en_cours',
-    10: '10_chargement_scores',
-    11: '11_score_potentiel',
-    12: '12_teaser_resultats_floutes',
-    13: '13_paywall',
-    14: '14_resultats_debloques',
+    1:  '01_saisie_age',
+    2:  '02_saisie_pseudo',
+    3:  '03_instructions_photo',
+    4:  '04_capture_photo',
+    5:  '05_analyse_ia_en_cours',
+    6:  '06_chargement_scores',
+    7:  '07_score_potentiel',
+    8:  '08_teaser_resultats_floutes',
+    9:  '09_paywall',
+    10: '10_resultats_debloques',
   }
 
-  // URLs dédiées pour chaque étape (tracking taap.it + PostHog)
   const STEP_PATHS = {
-    1:  '/scan/qualification',
-    2:  '/scan/age',
-    3:  '/scan/zones',
-    4:  '/scan/objectif',
-    5:  '/scan/progression',
-    6:  '/scan/pseudo',
-    7:  '/scan/instructions',
-    8:  '/scan/capture',
-    9:  '/scan/analyse',
-    10: '/scan/chargement',
-    11: '/scan/potentiel',
-    12: '/scan/apercu',
-    13: '/scan/offre',
-    14: '/scan/resultats',
+    1:  '/scan/age',
+    2:  '/scan/pseudo',
+    3:  '/scan/instructions',
+    4:  '/scan/capture',
+    5:  '/scan/analyse',
+    6:  '/scan/chargement',
+    7:  '/scan/potentiel',
+    8:  '/scan/apercu',
+    9:  '/scan/offre',
+    10: '/scan/resultats',
   }
 
-  // Tracker chaque changement d'étape + mettre à jour l'URL
   useEffect(() => {
     const path = STEP_PATHS[step] ?? `/scan/step-${step}`
     window.history.pushState({ step }, '', path)
@@ -90,17 +76,14 @@ export default function Onboarding({ onClose, initialUser, initialSubscribed, in
     })
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [step])
-  // Priorité : scores en attente (retour Stripe) → scans Supabase → null
+
   const restoredScores = pendingScores
     ?? (initialUser && initialScans?.length > 0 ? initialScans[0] : null)
 
   const [data, setData] = useState({
-    level: null,
-    age:   initialProfile?.age ?? 22,
-    zones: [],
-    result: null,
-    pseudo: initialProfile?.pseudo ?? (initialUser?.email?.split('@')[0] ?? ''),
-    faceScores: restoredScores,
+    age:          initialProfile?.age ?? 22,
+    pseudo:       initialProfile?.pseudo ?? (initialUser?.email?.split('@')[0] ?? ''),
+    faceScores:   restoredScores,
     analysisData: null,
   })
 
@@ -110,12 +93,12 @@ export default function Onboarding({ onClose, initialUser, initialSubscribed, in
     setStep(s => Math.min(s + 1, TOTAL))
   }
 
-  // Depuis Step11Results : saute directement au scan, puis teaser seulement
+  // From Step11Results: jump directly to capture, then teaser only
   const handleRescan = () => {
     setRescanMode(true)
     setFaceidKey(k => k + 1)
     setDirection(1)
-    setStep(8)
+    setStep(4)
   }
 
   const variants = {
@@ -125,41 +108,47 @@ export default function Onboarding({ onClose, initialUser, initialSubscribed, in
   }
 
   const steps = [
-    <Step1      key={1}  onNext={(v) => next({ level: v })} />,
-    <Step2      key={2}  value={data.age} onNext={(v) => next({ age: v })} />,
-    <Step3      key={3}  value={data.zones} onNext={(v) => next({ zones: v })} />,
-    <Step4      key={4}  onNext={(v) => next({ result: v })} />,
-    <Step6      key={5}  onNext={() => next()} />,
-    <Step7      key={6}  onNext={(v) => next({ pseudo: v })} />,
-    <Step8      key={7}  onNext={() => next()}
+    // 1 — Age
+    <Step2      key={1}  value={data.age} onNext={(v) => next({ age: v })} />,
+    // 2 — First name
+    <Step7      key={2}  onNext={(v) => next({ pseudo: v })} />,
+    // 3 — Photo instructions
+    <Step8      key={3}  onNext={() => next()}
       onNextUpload={(raw) => {
-        // Mode upload : saute Step8FaceID et passe directement à l'analyse IA
         setData(d => ({ ...d, photoUrl: raw.photoUrl, photoLandmarks: raw.photoLandmarks, analysisData: raw.analysisData }))
         setDirection(1)
-        setStep(9)
+        setStep(5)
       }}
     />,
+    // 4 — Live capture (immersive)
     <Step8FaceID key={`faceid-${faceidKey}`} age={data.age} onNext={(raw) => next({ photoUrl: raw.photoUrl, photoLandmarks: raw.photoLandmarks, analysisData: raw.analysisData })} onRetry={() => setFaceidKey(k => k + 1)} />,
-    <Step9AnalyzingIA key={9} age={data.age} analysisData={data.analysisData}
+    // 5 — AI analysis (immersive)
+    <Step9AnalyzingIA key={5} age={data.age} analysisData={data.analysisData}
       onNext={(scores) => {
         const defauts = (scores.defauts && scores.defauts.length > 0)
           ? scores.defauts
           : DEFAULT_DEFAUTS
         next({ faceScores: { ...scores, defauts, photoUrl: data.photoUrl, photoLandmarks: data.photoLandmarks, scanId: Date.now() } })
       }}
-      onRescan={() => { setDirection(-1); setStep(8); setFaceidKey(k => k + 1) }}
+      onRescan={() => { setDirection(-1); setStep(3); setFaceidKey(k => k + 1) }}
     />,
-    <Step9      key={10}  onNext={() => {
-      if (rescanMode) { setDirection(1); setStep(13) }
+    // 6 — Score loading (immersive)
+    <Step9      key={6}  onNext={() => {
+      if (rescanMode) { setDirection(1); setStep(9) }
       else next()
     }} />,
-    <Step5      key={11} faceScores={data.faceScores} onNext={() => next()} />,
-    <Step9Reveal key={12} pseudo={data.pseudo} faceScores={data.faceScores} zones={data.zones} onNext={() => next()} />,
-    <Step10     key={13} pseudo={data.pseudo} faceScores={data.faceScores} onNext={() => { setRescanMode(false); next() }} onClose={onClose} />,
-    <Step11     key={14} pseudo={data.pseudo} faceScores={data.faceScores} age={data.age} onClose={onClose} onRescan={handleRescan} pendingPayment={pendingPayment} />,
+    // 7 — Potential score (non-immersive)
+    <Step5      key={7}  faceScores={data.faceScores} onNext={() => next()} />,
+    // 8 — Teaser / blurred reveal (immersive)
+    <Step9Reveal key={8} pseudo={data.pseudo} faceScores={data.faceScores} zones={[]} onNext={() => next()} />,
+    // 9 — Paywall (immersive)
+    <Step10     key={9}  pseudo={data.pseudo} faceScores={data.faceScores} onNext={() => { setRescanMode(false); next() }} onClose={onClose} />,
+    // 10 — Unlocked results (immersive)
+    <Step11     key={10} pseudo={data.pseudo} faceScores={data.faceScores} age={data.age} onClose={onClose} onRescan={handleRescan} pendingPayment={pendingPayment} />,
   ]
 
   const immersive = IMMERSIVE_STEPS.includes(step)
+  const progressPct = Math.min((step / PROGRESS_STEPS) * 100, 100)
 
   return (
     <motion.div
@@ -178,12 +167,12 @@ export default function Onboarding({ onClose, initialUser, initialSubscribed, in
           </span>
 
           <div className="flex items-center gap-3">
-            <span className="text-xs text-white/30">{step}/{TOTAL - 2}</span>
+            <span className="text-xs text-white/30">{Math.min(step, PROGRESS_STEPS)}/{PROGRESS_STEPS}</span>
             <div className="w-24 h-1 rounded-full bg-white/8 overflow-hidden">
               <motion.div
                 className="h-full rounded-full"
                 style={{ background: '#cc3c69' }}
-                animate={{ width: `${(step / (TOTAL - 2)) * 100}%` }}
+                animate={{ width: `${progressPct}%` }}
                 transition={{ duration: 0.4, ease: 'easeOut' }}
               />
             </div>
