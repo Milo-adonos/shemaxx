@@ -10,15 +10,15 @@ import Step8 from './Step8Photos'
 import Step8FaceID from './Step8FaceID'
 import Step9AnalyzingIA from './Step9AnalyzingIA'
 import Step9 from './Step9Loading'
-import Step9Reveal, { DEFAULT_DEFAUTS } from './Step9Reveal'
+import { DEFAULT_DEFAUTS } from './Step9Reveal'
 import Step10 from './Step10Paywall'
 import Step11 from './Step11Results'
 
-// New flow: Age → Pseudo → Photos → Capture → AnalyzingIA → Loading → Potential → Reveal → Paywall → Results
-const TOTAL = 10
+// New flow: Age → Pseudo → Photos → Capture → AnalyzingIA → Loading → Potential → Paywall → Results
+const TOTAL = 9
 
 // Steps shown without header (full-screen immersive)
-const IMMERSIVE_STEPS = [4, 5, 6, 8, 9, 10]
+const IMMERSIVE_STEPS = [4, 5, 6, 8, 9]
 
 // Number of non-immersive questionnaire steps shown in the progress bar
 const PROGRESS_STEPS = 3
@@ -40,29 +40,27 @@ export default function Onboarding({ onClose, initialUser, initialSubscribed, in
   const [rescanMode, setRescanMode] = useState(false)
 
   const STEP_NAMES = {
-    1:  '01_saisie_age',
-    2:  '02_saisie_pseudo',
-    3:  '03_instructions_photo',
-    4:  '04_capture_photo',
-    5:  '05_analyse_ia_en_cours',
-    6:  '06_chargement_scores',
-    7:  '07_score_potentiel',
-    8:  '08_teaser_resultats_floutes',
-    9:  '09_paywall',
-    10: '10_resultats_debloques',
+    1: '01_saisie_age',
+    2: '02_saisie_pseudo',
+    3: '03_instructions_photo',
+    4: '04_capture_photo',
+    5: '05_analyse_ia_en_cours',
+    6: '06_chargement_scores',
+    7: '07_score_potentiel',
+    8: '08_paywall',
+    9: '09_resultats_debloques',
   }
 
   const STEP_PATHS = {
-    1:  '/scan/age',
-    2:  '/scan/pseudo',
-    3:  '/scan/instructions',
-    4:  '/scan/capture',
-    5:  '/scan/analyse',
-    6:  '/scan/chargement',
-    7:  '/scan/potentiel',
-    8:  '/scan/apercu',
-    9:  '/scan/offre',
-    10: '/scan/resultats',
+    1: '/scan/age',
+    2: '/scan/pseudo',
+    3: '/scan/instructions',
+    4: '/scan/capture',
+    5: '/scan/analyse',
+    6: '/scan/chargement',
+    7: '/scan/potentiel',
+    8: '/scan/offre',
+    9: '/scan/resultats',
   }
 
   useEffect(() => {
@@ -134,17 +132,15 @@ export default function Onboarding({ onClose, initialUser, initialSubscribed, in
     />,
     // 6 — Score loading (immersive)
     <Step9      key={6}  onNext={() => {
-      if (rescanMode) { setDirection(1); setStep(9) }
+      if (rescanMode) { setDirection(1); setStep(8) }
       else next()
     }} />,
     // 7 — Potential score (non-immersive)
     <Step5      key={7}  faceScores={data.faceScores} onNext={() => next()} />,
-    // 8 — Teaser / blurred reveal (immersive)
-    <Step9Reveal key={8} pseudo={data.pseudo} faceScores={data.faceScores} zones={[]} onNext={() => next()} />,
-    // 9 — Paywall (immersive)
-    <Step10     key={9}  pseudo={data.pseudo} faceScores={data.faceScores} onNext={() => { setRescanMode(false); next() }} onClose={onClose} />,
-    // 10 — Unlocked results (immersive)
-    <Step11     key={10} pseudo={data.pseudo} faceScores={data.faceScores} age={data.age} onClose={onClose} onRescan={handleRescan} pendingPayment={pendingPayment} />,
+    // 8 — Paywall (immersive)
+    <Step10     key={8}  pseudo={data.pseudo} faceScores={data.faceScores} onNext={() => { setRescanMode(false); next() }} onClose={onClose} />,
+    // 9 — Unlocked results (immersive)
+    <Step11     key={9}  pseudo={data.pseudo} faceScores={data.faceScores} age={data.age} onClose={onClose} onRescan={handleRescan} pendingPayment={pendingPayment} />,
   ]
 
   const immersive = IMMERSIVE_STEPS.includes(step)
