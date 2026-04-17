@@ -274,7 +274,7 @@ const en = {
   paywall: {
     cta: 'Pay & subscribe',
     processing: 'Processing...',
-    priceLabel: '/week',
+    priceLabel: '— one time payment',
     perDay: 'per day',
     cancelAnytime: 'Cancel anytime',
     secure: 'Secure payment',

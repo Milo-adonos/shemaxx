@@ -558,7 +558,7 @@ export default function Step10Paywall({ pseudo, faceScores = {}, onNext, onClose
           </span>
         </motion.button>
 
-        <p className="text-center font-black text-white text-sm">3,99 € {t.paywall.priceLabel}</p>
+        <p className="text-center font-black text-white text-sm">4,99 € — one time payment</p>
 
         <div className="flex items-center justify-center gap-4">
           <button className="text-xs" style={{ color: 'rgba(255,255,255,0.3)' }}>{t.footer.terms}</button>
